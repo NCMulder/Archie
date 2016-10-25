@@ -9,6 +9,7 @@ import static java.lang.System.out;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,9 +38,9 @@ public class ARCHIE extends JPanel {
         dirTree = new DefaultMutableTreeNode(path);
         CreateNodes(path, dirTree);
         CreateDocument(dirTree);
-        
+
         XMLOutputter outputter = new XMLOutputter();
-        
+
         try {
             PrintWriter writer = new PrintWriter("basic_xml.xml");
             outputter.output(xml, writer);
@@ -70,12 +71,12 @@ public class ARCHIE extends JPanel {
     public static void main(String[] args) {
         String str = "C:/Users/niels/Desktop";
         ARCHIE arch = new ARCHIE(Paths.get(str));
-        
+
         JFrame frame = new JFrame("DirTree");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
+
         frame.add(arch);
-        
+
         frame.pack();
         frame.setVisible(true);
     }
@@ -83,37 +84,60 @@ public class ARCHIE extends JPanel {
     private void CreateDocument(DefaultMutableTreeNode dirTree) {
         Element root = new Element("root");
         CreateElements(dirTree, root);
-        
+
         xml = new Document(root);
-        out.println("xml doc: " + xml.toString());
+    }
+
+    private void CreateElements(DefaultMutableTreeNode dir, Element element) {
+        Path filePath = (Path) dir.getUserObject();
+        Element file = new Element("file");
+        Element name = new Element("name");
+        name.setText(filePath.getFileName().toString());
+        file.addContent(name);
+
+        if (filePath.toFile().isFile()) {
+        setFileElements(filePath, file);
+        } else {
+            file.setName("folder");
+            setFolderElements(dir, file);
+            for (Object files : Collections.list(dir.children())) {
+                CreateElements((DefaultMutableTreeNode) files, file);
+            }
+        }
+        element.addContent(file);
     }
     
-    private void CreateElements(DefaultMutableTreeNode dir, Element element){
-        Path filePath = (Path)dir.getUserObject();
-        
-        if(filePath.toFile().isFile()){
-            Element file = new Element("file");
-            file.setAttribute("name", filePath.toString());
-            
-            String fileType = "unknown";
+    //setFileElements sets several content types for files, such as filetype and modification date.
+    private void setFileElements(Path filePath, Element file) {
+            BasicFileAttributes attr = null;
+        try {
+            attr = Files.readAttributes(filePath, BasicFileAttributes.class);
+        } catch (IOException ex) {
+            Logger.getLogger(ARCHIE.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        //Filetype setting.
+        Element fileType = new Element("filetype");
+        String fileTypeString = "unknown";
             try {
                 String temp = Files.probeContentType(filePath);
-                if(temp!=null)
-                    fileType = temp;
+                if (temp != null) {
+                    fileTypeString = temp;
+                }
             } catch (IOException ex) {
                 Logger.getLogger(ARCHIE.class.getName()).log(Level.SEVERE, null, ex);
             }
-            
-            file.setAttribute("filetype", fileType);
-            element.addContent(file);
-        } else {
-            Element folder = new Element("folder");
-            folder.setAttribute("name", dir.toString());
-            folder.setAttribute("filecount", Integer.toString(dir.getChildCount()));
-            for (Object file : Collections.list(dir.children())) {
-                CreateElements((DefaultMutableTreeNode)file, folder);
-            }
-            element.addContent(folder);
-        }
+        fileType.setText(fileTypeString);
+        file.addContent(fileType);
+        
+        Element fileSize = new Element("file_size");
+        fileSize.setText(Long.toString(attr.size()));
+        file.addContent(fileSize);
+    }
+
+    //setFileElements sets several content types for folders, such as filecount.
+    private void setFolderElements(DefaultMutableTreeNode folderNode, Element folder) {
+            Element fileCount = new Element("filecount");
+            fileCount.setText(Integer.toString(folderNode.getChildCount()));
+            folder.addContent(fileCount);
     }
 }
