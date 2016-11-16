@@ -17,10 +17,19 @@ import org.jdom2.output.XMLOutputter;
 public class archieXMLcreator {
     
     public Document CreateDocument(DefaultMutableTreeNode dirTree) {
-        Element root = new Element("root");
-        CreateElements(dirTree, root);
+        Path filePath = (Path) dirTree.getUserObject();
+        Element file = new Element("file");
+        Element name = new Element("name");
+        name.setText(filePath.getFileName().toString());
+        file.addContent(name);
 
-        return new Document(root);
+        file.setName("folder");
+            setFolderElements(dirTree, file);
+            for (Object files : Collections.list(dirTree.children())) {
+                CreateElements((DefaultMutableTreeNode) files, file);
+            }
+
+        return new Document(file);
     }
 
     private void CreateElements(DefaultMutableTreeNode dir, Element element) {
