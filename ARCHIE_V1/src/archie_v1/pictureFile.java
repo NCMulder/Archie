@@ -11,7 +11,7 @@ public class pictureFile extends FileHelper {
     }
 
     @Override
-    public Map<MetaDataType, String> getMetaData() {
+    public Map<String, String> getMetaData() {
         //Todo: add picture specific metadata extraction
         return metadata;
     }

@@ -60,10 +60,11 @@ public class archieXMLcreator {
     //setFileElements sets several content types for files, such as filetype and modification date.
     private void setFileElements(Path filePath, Element file) {
         FileHelper fh = getFile(filePath);
-        Map<FileHelper.MetaDataType, String> fileMap = fh.getMetaData();
+        Map<String, String> fileMap = fh.getMetaData();
         
-        for (FileHelper.MetaDataType attribute : fileMap.keySet()){
-            Element metaData = new Element(attribute.toString());
+        for (String attribute : fileMap.keySet()){
+            //needs a better way of metadataname replacement
+            Element metaData = new Element(attribute.replaceAll(":", "_").replaceAll(" ", "_").replaceAll("/", "_"));
             metaData.setText(fileMap.get(attribute));
             file.addContent(metaData);
         }

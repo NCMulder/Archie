@@ -48,9 +48,7 @@ public class ARCHIE extends JPanel {
 
         JFrame frame = new JFrame("DirTree");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
         frame.add(arch);
-
         frame.pack();
         frame.setVisible(true);
     }

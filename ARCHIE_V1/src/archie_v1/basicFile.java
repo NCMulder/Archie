@@ -11,7 +11,7 @@ public class basicFile extends FileHelper {
     }
 
     @Override
-    public Map<MetaDataType, String> getMetaData() {
+    public Map<String, String> getMetaData() {
         return metadata;
     }
 }
