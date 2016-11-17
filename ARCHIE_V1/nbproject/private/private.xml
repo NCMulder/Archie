@@ -3,11 +3,13 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/niels/Documents/Archie/Archie/ARCHIE_V1/src/archie_v1/pictureFile.java</file>
+            <file>file:/C:/Users/niels/Documents/Archie/Archie/ARCHIE_V1/src/archie_v1/fileHelpers/basicFile.java</file>
             <file>file:/C:/Users/niels/Documents/Archie/Archie/ARCHIE_V1/src/archie_v1/archieXMLcreator.java</file>
-            <file>file:/C:/Users/niels/Documents/Archie/Archie/ARCHIE_V1/src/archie_v1/basicFile.java</file>
+            <file>file:/C:/Users/niels/Documents/Archie/Archie/ARCHIE_V1/src/archie_v1/outputAbstract.java</file>
+            <file>file:/C:/Users/niels/Documents/Archie/Archie/ARCHIE_V1/src/archie_v1/fileHelpers/pictureFile.java</file>
             <file>file:/C:/Users/niels/Documents/Archie/Archie/ARCHIE_V1/src/archie_v1/FileHelper.java</file>
             <file>file:/C:/Users/niels/Documents/Archie/Archie/ARCHIE_V1/src/archie_v1/ARCHIE.java</file>
+            <file>file:/C:/Users/niels/Documents/Archie/Archie/ARCHIE_V1/src/archie_v1/outputFormats/outputIslandora.java</file>
         </group>
     </open-files>
 </project-private>

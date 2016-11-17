@@ -13,13 +13,14 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.jdom2.*;
 
-public class ARCHIE extends JPanel {
+public class ARCHIE{
 
     private Path mainDir;
-    private DefaultMutableTreeNode dirTree;
+    static private DefaultMutableTreeNode dirTree;
     private JTree fileTree;
     private Document xml;
     private archieXMLcreator aXML;
+    static UIHelper ui;
 
     public ARCHIE(Path path) {
         mainDir = path;
@@ -36,26 +37,19 @@ public class ARCHIE extends JPanel {
         aXML.saveToXML(xml, "basic_xml");
         
         outputIslandora temp = new outputIslandora();
-        temp.createOutput(xml);
-
-        //Filetree view creation
-        fileTree = new JTree(dirTree);
-        JScrollPane fileTreeView = new JScrollPane(fileTree);
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        splitPane.setLeftComponent(fileTreeView);
-        add(splitPane);
+        Document iDoc = temp.createOutput(xml);
+        aXML.saveToXML(iDoc, "islandora_XML");
     }
 
     public static void main(String[] args) {
        //String str = "C:\\Users\\niels\\Documents\\Archie\\Archie\\Documentation\\testset";
        String str = "C:\\Users\\niels\\Documents\\Archie\\Archie\\Documentation\\testset";
         ARCHIE arch = new ARCHIE(Paths.get(str));
-
-        JFrame frame = new JFrame("DirTree");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(arch);
-        frame.pack();
-        frame.setVisible(true);
+        setupUI();
+    }
+    
+    public static void setupUI(){
+        ui = new UIHelper(dirTree);
     }
 
     private void CreateNodes(Path path, DefaultMutableTreeNode tree) {
