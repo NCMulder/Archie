@@ -1,6 +1,7 @@
 //License
 package archie_v1;
 
+import archie_v1.fileHelpers.basicFile;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -77,11 +78,11 @@ public class archieXMLcreator {
             folder.addContent(fileCount);
     }
     
-    public void saveToXML(Document xml){
+    public void saveToXML(Document xml, String fileName){
         XMLOutputter outputter = new XMLOutputter();
 
         try {
-            PrintWriter writer = new PrintWriter("basic_xml.xml");
+            PrintWriter writer = new PrintWriter(fileName + ".xml");
             outputter.output(xml, writer);
         } catch (FileNotFoundException ex) {
             Logger.getLogger(ARCHIE.class.getName()).log(Level.SEVERE, "File not found", ex);

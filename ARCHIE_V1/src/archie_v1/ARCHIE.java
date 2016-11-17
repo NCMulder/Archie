@@ -1,6 +1,7 @@
 //License header
 package archie_v1;
 
+import archie_v1.outputFormats.outputIslandora;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -32,7 +33,10 @@ public class ARCHIE extends JPanel {
         //Tussenvorm XML creation
         aXML = new archieXMLcreator();
         xml = aXML.CreateDocument(dirTree);
-        aXML.saveToXML(xml);
+        aXML.saveToXML(xml, "basic_xml");
+        
+        outputIslandora temp = new outputIslandora();
+        temp.createOutput(xml);
 
         //Filetree view creation
         fileTree = new JTree(dirTree);
@@ -43,7 +47,8 @@ public class ARCHIE extends JPanel {
     }
 
     public static void main(String[] args) {
-        String str = "C:\\Users\\niels\\Documents\\Archie\\Archie\\Documentation\\testset";
+       //String str = "C:\\Users\\niels\\Documents\\Archie\\Archie\\Documentation\\testset";
+       String str = "C:\\Users\\niels\\Documents\\Archie\\Archie\\Documentation\\testset";
         ARCHIE arch = new ARCHIE(Paths.get(str));
 
         JFrame frame = new JFrame("DirTree");

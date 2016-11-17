@@ -1,6 +1,7 @@
 //License
-package archie_v1;
+package archie_v1.fileHelpers;
 
+import archie_v1.FileHelper;
 import java.nio.file.Path;
 import java.util.Map;
 
