@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.XMLOutputter;
@@ -36,9 +37,7 @@ public class archieXMLcreator {
     private void CreateElements(DefaultMutableTreeNode dir, Element element) {
         Path filePath = (Path) dir.getUserObject();
         Element file = new Element("file");
-        Element name = new Element("name");
-        name.setText(filePath.getFileName().toString());
-        file.addContent(name);
+        file.setAttribute("name", filePath.getFileName().toString());
 
         if (filePath.toFile().isFile()) {
         setFileElements(filePath, file);
@@ -63,19 +62,16 @@ public class archieXMLcreator {
         FileHelper fh = getFile(filePath);
         Map<String, String> fileMap = fh.getMetaData();
         
-        for (String attribute : fileMap.keySet()){
+        for (String metadata : fileMap.keySet()){
             //needs a better way of metadataname replacement
-            Element metaData = new Element(attribute.replaceAll(":", "_").replaceAll(" ", "_").replaceAll("/", "_"));
-            metaData.setText(fileMap.get(attribute));
-            file.addContent(metaData);
+            Attribute attribute = new Attribute(metadata.replaceAll(":", "_").replaceAll(" ", "_").replaceAll("/", "_"), fileMap.get(metadata));
+            file.setAttribute(attribute);
         }
     }
 
     //setFileElements sets several content types for folders, such as filecount.
     private void setFolderElements(DefaultMutableTreeNode folderNode, Element folder) {
-            Element fileCount = new Element("filecount");
-            fileCount.setText(Integer.toString(folderNode.getChildCount()));
-            folder.addContent(fileCount);
+        folder.setAttribute("filecount", Integer.toString(folderNode.getChildCount()));
     }
     
     public void saveToXML(Document xml, String fileName){

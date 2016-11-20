@@ -5,11 +5,6 @@ import archie_v1.outputFormats.outputIslandora;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.jdom2.*;
 
@@ -17,7 +12,6 @@ public class ARCHIE{
 
     private Path mainDir;
     static private DefaultMutableTreeNode dirTree;
-    private JTree fileTree;
     private Document xml;
     private archieXMLcreator aXML;
     static UIHelper ui;
@@ -42,7 +36,6 @@ public class ARCHIE{
     }
 
     public static void main(String[] args) {
-       //String str = "C:\\Users\\niels\\Documents\\Archie\\Archie\\Documentation\\testset";
        String str = "C:\\Users\\niels\\Documents\\Archie\\Archie\\Documentation\\testset";
         ARCHIE arch = new ARCHIE(Paths.get(str));
         setupUI();
