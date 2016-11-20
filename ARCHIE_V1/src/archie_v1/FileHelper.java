@@ -45,15 +45,15 @@ public abstract class FileHelper {
             Logger.getLogger(FileHelper.class.getName()).log(Level.SEVERE, null, ex);
         }
         ParseContext context = new ParseContext();
-        
+
         try {
             parser.parse(inputstream, handler, metadataTemp, context);
         } catch (IOException | SAXException | TikaException ex) {
             Logger.getLogger(FileHelper.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         String[] names = metadataTemp.names();
-        for(String metaType : names){
+        for (String metaType : names) {
             basedata.put(metaType, metadataTemp.get(metaType));
         }
 

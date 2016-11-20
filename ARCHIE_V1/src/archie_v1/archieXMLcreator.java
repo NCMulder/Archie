@@ -17,7 +17,7 @@ import org.jdom2.Element;
 import org.jdom2.output.XMLOutputter;
 
 public class archieXMLcreator {
-    
+
     public Document CreateDocument(DefaultMutableTreeNode dirTree) {
         Path filePath = (Path) dirTree.getUserObject();
         Element file = new Element("file");
@@ -26,10 +26,10 @@ public class archieXMLcreator {
         file.addContent(name);
 
         file.setName("folder");
-            setFolderElements(dirTree, file);
-            for (Object files : Collections.list(dirTree.children())) {
-                CreateElements((DefaultMutableTreeNode) files, file);
-            }
+        setFolderElements(dirTree, file);
+        for (Object files : Collections.list(dirTree.children())) {
+            CreateElements((DefaultMutableTreeNode) files, file);
+        }
 
         return new Document(file);
     }
@@ -40,7 +40,7 @@ public class archieXMLcreator {
         file.setAttribute("name", filePath.getFileName().toString());
 
         if (filePath.toFile().isFile()) {
-        setFileElements(filePath, file);
+            setFileElements(filePath, file);
         } else {
             file.setName("folder");
             setFolderElements(dir, file);
@@ -50,19 +50,19 @@ public class archieXMLcreator {
         }
         element.addContent(file);
     }
-    
-    private FileHelper getFile(Path filePath){
+
+    private FileHelper getFile(Path filePath) {
         //Todo: context specific file type selection
         basicFile bf = new basicFile(filePath);
         return bf;
     }
-    
+
     //setFileElements sets several content types for files, such as filetype and modification date.
     private void setFileElements(Path filePath, Element file) {
         FileHelper fh = getFile(filePath);
         Map<String, String> fileMap = fh.getMetaData();
-        
-        for (String metadata : fileMap.keySet()){
+
+        for (String metadata : fileMap.keySet()) {
             //needs a better way of metadataname replacement
             Attribute attribute = new Attribute(metadata.replaceAll(":", "_").replaceAll(" ", "_").replaceAll("/", "_"), fileMap.get(metadata));
             file.setAttribute(attribute);
@@ -73,8 +73,8 @@ public class archieXMLcreator {
     private void setFolderElements(DefaultMutableTreeNode folderNode, Element folder) {
         folder.setAttribute("filecount", Integer.toString(folderNode.getChildCount()));
     }
-    
-    public void saveToXML(Document xml, String fileName){
+
+    public void saveToXML(Document xml, String fileName) {
         XMLOutputter outputter = new XMLOutputter();
 
         try {

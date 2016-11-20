@@ -8,7 +8,7 @@ import java.nio.file.Paths;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.jdom2.*;
 
-public class ARCHIE{
+public class ARCHIE {
 
     private Path mainDir;
     static private DefaultMutableTreeNode dirTree;
@@ -18,30 +18,30 @@ public class ARCHIE{
 
     public ARCHIE(Path path) {
         mainDir = path;
-        
+
         //Filetree generation
         dirTree = new DefaultMutableTreeNode(path);
         for (File file : path.toFile().listFiles()) {
-                CreateNodes(file.toPath(), dirTree);
-            }
-        
+            CreateNodes(file.toPath(), dirTree);
+        }
+
         //Tussenvorm XML creation
         aXML = new archieXMLcreator();
         xml = aXML.CreateDocument(dirTree);
         aXML.saveToXML(xml, "basic_xml");
-        
+
         outputIslandora temp = new outputIslandora();
         Document iDoc = temp.createOutput(xml);
         aXML.saveToXML(iDoc, "islandora_XML");
     }
 
     public static void main(String[] args) {
-       String str = "C:\\Users\\niels\\Documents\\Archie\\Archie\\Documentation\\testset";
+        String str = "C:\\Users\\niels\\Documents\\Archie\\Archie\\Documentation\\testset";
         ARCHIE arch = new ARCHIE(Paths.get(str));
         setupUI();
     }
-    
-    public static void setupUI(){
+
+    public static void setupUI() {
         ui = new UIHelper(dirTree);
     }
 

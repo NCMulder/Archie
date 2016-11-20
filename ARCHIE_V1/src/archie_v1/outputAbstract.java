@@ -4,10 +4,11 @@ package archie_v1;
 import org.jdom2.Document;
 
 public abstract class outputAbstract {
+
     protected Document output;
-    
-    public outputAbstract(){
+
+    public outputAbstract() {
     }
-    
+
     public abstract Document createOutput(Document archieXML);
 }

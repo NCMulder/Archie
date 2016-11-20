@@ -11,9 +11,9 @@ import org.jdom2.Namespace;
 
 public class outputIslandora extends outputAbstract {
 
-    public outputIslandora(){
+    public outputIslandora() {
         super();
-        
+
         Namespace ns1 = Namespace.getNamespace("http://www.loc.gov/mods/v3");
         Namespace ns2 = Namespace.getNamespace("xsi", "https://www.w3.org/2001/XMLSchema-instance");
         Namespace ns3 = Namespace.getNamespace("schemaLocation", "http://www.loc.gov/standards/mods/v3/mods-3-6.xsd");
@@ -24,37 +24,27 @@ public class outputIslandora extends outputAbstract {
         modsXML.setAttribute("version", "3.6");
         output = new Document(modsXML);
     }
-    
+
     @Override
     public Document createOutput(Document archieXML) {
-        //todo: islandora specific output
+        //Todo: change to MODS output.
         Iterator<Content> files = archieXML.getDescendants();
-        
-        while(files.hasNext()){
+
+        while (files.hasNext()) {
             Content temp = files.next();
-            if(temp.getCType() == Content.CType.Element){
-            Element file = (Element)temp.clone();
-            if("file".equals(file.getName())){
-                //Todo: replace ugly attribute removal; perhabs make new element instead of cloning?
-                Attribute[] attrList = new Attribute[file.getAttributes().size()];
-                int i = 0;
-                for(Attribute attribute : file.getAttributes()){
-                    Element element = new Element(attribute.getName());
-                    element.setText(attribute.getValue());
-                    attrList[i] = attribute;
-                    i++;
-                    file.addContent(element);
+            if (temp.getCType() == Content.CType.Element) {
+                Element file = new Element(((Element) temp).getName());
+                if ("file".equals(file.getName())) {
+                    for (Attribute attribute : ((Element) temp).getAttributes()) {
+                        Element element = new Element(attribute.getName());
+                        element.setText(attribute.getValue());
+                        file.addContent(element);
+                    }
+                    output.getRootElement().addContent(file);
                 }
-                
-                for(Attribute attribute : attrList){
-                    file.removeAttribute(attribute);
-                }
-                
-                output.getRootElement().addContent(file);
-            }
             }
         }
-        
+
         return output;
     }
 }
