@@ -20,12 +20,9 @@ public class archieXMLcreator {
 
     public Document CreateDocument(DefaultMutableTreeNode dirTree) {
         Path filePath = (Path) dirTree.getUserObject();
-        Element file = new Element("file");
-        Element name = new Element("name");
-        name.setText(filePath.getFileName().toString());
-        file.addContent(name);
+        Element file = new Element("folder");
+        file.setAttribute("name", filePath.getFileName().toString());
 
-        file.setName("folder");
         setFolderElements(dirTree, file);
         for (Object files : Collections.list(dirTree.children())) {
             CreateElements((DefaultMutableTreeNode) files, file);
@@ -38,6 +35,7 @@ public class archieXMLcreator {
         Path filePath = (Path) dir.getUserObject();
         Element file = new Element("file");
         file.setAttribute("name", filePath.getFileName().toString());
+        file.setAttribute("path", filePath.toString());
 
         if (filePath.toFile().isFile()) {
             setFileElements(filePath, file);
@@ -80,8 +78,6 @@ public class archieXMLcreator {
         try {
             PrintWriter writer = new PrintWriter(fileName + ".xml");
             outputter.output(xml, writer);
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(ARCHIE.class.getName()).log(Level.SEVERE, "File not found", ex);
         } catch (IOException ex) {
             Logger.getLogger(ARCHIE.class.getName()).log(Level.SEVERE, "Writer not found", ex);
         }

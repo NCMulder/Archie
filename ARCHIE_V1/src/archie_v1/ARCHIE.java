@@ -5,6 +5,7 @@ import archie_v1.outputFormats.outputIslandora;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Iterator;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.jdom2.*;
 
@@ -33,6 +34,16 @@ public class ARCHIE {
         outputIslandora temp = new outputIslandora();
         Document iDoc = temp.createOutput(xml);
         aXML.saveToXML(iDoc, "islandora_XML");
+        
+        Iterator<Content> files = xml.getDescendants();
+        while(files.hasNext()){
+            outputIslandora temp2 = new outputIslandora();
+            Element element = (Element)files.next();
+            if("file".equals(element.getName())){
+                Document fileXML = temp2.createOutput(element);
+                //aXML.saveToXML(fileXML, "fileXMLS/" + element.getAttributeValue("name"));
+            }
+        }
     }
 
     public static void main(String[] args) {
