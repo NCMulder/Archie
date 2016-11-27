@@ -2,6 +2,7 @@
 package archie_v1.UI;
 
 import archie_v1.Dataset;
+import java.awt.BorderLayout;
 import java.nio.file.Path;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -9,13 +10,15 @@ import javax.swing.JSplitPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-public class MetaDataChanger extends JPanel {
+public class MetaDataChanger extends JSplitPane {
 
     Path mainDirectory;
     JTree UITree;
     Dataset dataset;
 
     public MetaDataChanger(String name, Path path, Boolean fromArchie) {
+        this.orientation = JSplitPane.HORIZONTAL_SPLIT;
+        this.setResizeWeight(0.5);
         mainDirectory = path;
         dataset = new Dataset(name, path, fromArchie);
 
@@ -31,12 +34,9 @@ public class MetaDataChanger extends JPanel {
         };
 
         JScrollPane fileTreeView = new JScrollPane(UITree);
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        splitPane.setLeftComponent(fileTreeView);
+        this.setLeftComponent(fileTreeView);
 
         WelcomeScreen ws = new WelcomeScreen();
-        splitPane.setRightComponent(ws);
-
-        add(splitPane);
+        this.setRightComponent(ws);
     }
 }
