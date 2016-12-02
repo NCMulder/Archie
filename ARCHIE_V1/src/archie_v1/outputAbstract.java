@@ -14,4 +14,6 @@ public abstract class outputAbstract {
 
     public abstract Document createOutput(Document archieXML);
     public abstract Document createOutput(Element archieElement);
+    //v replaces ^
+    public abstract Document singleItem(Element element);
 }

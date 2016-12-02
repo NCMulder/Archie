@@ -14,6 +14,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.border.EmptyBorder;
@@ -96,11 +97,24 @@ public class MainFrame extends JFrame implements ActionListener {
             mainPanel = nds;
             this.add(nds);
             this.pack();
+        } else if (e.getActionCommand() == "Islandora zip"){
+            if(mainPanel instanceof MetaDataChanger){
+                MetaDataChanger mdc = (MetaDataChanger)mainPanel;
+                JFileChooser fc = new JFileChooser(mdc.dataset.mainDirectory.getParent().toString());
+                boolean succes = false;
+                int rv = fc.showSaveDialog(this);
+                if(rv == JFileChooser.APPROVE_OPTION)
+                    succes = ((MetaDataChanger)mainPanel).Save(MetaDataChanger.SaveType.Islandora, fc.getSelectedFile().toPath());
+                if(succes)
+                    JOptionPane.showMessageDialog(this, "The file has been succesfully saved.");
+            }
         } else {
             System.out.println(e);
+            System.out.println(e.getSource());
         }
     }
     
+    //temp
     public JPanel WorkingOnItPanel(){
         JPanel wOI = new JPanel();
         JLabel wOIL = new JLabel("Working on it...");

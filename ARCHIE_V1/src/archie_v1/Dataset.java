@@ -9,9 +9,9 @@ import org.jdom2.Element;
 
 public class Dataset {
 
-    Path mainDirectory;
+    public Path mainDirectory;
     public DefaultMutableTreeNode fileTree;
-    Document aXML;
+    public Document aXML;
 
     public Dataset(String name, Path path, Boolean fromArchie) {
         this.mainDirectory = path;

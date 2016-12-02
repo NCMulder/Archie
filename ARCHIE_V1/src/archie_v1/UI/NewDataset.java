@@ -36,7 +36,7 @@ public class NewDataset extends JPanel implements ActionListener {
         fileChooser.addActionListener(this);
         fileChooser.setApproveButtonText("Generate");
         
-        name = new JTextField();
+        name = new JTextField("testset");
         GridBagConstraints tfg      = new GridBagConstraints(2, 0, 1, 1, .4, .25, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 100), 0, 0);
         
         JLabel nameLabel = new JLabel("Name:");

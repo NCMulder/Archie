@@ -9,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,7 +27,8 @@ public class outputIslandora extends outputAbstract {
     
     public outputIslandora() {
         super();
-
+        
+        
         ns1 = Namespace.getNamespace("http://www.loc.gov/mods/v3");
         Namespace ns2 = Namespace.getNamespace("xsi", "https://www.w3.org/2001/XMLSchema-instance");
         Namespace ns3 = Namespace.getNamespace("schemaLocation", "http://www.loc.gov/standards/mods/v3/mods-3-6.xsd");
@@ -35,6 +37,7 @@ public class outputIslandora extends outputAbstract {
         modsXML.addNamespaceDeclaration(ns2);
         modsXML.addNamespaceDeclaration(ns3);
         modsXML.setAttribute("version", "3.6");
+        
         output = new Document(modsXML);
     }
 
@@ -61,6 +64,127 @@ public class outputIslandora extends outputAbstract {
 
         return output;
     }
+    
+    
+    //redo this for all file types (e.g. public Document singleIslandora(pictureFile file)? Maybe not if not all is needed 
+    public Document singleItem(Element element){
+        Element root = output.getRootElement();
+        
+        //title info
+        Element titleInfo = new Element("titleInfo", ns1);
+        Element title = new Element("title", ns1);
+        title.setText(element.getAttributeValue("name"));
+        titleInfo.addContent(title);
+        root.addContent(titleInfo);
+        
+        //identifier
+        Element identifier = new Element("identifier", ns1);
+        identifier.setAttribute("type", "unknown");
+        identifier.setText("unknown");
+        root.addContent(identifier);
+        
+        //creator
+        Element name = new Element("name", ns1);
+        name.setAttribute("type", "personal");
+        Element role = new Element("role", ns1);
+        Element roleTerm = new Element("roleTerm", ns1);
+        roleTerm.setAttribute("type", "text");
+        roleTerm.setAttribute("authority", "unknown");
+        roleTerm.setText("creator");
+        role.addContent(roleTerm);
+        name.addContent(role);
+        Element namePartTOA = new Element("namePart", ns1);
+        namePartTOA.setAttribute("type", "termsOfAdress");
+        namePartTOA.setText("unknown");
+        name.addContent(namePartTOA);
+        Element namePartGiven = new Element ("namePart", ns1);
+        namePartGiven.setAttribute("type", "given");
+        namePartGiven.setText(element.getAttributeValue("creator").split(", ")[1]);
+        name.addContent(namePartGiven);
+        Element namePartFamily = new Element("namePart", ns1);
+        namePartFamily.setAttribute("type", "family");
+        namePartFamily.setText(element.getAttributeValue("creator").split(", ")[0]);
+        name.addContent(namePartFamily);
+        Element nameIdentifier = new Element("nameIdentifier", ns1);
+        nameIdentifier.setText("unknown");
+        name.addContent(nameIdentifier);
+        Element affiliation = new Element("affiliation", ns1);
+        affiliation.setText(element.getAttributeValue("publisher"));
+        name.addContent(affiliation);
+        root.addContent(name);
+        
+        //contributors - should be addable in metadatachanger
+        
+        
+        //related item
+        Element relatedItem = new Element("relatedItem", ns1);
+        Element titleInfo2 = new Element("titleInfo", ns1);
+        Element title2 = new Element("title", ns1);
+        title2.setText("unknown");
+        titleInfo2.addContent(title2);
+        relatedItem.addContent(titleInfo2);
+        Element location = new Element("location", ns1);
+        Element url = new Element("url", ns1);
+        url.setText("unknown");
+        location.addContent(url);
+        relatedItem.addContent(location);
+        root.addContent(relatedItem);
+        
+        //subject/topic
+        
+        //abstract
+        
+        //originInfo/publisher
+        
+        //originInfo/dateCreated
+        Element originInfo = new Element("originInfo", ns1);
+        Element dateCreated = new Element ("dateCreated", ns1);
+        dateCreated.setAttribute("encoding", "unknown");
+        dateCreated.setText(element.getAttributeValue("modified"));
+        originInfo.addContent(dateCreated);
+        root.addContent(originInfo);
+        
+        //typeOfResource/collection/text
+        Element typeOfResource = new Element("typeOfResource", ns1);
+        typeOfResource.setAttribute("collection", "yes");
+        typeOfResource.setText("mixed material");
+        root.addContent(typeOfResource);
+        
+        //physicalDescription
+        
+        //language/languageTerm
+        
+        //subject/temporal
+        
+        //subject/cartographic/coordinates
+        
+        //accesCondition
+        
+        //collector
+        
+        //abstract (description)
+        
+        //note (purpose)
+        
+        //note (collection)
+        
+        //note (units)
+        
+        //note (appreciation)
+        
+        //note (source)
+        
+        //note (citation)
+        
+        //note (notes_
+        
+        //subject/cartographic/coordinates
+        
+        //extras
+        
+        
+        return output;
+    }
 
     @Override
     public Document createOutput(Element archieElement) {
@@ -69,10 +193,10 @@ public class outputIslandora extends outputAbstract {
         
         for (Attribute attribute : archieElement.getAttributes()) {
             Element element = new Element(attribute.getName());
-            element.setNamespace(ns1);
             element.setText(attribute.getValue());
             output.getRootElement().addContent(element);
         }
+        
         
         
         XMLOutputter outputter = new XMLOutputter();

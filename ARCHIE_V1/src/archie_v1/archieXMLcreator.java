@@ -22,6 +22,7 @@ public class archieXMLcreator {
         Path filePath = (Path) dirTree.getUserObject();
         Element file = new Element("folder");
         file.setAttribute("name", filePath.getFileName().toString());
+        file.setAttribute("path", filePath.toString());
 
         setFolderElements(dirTree, file);
         for (Object files : Collections.list(dirTree.children())) {
