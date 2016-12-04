@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,6 +18,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.jdom2.Attribute;
 import org.jdom2.Content;
+import org.jdom2.DocType;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
@@ -39,6 +41,7 @@ public class outputIslandora extends outputAbstract {
         modsXML.setAttribute("version", "3.6");
         
         output = new Document(modsXML);
+        output.setDocType(new DocType("mods"));
     }
 
     @Override
@@ -63,6 +66,25 @@ public class outputIslandora extends outputAbstract {
         }
 
         return output;
+    }
+    
+    @Override
+    public boolean SaveToXML(String destination, Document archieXML) throws IOException{
+        Zipper zipper = new Zipper();
+        Iterator<Content> files = archieXML.getDescendants();
+        ArrayList<Document> toSave = new ArrayList();
+        ArrayList<String> sources = new ArrayList();
+
+        while (files.hasNext()) {
+            Element temp = (Element) files.next();
+            if ("file".equals(temp.getName())) {
+                outputIslandora oI = new outputIslandora();
+                Document doc = oI.singleItem(temp);
+                toSave.add(doc);
+                sources.add(temp.getAttributeValue("path"));
+                }
+        }
+        return zipper.SaveAsZip(destination, toSave.toArray(new Document[toSave.size()]), sources.toArray(new String[sources.size()]));
     }
     
     
@@ -99,17 +121,17 @@ public class outputIslandora extends outputAbstract {
         name.addContent(namePartTOA);
         Element namePartGiven = new Element ("namePart", ns1);
         namePartGiven.setAttribute("type", "given");
-        namePartGiven.setText(element.getAttributeValue("creator").split(", ")[1]);
+        //namePartGiven.setText(element.getAttributeValue("creator").split(", ")[1]);
         name.addContent(namePartGiven);
         Element namePartFamily = new Element("namePart", ns1);
         namePartFamily.setAttribute("type", "family");
-        namePartFamily.setText(element.getAttributeValue("creator").split(", ")[0]);
+        //namePartFamily.setText(element.getAttributeValue("creator").split(", ")[0]);
         name.addContent(namePartFamily);
         Element nameIdentifier = new Element("nameIdentifier", ns1);
         nameIdentifier.setText("unknown");
         name.addContent(nameIdentifier);
         Element affiliation = new Element("affiliation", ns1);
-        affiliation.setText(element.getAttributeValue("publisher"));
+        //affiliation.setText(element.getAttributeValue("publisher"));
         name.addContent(affiliation);
         root.addContent(name);
         
@@ -140,7 +162,7 @@ public class outputIslandora extends outputAbstract {
         Element originInfo = new Element("originInfo", ns1);
         Element dateCreated = new Element ("dateCreated", ns1);
         dateCreated.setAttribute("encoding", "unknown");
-        dateCreated.setText(element.getAttributeValue("modified"));
+        //dateCreated.setText(element.getAttributeValue("modified"));
         originInfo.addContent(dateCreated);
         root.addContent(originInfo);
         

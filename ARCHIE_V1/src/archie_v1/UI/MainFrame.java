@@ -7,6 +7,9 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -99,14 +102,18 @@ public class MainFrame extends JFrame implements ActionListener {
             this.pack();
         } else if (e.getActionCommand() == "Islandora zip"){
             if(mainPanel instanceof MetaDataChanger){
-                MetaDataChanger mdc = (MetaDataChanger)mainPanel;
-                JFileChooser fc = new JFileChooser(mdc.dataset.mainDirectory.getParent().toString());
-                boolean succes = false;
-                int rv = fc.showSaveDialog(this);
-                if(rv == JFileChooser.APPROVE_OPTION)
-                    succes = ((MetaDataChanger)mainPanel).Save(MetaDataChanger.SaveType.Islandora, fc.getSelectedFile().toPath());
-                if(succes)
-                    JOptionPane.showMessageDialog(this, "The file has been succesfully saved.");
+                try {
+                    MetaDataChanger mdc = (MetaDataChanger)mainPanel;
+                    JFileChooser fc = new JFileChooser(mdc.dataset.mainDirectory.getParent().toString());
+                    boolean succes = false;
+                    int rv = fc.showSaveDialog(this);
+                    if(rv == JFileChooser.APPROVE_OPTION)
+                        succes = ((MetaDataChanger)mainPanel).Save(MetaDataChanger.SaveType.Islandora, fc.getSelectedFile().toPath());
+                    if(succes)
+                        JOptionPane.showMessageDialog(this, "The file has been succesfully saved.");
+                } catch (IOException ex) {
+                    Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         } else {
             System.out.println(e);

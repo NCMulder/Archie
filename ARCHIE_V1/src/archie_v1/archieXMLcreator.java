@@ -1,4 +1,6 @@
 //License
+
+//TODO: Check Pattern package for easy XML parsing
 package archie_v1;
 
 import archie_v1.fileHelpers.basicFile;

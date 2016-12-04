@@ -31,7 +31,7 @@ public class NewDataset extends JPanel implements ActionListener {
         this.parent = parent;
         
         this.setLayout(new GridBagLayout());
-        fileChooser = new JFileChooser("C:\\Users\\niels\\Documents\\Archie\\Archie\\Documentation");
+        fileChooser = new JFileChooser("C:\\Users\\niels\\Documents\\Archie\\Testset\\testset");
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fileChooser.addActionListener(this);
         fileChooser.setApproveButtonText("Generate");
