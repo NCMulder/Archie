@@ -14,25 +14,37 @@ public class Dataset {
     public Document aXML;
 
     public Dataset(String name, Path path, Boolean fromArchie) {
+        long startTime = System.nanoTime();
         this.mainDirectory = path;
         if (!fromArchie) {
-            fileTree = getFileTree();
+            fileTree = dirToTree(path);
         } else {
             //fileTreeFromDoc
             fileTree = null;
         }
+        long currTime = System.nanoTime();
+        System.out.println("Filetree created in " + (currTime - startTime)/1000000 + " ms");
 
         archieXMLcreator axc = new archieXMLcreator();
         aXML = axc.CreateDocument(fileTree);
-
+        long archieTime = System.nanoTime();
+        System.out.println("ArchieXML created in " + (archieTime - currTime)/1000000 + " ms");
     }
 
-    public DefaultMutableTreeNode getFileTree() {
-        DefaultMutableTreeNode dirTree = new DefaultMutableTreeNode(mainDirectory);
-        for (File file : mainDirectory.toFile().listFiles()) {
+    public DefaultMutableTreeNode dirToTree(Path path) {
+        DefaultMutableTreeNode dirTree = new DefaultMutableTreeNode(path);
+        for (File file : path.toFile().listFiles()) {
             createNodes(file.toPath(), dirTree);
         }
         return dirTree;
+    }
+
+    public DefaultMutableTreeNode docToTree(Document doc) {
+        DefaultMutableTreeNode resultTree = new DefaultMutableTreeNode(doc.getRootElement());
+        for (Element elem : doc.getRootElement().getChildren()) {
+            createNodes(elem, resultTree);
+        }
+        return resultTree;
     }
 
     private void createNodes(Path file, DefaultMutableTreeNode tree) {
@@ -45,14 +57,6 @@ public class Dataset {
         }
     }
 
-    public DefaultMutableTreeNode docToTree(Document doc) {
-        DefaultMutableTreeNode resultTree = new DefaultMutableTreeNode(doc.getRootElement());
-        for (Element elem : doc.getRootElement().getChildren()) {
-            createNodes(elem, resultTree);
-        }
-        return resultTree;
-    }
-
     private void createNodes(Element elem, DefaultMutableTreeNode tree) {
         DefaultMutableTreeNode fileNode = new DefaultMutableTreeNode(elem);
         tree.add(fileNode);
@@ -63,9 +67,4 @@ public class Dataset {
             }
         }
     }
-
-    //Output/saving- todo
-//        outputIslandora temp = new outputIslandora();
-//        Document iDoc = temp.createOutput(xml);
-//        aXML.saveToXML(iDoc, "islandora_XML");
 }

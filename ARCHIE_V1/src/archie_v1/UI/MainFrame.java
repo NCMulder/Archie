@@ -21,6 +21,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class MainFrame extends JFrame implements ActionListener {
 
@@ -28,6 +29,7 @@ public class MainFrame extends JFrame implements ActionListener {
     public JComponent mainPanel;
     JPanel welcome;
     JSplitPane metadatachanger;
+    JMenuItem toIslandora, toDANS, toArchieXML;
 
     public MainFrame(UIManager parent) {
         // base init
@@ -77,18 +79,21 @@ public class MainFrame extends JFrame implements ActionListener {
         dataSet.add(saveAsItem);
 
         JMenu export = new JMenu("Export as...    ");
-        JMenuItem toIslandora = new JMenuItem("Islandora zip");
+        toIslandora = new JMenuItem("Islandora .zip");
         toIslandora.addActionListener(this);
-        JMenuItem toDANS = new JMenuItem("DANS repo");
+        toDANS = new JMenuItem("DANS repo");
         toDANS.addActionListener(this);
+        toArchieXML = new JMenuItem("Archie .xml");
+        toArchieXML.addActionListener(this);
         export.add(toIslandora);
         export.add(toDANS);
+        export.add(toArchieXML);
         dataSet.add(export);
 
         menuBar.add(dataSet);
 
         this.setJMenuBar(menuBar);
-        //todo: more menu imps, event listeners and shit
+        //todo: more menu imps, event listeners
     }
 
     @Override
@@ -100,15 +105,36 @@ public class MainFrame extends JFrame implements ActionListener {
             mainPanel = nds;
             this.add(nds);
             this.pack();
-        } else if (e.getActionCommand() == "Islandora zip"){
+        } else if (e.getSource() == toIslandora){
             if(mainPanel instanceof MetaDataChanger){
                 try {
                     MetaDataChanger mdc = (MetaDataChanger)mainPanel;
                     JFileChooser fc = new JFileChooser(mdc.dataset.mainDirectory.getParent().toString());
+                    FileNameExtensionFilter zipFilter = new FileNameExtensionFilter("zip files (*.zip)", "zip");
+                    fc.addChoosableFileFilter(zipFilter);
+                    fc.setFileFilter(zipFilter);
                     boolean succes = false;
                     int rv = fc.showSaveDialog(this);
                     if(rv == JFileChooser.APPROVE_OPTION)
-                        succes = ((MetaDataChanger)mainPanel).Save(MetaDataChanger.SaveType.Islandora, fc.getSelectedFile().toPath());
+                        succes = mdc.Save(MetaDataChanger.SaveType.Islandora, fc.getSelectedFile().toPath());
+                    if(succes)
+                        JOptionPane.showMessageDialog(this, "The file has been succesfully saved.");
+                } catch (IOException ex) {
+                    Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        } else if (e.getSource() == toArchieXML){
+            if(mainPanel instanceof MetaDataChanger){
+                try {
+                    MetaDataChanger mdc = (MetaDataChanger)mainPanel;
+                    JFileChooser fc = new JFileChooser(mdc.dataset.mainDirectory.getParent().toString());
+                    FileNameExtensionFilter zipFilter = new FileNameExtensionFilter("xml files (*.xml)", "xml");
+                    fc.addChoosableFileFilter(zipFilter);
+                    fc.setFileFilter(zipFilter);
+                    boolean succes = false;
+                    int rv = fc.showSaveDialog(this);
+                    if(rv == JFileChooser.APPROVE_OPTION)
+                        succes = mdc.Save(MetaDataChanger.SaveType.ArchieXML, fc.getSelectedFile().toPath());
                     if(succes)
                         JOptionPane.showMessageDialog(this, "The file has been succesfully saved.");
                 } catch (IOException ex) {

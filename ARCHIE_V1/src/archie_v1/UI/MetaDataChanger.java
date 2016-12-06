@@ -1,17 +1,15 @@
 //License
 package archie_v1.UI;
 
-import archie_v1.ARCHIE;
 import archie_v1.Dataset;
+import archie_v1.archieXMLcreator;
 import archie_v1.outputAbstract;
 import archie_v1.outputFormats.Zipper;
 import archie_v1.outputFormats.outputIslandora;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.Iterator;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
@@ -19,29 +17,31 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
-import org.jdom2.Attribute;
 import org.jdom2.Content;
 import org.jdom2.Element;
-import org.jdom2.output.XMLOutputter;
 
 
 
 public class MetaDataChanger extends JSplitPane implements TreeSelectionListener{
 
+    public enum SaveType{ArchieXML, Islandora, Dans}
     
-    public enum SaveType{Islandora, Dans}
     Path mainDirectory;
     JTree UITree;
     Dataset dataset;
-    Zipper zipper;
 
     public MetaDataChanger(String name, Path path, Boolean fromArchie) {
+        //Directory, dataset
+        mainDirectory = path;
+        long startTime = System.nanoTime();
+        dataset = new Dataset(name, path, fromArchie);
+        long dataSetTime = System.nanoTime();
+        System.out.println("Dataset created in " + (dataSetTime - startTime)/1000000 + " ms");
+        
+        //UI
         this.orientation = JSplitPane.HORIZONTAL_SPLIT;
         this.setResizeWeight(0.5);
-        mainDirectory = path;
-        dataset = new Dataset(name, path, fromArchie);
-        zipper = new Zipper();
-
+        
         UITree = new JTree(dataset.fileTree) {
             @Override
             public String convertValueToText(Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
@@ -52,32 +52,31 @@ public class MetaDataChanger extends JSplitPane implements TreeSelectionListener
         };
         UITree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         UITree.addTreeSelectionListener(this);
-
+        
         JScrollPane fileTreeView = new JScrollPane(UITree);
         this.setLeftComponent(fileTreeView);
 
+        //Todo: change right component to thingy
         WelcomeScreen ws = new WelcomeScreen();
         this.setRightComponent(ws);
+        long UITime = System.nanoTime();
+        System.out.println("UI created in " + (UITime - dataSetTime)/1000000 + " ms");
     }
     
     public boolean Save(SaveType st, Path outputPath) throws IOException{
         outputAbstract output;
         if(st == SaveType.Islandora)
             output = new outputIslandora();
-        else{
-            Logger.getLogger(ARCHIE.class.getName()).log(Level.SEVERE, "The chosen save format has not yet been implemented", "his");
-            output = null;
+        else if(st == SaveType.ArchieXML){
+            archieXMLcreator axml = new archieXMLcreator();
+            axml.saveToXML(dataset.aXML, outputPath + ".xml");
+            return true;
+        } else {
+            JOptionPane.showMessageDialog(this, "The chosen save mode has not been implemented yet.");
+            return false;
         }
-        output.SaveToXML(outputPath.toString() + ".zip", dataset.aXML);
+        output.Save(outputPath.toString() + ".zip", dataset.aXML);
         
-        XMLOutputter outputter = new XMLOutputter();
-
-        try {
-            PrintWriter writer = new PrintWriter(outputPath + ".xml");
-            outputter.output(output.singleItem(dataset.aXML.getRootElement().getChildren().get(0)), writer);
-        } catch (IOException ex) {
-            Logger.getLogger(ARCHIE.class.getName()).log(Level.SEVERE, "Writer not found", ex);
-        }
         return true;
     }
     

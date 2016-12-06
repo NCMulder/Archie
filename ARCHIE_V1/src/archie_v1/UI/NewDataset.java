@@ -71,7 +71,6 @@ public class NewDataset extends JPanel implements ActionListener {
                 parent.add(parent.mainPanel,BorderLayout.CENTER);
                 parent.validate();
                 parent.pack();
-                System.out.println(parent.mainPanel);
             }
         }
     }

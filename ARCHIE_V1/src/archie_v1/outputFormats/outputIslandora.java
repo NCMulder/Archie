@@ -2,6 +2,7 @@
 package archie_v1.outputFormats;
 
 import archie_v1.ARCHIE;
+import archie_v1.fileHelpers.pictureFile;
 import archie_v1.outputAbstract;
 import java.io.File;
 import java.io.FileInputStream;
@@ -69,7 +70,7 @@ public class outputIslandora extends outputAbstract {
     }
     
     @Override
-    public boolean SaveToXML(String destination, Document archieXML) throws IOException{
+    public void Save(String destination, Document archieXML) throws IOException{
         Zipper zipper = new Zipper();
         Iterator<Content> files = archieXML.getDescendants();
         ArrayList<Document> toSave = new ArrayList();
@@ -84,7 +85,17 @@ public class outputIslandora extends outputAbstract {
                 sources.add(temp.getAttributeValue("path"));
                 }
         }
-        return zipper.SaveAsZip(destination, toSave.toArray(new Document[toSave.size()]), sources.toArray(new String[sources.size()]));
+        
+        //Instruct the zipper to save the generated .xml-documents and their associated files to a zip.
+        zipper.SaveAsZip(destination, toSave.toArray(new Document[toSave.size()]), sources.toArray(new String[sources.size()]));
+    }
+    
+    public Document genericFileToDocument(Element element){
+        return null;
+    }
+    
+    public Document pictureFileToDocument(pictureFile file){
+        return null;
     }
     
     

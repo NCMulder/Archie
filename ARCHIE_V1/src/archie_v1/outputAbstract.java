@@ -17,5 +17,5 @@ public abstract class outputAbstract {
     public abstract Document createOutput(Element archieElement);
     //v replaces ^
     public abstract Document singleItem(Element element);
-    public abstract boolean SaveToXML(String destination, Document archieXML) throws IOException;
+    public abstract void Save(String destination, Document archieXML) throws IOException;
 }
