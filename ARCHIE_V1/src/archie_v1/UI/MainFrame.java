@@ -2,14 +2,18 @@
 package archie_v1.UI;
 
 import java.awt.BorderLayout;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Label;
+import java.awt.PopupMenu;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -114,8 +118,9 @@ public class MainFrame extends JFrame implements ActionListener {
                     fc.setFileFilter(zipFilter);
                     boolean succes = false;
                     int rv = fc.showSaveDialog(this);
-                    if(rv == JFileChooser.APPROVE_OPTION)
+                    if(rv == JFileChooser.APPROVE_OPTION){
                         succes = mdc.Save(MetaDataChanger.SaveType.Islandora, fc.getSelectedFile().toPath());
+                    }
                     if(succes)
                         JOptionPane.showMessageDialog(this, "The file has been succesfully saved.");
                 } catch (IOException ex) {

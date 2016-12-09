@@ -18,8 +18,7 @@ public class databaseFile extends FileHelper {
         
         elArray[0] = getTitle(ns);
         elArray[1] = getCreator(ns, "creator", "extended-properties_Company");
-        elArray[2] = getOriginInfo(ns);
-        elArray[3] = getTypeOfResource(ns);
+        elArray[2] = getTypeOfResource(ns);
         
         return elArray;
     }

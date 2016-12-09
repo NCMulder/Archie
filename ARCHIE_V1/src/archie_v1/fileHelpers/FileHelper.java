@@ -118,7 +118,7 @@ public abstract class FileHelper {
         
         elArray[0] = getTitle(ns);
         elArray[1] = getCreator(ns, null, null);
-        elArray[2] = getOriginInfo(ns);
+        elArray[2] = getOriginInfo(ns, null, null);
         elArray[3] = getTypeOfResource(ns);
         
         return elArray;
@@ -204,8 +204,22 @@ public abstract class FileHelper {
         return null;
     }
     
-    public Element getOriginInfo(Namespace namespace){
-        return null;
+    public Element getOriginInfo(Namespace namespace, String tikaPublisher, String tikaCreation){
+        Element originInfo = new Element("originInfo", namespace);
+        if(tikaPublisher!=null){
+         Element publisher = new Element("publisher", namespace);
+         String publisherText = (metadata.get(tikaPublisher) == null)?"unknown":metadata.get(tikaPublisher);
+         publisher.setText(publisherText);
+         originInfo.addContent(publisher);
+        }
+        if(tikaCreation!=null){
+        Element creationDate = new Element("dateCreated", namespace);
+        String creationText = (metadata.get(tikaCreation)== null)?"unknown":metadata.get(tikaCreation);
+        creationDate.setText(creationText);
+        originInfo.addContent(creationDate);
+        }
+        
+        return originInfo;
     }
     
     public Element getTypeOfResource(Namespace namespace){
