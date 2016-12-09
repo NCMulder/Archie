@@ -1,6 +1,7 @@
 //License
 package archie_v1;
 
+import archie_v1.outputFormats.outputArchieXML;
 import java.io.File;
 import java.nio.file.Path;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -25,7 +26,7 @@ public class Dataset {
         long currTime = System.nanoTime();
         System.out.println("Filetree created in " + (currTime - startTime)/1000000 + " ms");
 
-        archieXMLcreator axc = new archieXMLcreator();
+        outputArchieXML axc = new outputArchieXML();
         aXML = axc.CreateDocument(fileTree);
         long archieTime = System.nanoTime();
         System.out.println("ArchieXML created in " + (archieTime - currTime)/1000000 + " ms");

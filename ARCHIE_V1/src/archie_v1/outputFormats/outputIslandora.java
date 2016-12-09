@@ -1,9 +1,11 @@
 //License
+
+//This class needs a major revision after the metadata-extraction refactor.
 package archie_v1.outputFormats;
 
 import archie_v1.ARCHIE;
+import archie_v1.fileHelpers.FileHelper;
 import archie_v1.fileHelpers.pictureFile;
-import archie_v1.outputAbstract;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -11,6 +13,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -19,10 +22,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.jdom2.Attribute;
 import org.jdom2.Content;
+import org.jdom2.Content.CType;
 import org.jdom2.DocType;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
+import org.jdom2.filter.Filter;
 import org.jdom2.output.XMLOutputter;
 
 public class outputIslandora extends outputAbstract {
@@ -44,30 +49,6 @@ public class outputIslandora extends outputAbstract {
         output = new Document(modsXML);
         output.setDocType(new DocType("mods"));
     }
-
-    @Override
-    public Document createOutput (Document archieXML) {
-        
-        //Todo: change to MODS output.
-        Iterator<Content> files = archieXML.getDescendants();
-
-        while (files.hasNext()) {
-            Element temp = (Element) files.next();
-            if ("file".equals(temp.getName())) {
-                Element file = new Element(temp.getName());
-                file.setNamespace(ns1);
-                for (Attribute attribute : temp.getAttributes()) {
-                    Element element = new Element(attribute.getName());
-                    element.setNamespace(ns1);
-                    element.setText(attribute.getValue());
-                    file.addContent(element);
-                }
-                output.getRootElement().addContent(file);
-            }
-        }
-
-        return output;
-    }
     
     @Override
     public void Save(String destination, Document archieXML) throws IOException{
@@ -76,13 +57,18 @@ public class outputIslandora extends outputAbstract {
         ArrayList<Document> toSave = new ArrayList();
         ArrayList<String> sources = new ArrayList();
 
+        //Redo bits of this for better element detection; maybe use filter for getDescendants
         while (files.hasNext()) {
-            Element temp = (Element) files.next();
-            if ("file".equals(temp.getName())) {
-                outputIslandora oI = new outputIslandora();
-                Document doc = oI.singleItem(temp);
+            Element fileElement;
+            Content temp = files.next();
+            if(temp.getCType() == CType.Element)
+                fileElement = (Element)temp;
+            else continue;
+            if ("file".equals(fileElement.getName()) && "file".equals(fileElement.getAttributeValue("type"))) {
+                Path filePath = Paths.get(fileElement.getAttributeValue("path"));
+                Document doc = FileToDocument(filePath);
                 toSave.add(doc);
-                sources.add(temp.getAttributeValue("path"));
+                sources.add(filePath.toString());
                 }
         }
         
@@ -90,25 +76,34 @@ public class outputIslandora extends outputAbstract {
         zipper.SaveAsZip(destination, toSave.toArray(new Document[toSave.size()]), sources.toArray(new String[sources.size()]));
     }
     
-    public Document genericFileToDocument(Element element){
-        return null;
+    public Document FileToDocument(Path filePath){
+        FileHelper fileHelper = fileSelector(filePath);
+        Element root = getRootElement();
+        
+        Element[] fileElements = fileHelper.getRelevantElements(ns1);
+        for(Element element : fileElements){
+            if(element!=null)
+                root.addContent(element);
+        }
+        return new Document(root);
     }
     
-    public Document pictureFileToDocument(pictureFile file){
-        return null;
+    private Element getRootElement(){
+        ns1 = Namespace.getNamespace("http://www.loc.gov/mods/v3");
+        Namespace ns2 = Namespace.getNamespace("xsi", "https://www.w3.org/2001/XMLSchema-instance");
+        Namespace ns3 = Namespace.getNamespace("schemaLocation", "http://www.loc.gov/standards/mods/v3/mods-3-6.xsd");
+        Element modsXML = new Element("mods", ns1);
+        modsXML.addNamespaceDeclaration(ns1);
+        modsXML.addNamespaceDeclaration(ns2);
+        modsXML.addNamespaceDeclaration(ns3);
+        modsXML.setAttribute("version", "3.6");
+        
+        return modsXML;
     }
-    
     
     //redo this for all file types (e.g. public Document singleIslandora(pictureFile file)? Maybe not if not all is needed 
     public Document singleItem(Element element){
         Element root = output.getRootElement();
-        
-        //title info
-        Element titleInfo = new Element("titleInfo", ns1);
-        Element title = new Element("title", ns1);
-        title.setText(element.getAttributeValue("name"));
-        titleInfo.addContent(title);
-        root.addContent(titleInfo);
         
         //identifier
         Element identifier = new Element("identifier", ns1);
@@ -116,35 +111,6 @@ public class outputIslandora extends outputAbstract {
         identifier.setText("unknown");
         root.addContent(identifier);
         
-        //creator
-        Element name = new Element("name", ns1);
-        name.setAttribute("type", "personal");
-        Element role = new Element("role", ns1);
-        Element roleTerm = new Element("roleTerm", ns1);
-        roleTerm.setAttribute("type", "text");
-        roleTerm.setAttribute("authority", "unknown");
-        roleTerm.setText("creator");
-        role.addContent(roleTerm);
-        name.addContent(role);
-        Element namePartTOA = new Element("namePart", ns1);
-        namePartTOA.setAttribute("type", "termsOfAdress");
-        namePartTOA.setText("unknown");
-        name.addContent(namePartTOA);
-        Element namePartGiven = new Element ("namePart", ns1);
-        namePartGiven.setAttribute("type", "given");
-        //namePartGiven.setText(element.getAttributeValue("creator").split(", ")[1]);
-        name.addContent(namePartGiven);
-        Element namePartFamily = new Element("namePart", ns1);
-        namePartFamily.setAttribute("type", "family");
-        //namePartFamily.setText(element.getAttributeValue("creator").split(", ")[0]);
-        name.addContent(namePartFamily);
-        Element nameIdentifier = new Element("nameIdentifier", ns1);
-        nameIdentifier.setText("unknown");
-        name.addContent(nameIdentifier);
-        Element affiliation = new Element("affiliation", ns1);
-        //affiliation.setText(element.getAttributeValue("publisher"));
-        name.addContent(affiliation);
-        root.addContent(name);
         
         //contributors - should be addable in metadatachanger
         
@@ -176,12 +142,6 @@ public class outputIslandora extends outputAbstract {
         //dateCreated.setText(element.getAttributeValue("modified"));
         originInfo.addContent(dateCreated);
         root.addContent(originInfo);
-        
-        //typeOfResource/collection/text
-        Element typeOfResource = new Element("typeOfResource", ns1);
-        typeOfResource.setAttribute("collection", "yes");
-        typeOfResource.setText("mixed material");
-        root.addContent(typeOfResource);
         
         //physicalDescription
         
@@ -215,59 +175,6 @@ public class outputIslandora extends outputAbstract {
         
         //extras
         
-        
-        return output;
-    }
-
-    @Override
-    public Document createOutput(Element archieElement) {
-        
-        
-        
-        for (Attribute attribute : archieElement.getAttributes()) {
-            Element element = new Element(attribute.getName());
-            element.setText(attribute.getValue());
-            output.getRootElement().addContent(element);
-        }
-        
-        
-        
-        XMLOutputter outputter = new XMLOutputter();
-        try {
-            PrintWriter writer = new PrintWriter("fileXMLS/" + archieElement.getAttributeValue("name") + ".xml");
-            outputter.output(output, writer);
-        } catch (IOException ex) {
-            Logger.getLogger(ARCHIE.class.getName()).log(Level.SEVERE, "Writer not found", ex);
-        }
-        
-        try {
-            byte[] buffer = new byte[1024];
-            ZipOutputStream out = new ZipOutputStream(new FileOutputStream("testoutput/" + archieElement.getAttributeValue("name") + ".zip"));
-            
-            //fef
-            File srcFile = new File(archieElement.getAttributeValue("path"));
-            FileInputStream input = new FileInputStream(srcFile);
-            out.putNextEntry(new ZipEntry(srcFile.getName()));
-            int length;
-            while((length=input.read(buffer)) > 0){
-                out.write(buffer, 0, length);
-            }
-            out.closeEntry();
-            input.close();
-            srcFile = new File("fileXMLS/" + archieElement.getAttributeValue("name") + ".xml");
-            input = new FileInputStream(srcFile);
-            out.putNextEntry(new ZipEntry(srcFile.getName()));
-            while((length=input.read(buffer)) > 0){
-                out.write(buffer, 0, length);
-            }
-            out.closeEntry();
-            input.close();
-            //fef
-            
-            out.close();
-        } catch (IOException ex) {
-            Logger.getLogger(outputIslandora.class.getName()).log(Level.SEVERE, null, ex);
-        }
         
         return output;
     }

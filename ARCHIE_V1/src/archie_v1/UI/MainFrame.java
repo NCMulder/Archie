@@ -1,7 +1,6 @@
 //License
 package archie_v1.UI;
 
-import archie_v1.UIManager;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;

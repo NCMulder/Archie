@@ -2,8 +2,8 @@
 package archie_v1.UI;
 
 import archie_v1.Dataset;
-import archie_v1.archieXMLcreator;
-import archie_v1.outputAbstract;
+import archie_v1.outputFormats.outputArchieXML;
+import archie_v1.outputFormats.outputAbstract;
 import archie_v1.outputFormats.Zipper;
 import archie_v1.outputFormats.outputIslandora;
 import java.io.IOException;
@@ -68,8 +68,8 @@ public class MetaDataChanger extends JSplitPane implements TreeSelectionListener
         if(st == SaveType.Islandora)
             output = new outputIslandora();
         else if(st == SaveType.ArchieXML){
-            archieXMLcreator axml = new archieXMLcreator();
-            axml.saveToXML(dataset.aXML, outputPath + ".xml");
+            outputArchieXML axml = new outputArchieXML();
+            axml.Save(outputPath + ".xml", dataset.aXML);
             return true;
         } else {
             JOptionPane.showMessageDialog(this, "The chosen save mode has not been implemented yet.");

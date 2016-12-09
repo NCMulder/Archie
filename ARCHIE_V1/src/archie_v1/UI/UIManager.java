@@ -1,5 +1,5 @@
 //License
-package archie_v1;
+package archie_v1.UI;
 
 import archie_v1.UI.MainFrame;
 

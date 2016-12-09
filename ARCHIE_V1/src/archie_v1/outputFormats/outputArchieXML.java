@@ -2,8 +2,10 @@
 
 //TODO: Check Pattern package for easy XML parsing
 //TODO: redo this
-package archie_v1;
+package archie_v1.outputFormats;
 
+import archie_v1.ARCHIE;
+import archie_v1.fileHelpers.FileHelper;
 import archie_v1.fileHelpers.basicFile;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -15,18 +17,21 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.jdom2.Attribute;
+import static org.jdom2.AttributeType.CDATA;
+import org.jdom2.CDATA;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.XMLOutputter;
 
-public class archieXMLcreator {
+public class outputArchieXML extends outputAbstract {
     
     long convertTime = 0;
 
     public Document CreateDocument(DefaultMutableTreeNode dirTree) {
         long metStart = System.nanoTime();
         Path filePath = (Path) dirTree.getUserObject();
-        Element file = new Element("folder");
+        Element file = new Element("file");
+        file.setAttribute("type", "folder");
         file.setAttribute("name", filePath.getFileName().toString());
         file.setAttribute("path", filePath.toString());
 
@@ -43,6 +48,7 @@ public class archieXMLcreator {
     private void CreateElements(DefaultMutableTreeNode dir, Element element) {
         Path filePath = (Path) dir.getUserObject();
         Element file = new Element("file");
+        file.setAttribute("type", "file");
         file.setAttribute("name", filePath.getFileName().toString());
         file.setAttribute("path", filePath.toString());
 
@@ -50,6 +56,7 @@ public class archieXMLcreator {
             setFileElements(filePath, file);
         } else {
             file.setName("folder");
+            file.setAttribute("type", "folder");
             setFolderElements(dir, file);
             for (Object files : Collections.list(dir.children())) {
                 CreateElements((DefaultMutableTreeNode) files, file);
@@ -73,8 +80,9 @@ public class archieXMLcreator {
         Map<String, String> fileMap = fh.getMetaData();
         for (String metadata : fileMap.keySet()) {
             //needs a better way of metadataname replacement
-            Attribute attribute = new Attribute(metadata.replaceAll(":", "_").replaceAll(" ", "_").replaceAll("/", "_"), fileMap.get(metadata));
-            file.setAttribute(attribute);
+            Element element = new Element(metadata.replaceAll(":", "_").replaceAll(" ", "_").replaceAll("/", "_"));
+            element.setText(fileMap.get(metadata));
+            file.addContent(element);
         }
     }
 
@@ -83,14 +91,11 @@ public class archieXMLcreator {
         folder.setAttribute("filecount", Integer.toString(folderNode.getChildCount()));
     }
 
-    public void saveToXML(Document xml, String filePath) {
+    @Override
+    public void Save(String destination, Document xml) throws IOException {
         XMLOutputter outputter = new XMLOutputter();
 
-        try {
-            PrintWriter writer = new PrintWriter(filePath);
+            PrintWriter writer = new PrintWriter(destination);
             outputter.output(xml, writer);
-        } catch (IOException ex) {
-            Logger.getLogger(ARCHIE.class.getName()).log(Level.SEVERE, "Writer not found", ex);
-        }
     }
 }
