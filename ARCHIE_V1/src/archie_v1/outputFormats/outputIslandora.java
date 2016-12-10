@@ -5,11 +5,8 @@ package archie_v1.outputFormats;
 import archie_v1.fileHelpers.FileHelper;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Iterator;
-import org.jdom2.Content;
-import org.jdom2.Content.CType;
+import java.util.HashMap;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
@@ -22,33 +19,20 @@ public class outputIslandora extends outputAbstract {
     }
     
     @Override
-    public void Save(String destination, Document archieXML) throws IOException{
+    public void Save(String destination, ArrayList<FileHelper> files) throws IOException{
         Zipper zipper = new Zipper();
-        Iterator<Content> files = archieXML.getDescendants();
-        ArrayList<Document> toSave = new ArrayList();
-        ArrayList<String> sources = new ArrayList();
+        HashMap<Path, Document> documentMap = new HashMap();
 
-        //Redo bits of this for better element detection; maybe use filter for getDescendants TODO
-        while (files.hasNext()) {
-            Element fileElement;
-            Content temp = files.next();
-            if(temp.getCType() == CType.Element)
-                fileElement = (Element)temp;
-            else continue;
-            if ("file".equals(fileElement.getName()) && "file".equals(fileElement.getAttributeValue("type"))) {
-                Path filePath = Paths.get(fileElement.getAttributeValue("path"));
-                Document doc = FileToDocument(filePath);
-                toSave.add(doc);
-                sources.add(filePath.toString());
-                }
+        for(FileHelper fileHelper : files){
+            Document doc = FileToDocument(fileHelper);
+            documentMap.put(fileHelper.filePath, doc);
         }
         
         //Instruct the zipper to save the generated .xml-documents and their associated files to a zip.
-        zipper.SaveAsZip(destination, toSave.toArray(new Document[toSave.size()]), sources.toArray(new String[sources.size()]));
+        zipper.SaveAsZip(destination, documentMap);
     }
     
-    public Document FileToDocument(Path filePath){
-        FileHelper fileHelper = fileSelector(filePath);
+    public Document FileToDocument(FileHelper fileHelper){
         Element root = getRootElement();
         
         Element[] fileElements = fileHelper.getRelevantElements(ns1);

@@ -2,6 +2,7 @@
 package archie_v1.UI;
 
 import archie_v1.Dataset;
+import archie_v1.fileHelpers.FileHelper;
 import archie_v1.outputFormats.outputArchieXML;
 import archie_v1.outputFormats.outputAbstract;
 import archie_v1.outputFormats.Zipper;
@@ -68,14 +69,12 @@ public class MetaDataChanger extends JSplitPane implements TreeSelectionListener
         if(st == SaveType.Islandora)
             output = new outputIslandora();
         else if(st == SaveType.ArchieXML){
-            outputArchieXML axml = new outputArchieXML();
-            axml.Save(outputPath + ".xml", dataset.aXML);
-            return true;
+            output = new outputArchieXML();
         } else {
             JOptionPane.showMessageDialog(this, "The chosen save mode has not been implemented yet.");
             return false;
         }
-        output.Save(outputPath.toString() + ".zip", dataset.aXML);
+        output.Save(outputPath.toString(), dataset.files);
         
         return true;
     }
@@ -86,12 +85,11 @@ public class MetaDataChanger extends JSplitPane implements TreeSelectionListener
         if(node==null) return;
         Path nodeInfo = (Path)node.getUserObject();
         
-        Iterator<Content> files = dataset.aXML.getDescendants();
-
-        while (files.hasNext()) {
-            Element temp = (Element) files.next();
-            if (temp.getAttributeValue("path").equals(nodeInfo.toString())) {
+        for(FileHelper fh : dataset.files){
+            if(nodeInfo.equals(fh.filePath)){
+                //do interesting stuff here
                 System.out.println(nodeInfo.toString());
+                return;
             }
         }
     }

@@ -7,6 +7,7 @@ import archie_v1.fileHelpers.FileHelper;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -68,11 +69,12 @@ public class outputArchieXML extends outputAbstract {
         folder.setAttribute("filecount", Integer.toString(folderNode.getChildCount()));
     }
 
+    //Redo this for the new fileMap
     @Override
-    public void Save(String destination, Document xml) throws IOException {
+    public void Save(String destination, ArrayList<FileHelper> files) throws IOException {
         XMLOutputter outputter = new XMLOutputter();
 
-            PrintWriter writer = new PrintWriter(destination);
-            outputter.output(xml, writer);
+            PrintWriter writer = new PrintWriter(destination + ".xml");
+            //outputter.output(xml, writer);
     }
 }

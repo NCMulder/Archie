@@ -1,35 +1,30 @@
 //License
 package archie_v1;
 
-import archie_v1.outputFormats.outputArchieXML;
+import archie_v1.fileHelpers.FileHelper;
 import java.io.File;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.jdom2.Document;
 import org.jdom2.Element;
 
 public class Dataset {
 
+    public String name;
     public Path mainDirectory;
     public DefaultMutableTreeNode fileTree;
-    public Document aXML;
+    public ArrayList<FileHelper> files = new ArrayList();
 
     public Dataset(String name, Path path, Boolean fromArchie) {
-        long startTime = System.nanoTime();
+        this.name = name;
         this.mainDirectory = path;
+        
         if (!fromArchie) {
             fileTree = dirToTree(path);
         } else {
-            //fileTreeFromDoc
             fileTree = null;
         }
-        long currTime = System.nanoTime();
-        System.out.println("Filetree created in " + (currTime - startTime)/1000000 + " ms");
-
-        outputArchieXML axc = new outputArchieXML();
-        aXML = axc.CreateDocument(fileTree);
-        long archieTime = System.nanoTime();
-        System.out.println("ArchieXML created in " + (archieTime - currTime)/1000000 + " ms");
     }
 
     public DefaultMutableTreeNode dirToTree(Path path) {
@@ -40,6 +35,7 @@ public class Dataset {
         return dirTree;
     }
 
+    //Available for planned xml-to-dataset conversion. WIP.
     public DefaultMutableTreeNode docToTree(Document doc) {
         DefaultMutableTreeNode resultTree = new DefaultMutableTreeNode(doc.getRootElement());
         for (Element elem : doc.getRootElement().getChildren()) {
@@ -55,6 +51,9 @@ public class Dataset {
             for (File dirFile : file.toFile().listFiles()) {
                 createNodes(dirFile.toPath(), fileNode);
             }
+        } else {
+            //possibly do this concurrently, most time lost doing this.
+            files.add(ARCHIE.fileSelector(file));
         }
     }
 

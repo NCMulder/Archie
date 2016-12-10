@@ -5,13 +5,13 @@ import archie_v1.fileHelpers.*;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import org.apache.commons.io.FilenameUtils;
-import org.jdom2.Document;
 import org.jdom2.Element;
 
 public abstract class outputAbstract {
 
-    public abstract void Save(String destination, Document xml) throws IOException;
+    public abstract void Save(String destination, ArrayList<FileHelper> files) throws IOException;
     
     public FileHelper fileSelector(Element fileElement){
         Path filePath = Paths.get(fileElement.getAttributeValue("path"));

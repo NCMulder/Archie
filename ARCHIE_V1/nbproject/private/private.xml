@@ -5,10 +5,12 @@
         <group>
             <file>file:/C:/Users/niels/Documents/Archie/Archie/ARCHIE_V1/src/archie_v1/Dataset.java</file>
             <file>file:/C:/Users/niels/Documents/Archie/Archie/ARCHIE_V1/src/archie_v1/UI/MainFrame.java</file>
-            <file>file:/C:/Users/niels/Documents/Archie/Archie/ARCHIE_V1/src/archie_v1/archieXMLcreator.java</file>
-            <file>file:/C:/Users/niels/Documents/Archie/Archie/ARCHIE_V1/src/archie_v1/outputAbstract.java</file>
-            <file>file:/C:/Users/niels/Documents/Archie/Archie/ARCHIE_V1/src/archie_v1/UI/MetaDataChanger.java</file>
+            <file>file:/C:/Users/niels/Documents/Archie/Archie/ARCHIE_V1/src/archie_v1/fileHelpers/basicFile.java</file>
+            <file>file:/C:/Users/niels/Documents/Archie/Archie/ARCHIE_V1/src/archie_v1/fileHelpers/FileHelper.java</file>
+            <file>file:/C:/Users/niels/Documents/Archie/Archie/ARCHIE_V1/src/archie_v1/outputFormats/Zipper.java</file>
+            <file>file:/C:/Users/niels/Documents/Archie/Archie/ARCHIE_V1/src/archie_v1/outputFormats/outputArchieXML.java</file>
             <file>file:/C:/Users/niels/Documents/Archie/Archie/ARCHIE_V1/src/archie_v1/outputFormats/outputIslandora.java</file>
+            <file>file:/C:/Users/niels/Documents/Archie/Archie/ARCHIE_V1/src/archie_v1/outputFormats/outputAbstract.java</file>
         </group>
     </open-files>
 </project-private>

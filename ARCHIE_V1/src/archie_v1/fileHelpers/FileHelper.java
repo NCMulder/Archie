@@ -25,7 +25,7 @@ public abstract class FileHelper {
         Size, CreationDate, CreationTime, FileType, Author, LastModifiedBy
     }
 
-    Path filePath;
+    public Path filePath;
     protected Map<String, String> metadata;
 
     public FileHelper(Path filePath) {
