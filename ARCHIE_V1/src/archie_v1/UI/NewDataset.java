@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//License
 package archie_v1.UI;
 
 import java.awt.BorderLayout;
@@ -64,8 +60,8 @@ public class NewDataset extends JPanel implements ActionListener {
                 parent.pack();
                 parent.paint(parent.getGraphics());
                 
-                //todo: get name
-                parent.metadatachanger = new MetaDataChanger(name.getText(), fileChooser.getSelectedFile().toPath(), false);
+                //todo: get includeislandora
+                parent.metadatachanger = new MetadataChanger(name.getText(), fileChooser.getSelectedFile().toPath(), false, true);
                 parent.remove(parent.mainPanel);
                 parent.mainPanel = parent.metadatachanger;
                 parent.add(parent.mainPanel,BorderLayout.CENTER);

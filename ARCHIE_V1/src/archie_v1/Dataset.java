@@ -15,10 +15,12 @@ public class Dataset {
     public Path mainDirectory;
     public DefaultMutableTreeNode fileTree;
     public ArrayList<FileHelper> files = new ArrayList();
+    public boolean includeIslandora;
 
-    public Dataset(String name, Path path, Boolean fromArchie) {
+    public Dataset(String name, Path path, boolean fromArchie, boolean includeIslandora) {
         this.name = name;
         this.mainDirectory = path;
+        this.includeIslandora = includeIslandora;
         
         if (!fromArchie) {
             fileTree = dirToTree(path);
@@ -53,7 +55,7 @@ public class Dataset {
             }
         } else {
             //possibly do this concurrently, most time lost doing this.
-            files.add(ARCHIE.fileSelector(file));
+            files.add(ARCHIE.fileSelector(file, includeIslandora));
         }
     }
 

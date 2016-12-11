@@ -8,8 +8,10 @@ import org.jdom2.Namespace;
 
 public class pictureFile extends FileHelper {
 
-    public pictureFile(Path filePath) {
-        super(filePath);
+    public pictureFile(Path filePath, boolean Islandora) {
+        super(filePath, Islandora);
+        setRecordThroughTika(MetadataContainer.MetadataKey.DateCreated, "dcterms:created");
+        setRecordThroughTika(MetadataContainer.MetadataKey.Subject, "Scene Type");
     }
     
     @Override
@@ -17,22 +19,11 @@ public class pictureFile extends FileHelper {
         Element[] elArray = new Element[5];
         
         elArray[0] = getTitle(ns);
-        elArray[1] = getCreator(ns, null, null);
+        elArray[1] = getCreator(ns);
         elArray[2] = getSubject(ns);
-        elArray[3] = getOriginInfo(ns, null, "dcterms:created");
+        elArray[3] = getOriginInfo(ns);
         elArray[4] = getTypeOfResource(ns);
         
         return elArray;
-    }
-    
-    
-    @Override
-    public Element getSubject(Namespace namespace){
-        Element subject = new Element("Subject", namespace);
-        Element topic = new Element("topic", namespace);
-        String topicString = (metadata.get("Scene Type")==null)? "unknown":metadata.get("Scene Type");
-        topic.setText(topicString);
-        subject.addContent(topic);
-        return subject;
     }
 }

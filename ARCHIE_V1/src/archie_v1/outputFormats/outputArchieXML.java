@@ -3,6 +3,7 @@
 //TODO: Check Pattern package for easy XML parsing
 package archie_v1.outputFormats;
 
+import archie_v1.ARCHIE;
 import archie_v1.fileHelpers.FileHelper;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -54,7 +55,7 @@ public class outputArchieXML extends outputAbstract {
 
     //setFileElements sets several content types for files, such as filetype and modification date.
     private void setFileElements(Path filePath, Element file) {
-        FileHelper fh = fileSelector(filePath);
+        FileHelper fh = ARCHIE.fileSelector(filePath, true);
         Map<String, String> fileMap = fh.getMetaData();
         for (String metadata : fileMap.keySet()) {
             //needs a better way of metadataname replacement

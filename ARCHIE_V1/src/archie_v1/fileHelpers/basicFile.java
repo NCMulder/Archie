@@ -8,7 +8,7 @@ import org.jdom2.Namespace;
 
 public class basicFile extends FileHelper {
 
-    public basicFile(Path filePath) {
-        super(filePath);
+    public basicFile(Path filePath, boolean Islandora) {
+        super(filePath, Islandora);
     }
 }

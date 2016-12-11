@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
@@ -21,16 +22,22 @@ import org.xml.sax.SAXException;
 
 public abstract class FileHelper {
 
-    public enum MetaDataType {
-        Size, CreationDate, CreationTime, FileType, Author, LastModifiedBy
-    }
-
     public Path filePath;
-    protected Map<String, String> metadata;
+    public Map<String, String> metadata;
+    public MetadataContainer metadataContainer;
 
-    public FileHelper(Path filePath) {
+    public FileHelper(Path filePath, boolean Islandora) {
         this.filePath = filePath;
         metadata = getMetaData();
+        metadataContainer = new MetadataContainer(Islandora);
+        
+        for (int i = 0; i < MetadataContainer.MetadataKey.values().length; i++) {
+            setRecord(MetadataContainer.MetadataKey.values()[i], "unknown");
+        }
+        
+        //Seperate the islandora-element getters; put them in islandoraoutput?
+        setRecord(MetadataContainer.MetadataKey.Title, filePath.getFileName().toString());
+        setRecord(MetadataContainer.MetadataKey.FileContentType, "." + FilenameUtils.getExtension(filePath.toString()) + " file");
     }
 
     //Helper functions for all filehandlers.
@@ -117,11 +124,22 @@ public abstract class FileHelper {
         Element[] elArray = new Element[4];
         
         elArray[0] = getTitle(ns);
-        elArray[1] = getCreator(ns, null, null);
-        elArray[2] = getOriginInfo(ns, null, null);
+        elArray[1] = getCreator(ns);
+        elArray[2] = getOriginInfo(ns);
         elArray[3] = getTypeOfResource(ns);
         
         return elArray;
+    }
+    
+    public void setRecord(MetadataContainer.MetadataKey key, String value){
+        metadataContainer.metadataMap.put(key, value);
+    }
+    
+    public void setRecordThroughTika(MetadataContainer.MetadataKey key, String tikaString){
+        String tikaValue = metadata.get(tikaString);
+        if(tikaValue!=null){
+            metadataContainer.metadataMap.put(key, tikaValue);
+        }
     }
     
     //dataset elements?
@@ -130,33 +148,33 @@ public abstract class FileHelper {
         //Can be extracted directly from the filepath.
         Element titleInfo = new Element("titleInfo", namespace);
         Element title = new Element("title", namespace);
-        title.setText(filePath.getFileName().toString());
+        title.setText(metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.Title));
         titleInfo.addContent(title);
+        
         return titleInfo;
     }
     
     public Element getIdentifier(Namespace namespace){
         Element identifier = new Element("identifier", namespace);
         identifier.setAttribute("type", "unknown");
-        identifier.setText("unknown");
+        identifier.setText(metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.Identifier));
         return identifier;
     }
     
-    public Element getCreator(Namespace namespace, String tikaCreator, String tikaAffiliation){
-        Element[] names;
-        names = (tikaCreator==null)?nameHandler("", namespace):nameHandler(metadata.get(tikaCreator), namespace);
+    public Element getCreator(Namespace namespace){
+        Element[] names = nameHandler(metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.CreatorName), namespace);
         
         Element name = new Element("name", namespace);
         name.setAttribute("type", "personal");
         
-//        //how do we implement role terms?
-//        Element role = new Element("role", namespace);
-//        Element roleTerm = new Element("roleTerm", namespace);
-//        roleTerm.setAttribute("type", "text");
-//        roleTerm.setAttribute("authority", "unknown");
-//        roleTerm.setText("creator");
-//        role.addContent(roleTerm);
-//        name.addContent(role);
+        //how do we implement role terms?
+        Element role = new Element("role", namespace);
+        Element roleTerm = new Element("roleTerm", namespace);
+        roleTerm.setAttribute("type", "text");
+        roleTerm.setAttribute("authority", "unknown");
+        roleTerm.setText("creator");
+        role.addContent(roleTerm);
+        name.addContent(role);
 
         name.addContent(names[2]);
         name.addContent(names[1]);
@@ -164,14 +182,12 @@ public abstract class FileHelper {
         
         //How do we implement name identifiers?
         Element nameIdentifier = new Element("nameIdentifier", namespace);
-        nameIdentifier.setText("unknown");
+        nameIdentifier.setText(metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.CreatorIdentifier));
         name.addContent(nameIdentifier);
         
-        if(tikaAffiliation!=null){
         Element affiliation = new Element("affiliation", namespace);
-        affiliation.setText(metadata.get(tikaAffiliation));
+        affiliation.setText(metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.CreatorAffiliation));
         name.addContent(affiliation);
-        }
         
         return name;
     }
@@ -191,33 +207,32 @@ public abstract class FileHelper {
         return null;
     }
     
+    //Cant find again, url maybe? NO SETTER
     public Element getRelatedDataSet(Namespace namespace){
         //almost always manually set
         return null;
     }
     
     public Element getSubject(Namespace namespace){
-        return null;
+        Element subject = new Element("Subject", namespace);
+        Element topic = new Element("topic", namespace);
+        topic.setText(metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.Subject));
+        subject.addContent(topic);
+        return subject;
     }
     
     public Element getAbstract(Namespace namespace){
         return null;
     }
     
-    public Element getOriginInfo(Namespace namespace, String tikaPublisher, String tikaCreation){
+    public Element getOriginInfo(Namespace namespace){
         Element originInfo = new Element("originInfo", namespace);
-        if(tikaPublisher!=null){
          Element publisher = new Element("publisher", namespace);
-         String publisherText = (metadata.get(tikaPublisher) == null)?"unknown":metadata.get(tikaPublisher);
-         publisher.setText(publisherText);
+         publisher.setText(metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.Publisher));
          originInfo.addContent(publisher);
-        }
-        if(tikaCreation!=null){
         Element creationDate = new Element("dateCreated", namespace);
-        String creationText = (metadata.get(tikaCreation)== null)?"unknown":metadata.get(tikaCreation);
-        creationDate.setText(creationText);
+        creationDate.setText(metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.DateCreated));
         originInfo.addContent(creationDate);
-        }
         
         return originInfo;
     }

@@ -109,9 +109,9 @@ public class MainFrame extends JFrame implements ActionListener {
             this.add(nds);
             this.pack();
         } else if (e.getSource() == toIslandora){
-            if(mainPanel instanceof MetaDataChanger){
+            if(mainPanel instanceof MetadataChanger){
                 try {
-                    MetaDataChanger mdc = (MetaDataChanger)mainPanel;
+                    MetadataChanger mdc = (MetadataChanger)mainPanel;
                     JFileChooser fc = new JFileChooser(mdc.dataset.mainDirectory.getParent().toString());
                     FileNameExtensionFilter zipFilter = new FileNameExtensionFilter("zip files (*.zip)", "zip");
                     fc.addChoosableFileFilter(zipFilter);
@@ -119,7 +119,7 @@ public class MainFrame extends JFrame implements ActionListener {
                     boolean succes = false;
                     int rv = fc.showSaveDialog(this);
                     if(rv == JFileChooser.APPROVE_OPTION){
-                        succes = mdc.Save(MetaDataChanger.SaveType.Islandora, fc.getSelectedFile().toPath());
+                        succes = mdc.Save(MetadataChanger.SaveType.Islandora, fc.getSelectedFile().toPath());
                     }
                     if(succes)
                         JOptionPane.showMessageDialog(this, "The file has been succesfully saved.");
@@ -128,9 +128,9 @@ public class MainFrame extends JFrame implements ActionListener {
                 }
             }
         } else if (e.getSource() == toArchieXML){
-            if(mainPanel instanceof MetaDataChanger){
+            if(mainPanel instanceof MetadataChanger){
                 try {
-                    MetaDataChanger mdc = (MetaDataChanger)mainPanel;
+                    MetadataChanger mdc = (MetadataChanger)mainPanel;
                     JFileChooser fc = new JFileChooser(mdc.dataset.mainDirectory.getParent().toString());
                     FileNameExtensionFilter zipFilter = new FileNameExtensionFilter("xml files (*.xml)", "xml");
                     fc.addChoosableFileFilter(zipFilter);
@@ -138,7 +138,7 @@ public class MainFrame extends JFrame implements ActionListener {
                     boolean succes = false;
                     int rv = fc.showSaveDialog(this);
                     if(rv == JFileChooser.APPROVE_OPTION)
-                        succes = mdc.Save(MetaDataChanger.SaveType.ArchieXML, fc.getSelectedFile().toPath());
+                        succes = mdc.Save(MetadataChanger.SaveType.ArchieXML, fc.getSelectedFile().toPath());
                     if(succes)
                         JOptionPane.showMessageDialog(this, "The file has been succesfully saved.");
                 } catch (IOException ex) {
