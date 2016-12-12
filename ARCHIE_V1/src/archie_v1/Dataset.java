@@ -1,11 +1,14 @@
 //License
 package archie_v1;
 
+import archie_v1.fileHelpers.DatasetInitialInformation;
 import archie_v1.fileHelpers.FileHelper;
 import archie_v1.fileHelpers.FolderHelper;
+import archie_v1.fileHelpers.MetadataContainer;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Map;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -16,12 +19,14 @@ public class Dataset {
     public Path mainDirectory;
     public DefaultMutableTreeNode fileTree;
     public ArrayList<FileHelper> files = new ArrayList();
+    private DatasetInitialInformation dII;
     public boolean includeIslandora;
 
-    public Dataset(String name, Path path, boolean fromArchie, boolean includeIslandora) {
+    public Dataset(String name, Path path, boolean fromArchie, boolean includeIslandora, DatasetInitialInformation dII) {
         this.name = name;
         this.mainDirectory = path;
         this.includeIslandora = includeIslandora;
+        this.dII = dII;
         
         if (!fromArchie) {
             fileTree = dirToTree(path);
@@ -37,6 +42,10 @@ public class Dataset {
             createNodes(file.toPath(), dirTree, folderHelper);
         }
         files.add(folderHelper);
+        
+        for(Map.Entry<MetadataContainer.MetadataKey, String> kvPair : dII.initInfo.entrySet()){
+            folderHelper.setRecord(kvPair.getKey(), kvPair.getValue(), includeIslandora);
+        }
         return dirTree;
     }
 

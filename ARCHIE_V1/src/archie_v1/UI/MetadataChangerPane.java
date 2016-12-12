@@ -37,13 +37,13 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener{
         buttonLabel = new HashMap();
         
         JPanel bottomPane = new JPanel();
-        resetButton = new JButton("reset");
+        resetButton = new JButton("Reset");
         resetButton.addActionListener(this);
         bottomPane.add(resetButton);
-        saveButton = new JButton("save");
+        saveButton = new JButton("Save");
         saveButton.addActionListener(this);
         bottomPane.add(saveButton);
-        addButton = new JButton("add");
+        addButton = new JButton("Add");
         addButton.addActionListener(this);
         bottomPane.add(addButton);
         saveChildrenButton = new JButton("Save for all files in folder");

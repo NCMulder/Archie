@@ -1,6 +1,7 @@
 //License
 package archie_v1.outputFormats;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -23,6 +24,8 @@ public class Zipper {
         
         for (Map.Entry<Path, Document> documentEntry : documentMap.entrySet()) {
             Path filePath = documentEntry.getKey();
+            if(filePath.toFile().isDirectory())
+                continue;
             Document document = documentEntry.getValue();
             
             String[] fileNames = checkDuplicateNames(filePath);
