@@ -9,6 +9,7 @@ import java.awt.Label;
 import java.awt.PopupMenu;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -113,6 +114,7 @@ public class MainFrame extends JFrame implements ActionListener {
                 try {
                     MetadataChanger mdc = (MetadataChanger)mainPanel;
                     JFileChooser fc = new JFileChooser(mdc.dataset.mainDirectory.getParent().toString());
+                    fc.setSelectedFile(new File(mdc.dataset.name + ".zip"));
                     FileNameExtensionFilter zipFilter = new FileNameExtensionFilter("zip files (*.zip)", "zip");
                     fc.addChoosableFileFilter(zipFilter);
                     fc.setFileFilter(zipFilter);
@@ -132,6 +134,7 @@ public class MainFrame extends JFrame implements ActionListener {
                 try {
                     MetadataChanger mdc = (MetadataChanger)mainPanel;
                     JFileChooser fc = new JFileChooser(mdc.dataset.mainDirectory.getParent().toString());
+                    fc.setSelectedFile(new File(mdc.dataset.name + "_AXML.xml"));
                     FileNameExtensionFilter zipFilter = new FileNameExtensionFilter("xml files (*.xml)", "xml");
                     fc.addChoosableFileFilter(zipFilter);
                     fc.setFileFilter(zipFilter);

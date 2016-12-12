@@ -10,10 +10,11 @@ public class MetadataContainer {
     public Boolean includeIslandora, includeDANS;
     static String langs[] = {"English","French","German","Dutch","Spanish"};
     static String access[] = {"Open access","Archaeology group","Request permission","Other access"};
+    static String toas[] = {"None","Dr.","Drs.","Prof.","MSc","BSc"};
     
-    public enum MetadataKey{Title, Identifier, CreatorName("Creator name"), CreatorAffiliation("Creator affiliation"), 
+    public enum MetadataKey{Title, Identifier, CreatorName("Creator name"), CreatorAffiliation("Creator affiliation"), CreatorTOA("Creator TOA", false, toas),
                             CreatorIdentifier("Creator identifier"), ContributorName("Contributor name"), Rightsholder, 
-                            RelatedItem("Related item"), Subject, Description, Publisher, DateCreated, TotalSize("Total size"), 
+                            RelatedItem("Related item"), Subject, Description, Publisher, DateCreated("Date created"), TotalSize("Total size"), 
                             Language(false, langs), TemporalCoverage("Temporal coverage"), SpatialCoverage("Spatial coverage"), 
                             AccesLevel("Access level", false, access), Collector, FileDescription("File description"), 
                             FilePurpose("File purpose"), FileCollection("File collection"), FileUnits("File units"), 

@@ -2,6 +2,7 @@
 package archie_v1;
 
 import archie_v1.fileHelpers.FileHelper;
+import archie_v1.fileHelpers.FolderHelper;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -31,9 +32,11 @@ public class Dataset {
 
     public DefaultMutableTreeNode dirToTree(Path path) {
         DefaultMutableTreeNode dirTree = new DefaultMutableTreeNode(path);
+        FolderHelper folderHelper = new FolderHelper(path, includeIslandora);
         for (File file : path.toFile().listFiles()) {
-            createNodes(file.toPath(), dirTree);
+            createNodes(file.toPath(), dirTree, folderHelper);
         }
+        files.add(folderHelper);
         return dirTree;
     }
 
@@ -46,16 +49,21 @@ public class Dataset {
         return resultTree;
     }
 
-    private void createNodes(Path file, DefaultMutableTreeNode tree) {
+    private void createNodes(Path file, DefaultMutableTreeNode tree, FolderHelper folderH) {
         DefaultMutableTreeNode fileNode = new DefaultMutableTreeNode(file);
         tree.add(fileNode);
         if (file.toFile().isDirectory()) {
+            FolderHelper folderHelper = new FolderHelper(file, includeIslandora);
             for (File dirFile : file.toFile().listFiles()) {
-                createNodes(dirFile.toPath(), fileNode);
+                createNodes(dirFile.toPath(), fileNode, folderHelper);
             }
+            folderH.children.add(folderHelper);
+            files.add(folderHelper);
         } else {
             //possibly do this concurrently, most time lost doing this.
-            files.add(ARCHIE.fileSelector(file, includeIslandora));
+            FileHelper fileHelper = ARCHIE.fileSelector(file, includeIslandora);
+            folderH.children.add(fileHelper);
+            files.add(fileHelper);
         }
     }
 

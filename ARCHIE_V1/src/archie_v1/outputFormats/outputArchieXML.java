@@ -12,11 +12,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.apache.commons.io.FilenameUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.output.XMLOutputter;
 
 public class outputArchieXML extends outputAbstract {
+    
+    DefaultMutableTreeNode fileTree;
+    
+    public outputArchieXML(DefaultMutableTreeNode fileTree){
+        this.fileTree = fileTree;
+    }
     
     public Document CreateDocument(DefaultMutableTreeNode dirTree) {
         Path filePath = (Path) dirTree.getUserObject();
@@ -74,12 +81,8 @@ public class outputArchieXML extends outputAbstract {
     @Override
     public void Save(String destination, ArrayList<FileHelper> files) throws IOException {
         XMLOutputter outputter = new XMLOutputter();
-        for(FileHelper fh : files){
-            
-        }
-        
-
-            PrintWriter writer = new PrintWriter(destination + ".xml");
-            //outputter.output(xml, writer);
+        Document archieXML = CreateDocument(fileTree);
+            PrintWriter writer = new PrintWriter(FilenameUtils.removeExtension(destination) + ".xml");
+            outputter.output(archieXML, writer);
     }
 }

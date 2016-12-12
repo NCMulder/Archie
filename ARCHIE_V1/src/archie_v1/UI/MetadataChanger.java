@@ -41,7 +41,7 @@ public class MetadataChanger extends JSplitPane implements TreeSelectionListener
         if(st == SaveType.Islandora)
             output = new outputIslandora();
         else if(st == SaveType.ArchieXML){
-            output = new outputArchieXML();
+            output = new outputArchieXML(dataset.fileTree);
         } else {
             JOptionPane.showMessageDialog(this, "The chosen save mode has not been implemented yet.");
             return false;

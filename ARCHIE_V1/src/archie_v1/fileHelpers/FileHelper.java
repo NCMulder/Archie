@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -25,19 +26,25 @@ public abstract class FileHelper {
     public Path filePath;
     public Map<String, String> metadata;
     public MetadataContainer metadataContainer;
+    public LinkedList<FileHelper> children;
 
     public FileHelper(Path filePath, boolean Islandora) {
         this.filePath = filePath;
-        metadata = getMetaData();
         metadataContainer = new MetadataContainer(Islandora);
+        children = new LinkedList();
+        
+        Initialize();
+    }
+    
+    public void Initialize(){
+        metadata = getMetaData();
+        //Seperate the islandora-element getters; put them in islandoraoutput?
+        setRecord(MetadataContainer.MetadataKey.Title, filePath.getFileName().toString(), true);
+        setRecord(MetadataContainer.MetadataKey.FileContentType, "." + FilenameUtils.getExtension(filePath.toString()) + " file", true);
         
         for (int i = 0; i < MetadataContainer.MetadataKey.values().length; i++) {
-            setRecord(MetadataContainer.MetadataKey.values()[i], "unknown");
+            setRecord(MetadataContainer.MetadataKey.values()[i], "unknown", false);
         }
-        
-        //Seperate the islandora-element getters; put them in islandoraoutput?
-        setRecord(MetadataContainer.MetadataKey.Title, filePath.getFileName().toString());
-        setRecord(MetadataContainer.MetadataKey.FileContentType, "." + FilenameUtils.getExtension(filePath.toString()) + " file");
     }
 
     //Helper functions for all filehandlers.
@@ -102,7 +109,7 @@ public abstract class FileHelper {
         
         Element namePartTOA = new Element("namePart", namespace);
         namePartTOA.setAttribute("type", "termsOfAdress");
-        namePartTOA.setText(termsOfAdress);
+        namePartTOA.setText(metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.CreatorTOA));
         
         Element namePartGiven = new Element ("namePart", namespace);
         namePartGiven.setAttribute("type", "given");
@@ -131,7 +138,9 @@ public abstract class FileHelper {
         return elArray;
     }
     
-    public void setRecord(MetadataContainer.MetadataKey key, String value){
+    public void setRecord(MetadataContainer.MetadataKey key, String value, boolean hardSet){
+        if(!hardSet && (!"unknown".equals(metadataContainer.metadataMap.get(key))) && metadataContainer.metadataMap.containsKey(key))
+            return;
         metadataContainer.metadataMap.put(key, value);
     }
     

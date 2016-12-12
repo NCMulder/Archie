@@ -23,7 +23,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 public class MetadataChangerPane extends JSplitPane implements ActionListener{
-    JButton saveButton, resetButton, addButton;
+    JButton saveButton, resetButton, addButton, saveChildrenButton;
     FileHelper fh;
     HashMap<MetadataContainer.MetadataKey, JComponent> labelText;
     HashMap<JButton, MetadataContainer.MetadataKey> buttonLabel;
@@ -46,6 +46,9 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener{
         addButton = new JButton("add");
         addButton.addActionListener(this);
         bottomPane.add(addButton);
+        saveChildrenButton = new JButton("Save for all files in folder");
+        saveChildrenButton.addActionListener(this);
+        bottomPane.add(saveChildrenButton);
         
         //do context switch for filehelper?
         setTopPane();
@@ -55,11 +58,13 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener{
     @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource()==saveButton){
-            saveToFileHelper();
+            saveToFileHelper(false);
         } else if (e.getSource()==resetButton){
             setTopPane();
         } else if (e.getSource()==addButton){
             addMetadata();
+        } else if(e.getSource()==saveChildrenButton){
+            saveToFileHelper(true);
         } else if(e.getActionCommand().equals("remove")){
             System.out.println(e.getSource());
             fh.metadataContainer.metadataMap.remove(buttonLabel.get(e.getSource()));
@@ -123,10 +128,10 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener{
         this.setTopComponent(panel);
     }
     
-    private void saveToFileHelper(){
+    private void saveToFileHelper(boolean hardSet){
         for(Map.Entry<MetadataContainer.MetadataKey, JComponent> metadataKeyTextEntry : labelText.entrySet()){
             String value = (metadataKeyTextEntry.getKey().settable)? ((JTextField)metadataKeyTextEntry.getValue()).getText() : ((JComboBox)metadataKeyTextEntry.getValue()).getSelectedItem().toString();
-            fh.metadataContainer.metadataMap.put(metadataKeyTextEntry.getKey(), value);
+            fh.setRecord(metadataKeyTextEntry.getKey(), value, hardSet);
         }
     }
 

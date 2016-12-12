@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.apache.commons.io.FilenameUtils;
 import org.jdom2.Document;
 import org.jdom2.output.XMLOutputter;
 
@@ -17,7 +18,7 @@ public class Zipper {
     ArrayList<String> names = new ArrayList();
 
     public void SaveAsZip(String destination, HashMap<Path, Document> documentMap) throws IOException {
-        ZipOutputStream out = new ZipOutputStream(new FileOutputStream(destination + ".zip"));
+        ZipOutputStream out = new ZipOutputStream(new FileOutputStream(FilenameUtils.removeExtension(destination) + ".zip"));
         XMLOutputter xmlOutputter = new XMLOutputter();
         
         for (Map.Entry<Path, Document> documentEntry : documentMap.entrySet()) {
