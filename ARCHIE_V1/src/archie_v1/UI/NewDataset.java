@@ -2,11 +2,9 @@
 package archie_v1.UI;
 
 import archie_v1.fileHelpers.DatasetInitialInformation;
+import archie_v1.fileHelpers.MetadataContainer;
 import java.awt.BorderLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JComboBox;
@@ -14,7 +12,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
 /**
@@ -32,23 +29,6 @@ public class NewDataset extends JPanel implements ActionListener {
     
     public NewDataset(MainFrame parent){
         this.parent = parent;
-//        
-//        this.setLayout(new GridBagLayout());
-        fileChooser = new JFileChooser("C:\\Users\\niels\\Documents\\Archie\\Testset\\testset");
-        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        fileChooser.addActionListener(this);
-        fileChooser.setApproveButtonText("Generate");
-//        datasetName = new JTextField("testset");
-//        GridBagConstraints tfg      = new GridBagConstraints(2, 0, 1, 1, .4, .25, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 100), 0, 0);
-//        
-//        JLabel nameLabel = new JLabel("Name:");
-//        GridBagConstraints nameg    = new GridBagConstraints(1, 0, 1, 1, .2, .25, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0, 100, 0, 0), 0, 0);
-//        
-//        GridBagConstraints fcg      = new GridBagConstraints(1, 1, 3, 4, .6, .75, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 60, 60, 60), 0, 0);
-//        
-//        this.add(nameLabel, nameg);
-//        this.add(datasetName, tfg);
-//        this.add(fileChooser, fcg);
         
         this.setLayout(new GridLayout(0,1));
         
@@ -66,6 +46,10 @@ public class NewDataset extends JPanel implements ActionListener {
         JLabel creatorAffiliationLabel = new JLabel("Creator affiliation: ");
         creatorAffiliation = new JTextField();
         topPanel.add(creatorAffiliationLabel); topPanel.add(creatorAffiliation);
+        
+        JLabel creatorTOALabel = new JLabel("Creator TOA: ");
+        creatorTOA = new JComboBox(MetadataContainer.toas);
+        topPanel.add(creatorTOALabel); topPanel.add(creatorTOA);
         
         JLabel creatorIdentifierLabel = new JLabel("Creator identifier: ");
         creatorIdentifier = new JTextField();
@@ -91,6 +75,10 @@ public class NewDataset extends JPanel implements ActionListener {
         publisher = new JTextField();
         topPanel.add(publisherLabel); topPanel.add(publisher);
         
+        JLabel languageLabel = new JLabel("Language: ");
+        language = new JComboBox(MetadataContainer.langs);
+        topPanel.add(languageLabel); topPanel.add(language);
+        
         JLabel temporalCoverageLabel = new JLabel("Temporal coverage: ");
         temporalCoverage = new JTextField();
         topPanel.add(temporalCoverageLabel); topPanel.add(temporalCoverage);
@@ -99,10 +87,21 @@ public class NewDataset extends JPanel implements ActionListener {
         spatialCoverage = new JTextField();
         topPanel.add(spatialCoverageLabel); topPanel.add(spatialCoverage);
         
-        //wont work?
-//        JScrollPane scrollPane = new JScrollPane();
-//        scrollPane.add(topPanel);
+        JLabel accessLevelLabel = new JLabel("Access level: ");
+        accessLevel = new JComboBox(MetadataContainer.access);
+        topPanel.add(accessLevelLabel); topPanel.add(accessLevel);
         
+        //wont work?
+        //JScrollPane scrollPane = new JScrollPane();
+        //scrollPane.add(topPanel);
+        
+        //change default folder to more logical folder.
+        fileChooser = new JFileChooser("C:\\Users\\niels\\Documents\\Archie\\Testset\\testset");
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fileChooser.addActionListener(this);
+        fileChooser.setApproveButtonText("Generate");
+        
+
         this.add(topPanel);
         this.add(fileChooser);
     }
@@ -122,10 +121,20 @@ public class NewDataset extends JPanel implements ActionListener {
                 parent.pack();
                 parent.paint(parent.getGraphics());
                 
-                //todo: get includeislandora
-                DatasetInitialInformation diI = new DatasetInitialInformation(creatorName.getText(), creatorAffiliation.getText(), "None", creatorIdentifier.getText(),
-                      contributorName.getText(), rightsholder.getText(), subject.getText(), description.getText(), publisher.getText(), 
-                      "English", temporalCoverage.getText(), spatialCoverage.getText(), "Open access");
+                DatasetInitialInformation diI = 
+                        new DatasetInitialInformation(creatorName.getText(), 
+                                                      creatorAffiliation.getText(), 
+                                                      creatorTOA.getSelectedItem().toString(), 
+                                                      creatorIdentifier.getText(),
+                                                      contributorName.getText(), 
+                                                      rightsholder.getText(), 
+                                                      subject.getText(), 
+                                                      description.getText(), 
+                                                      publisher.getText(), 
+                                                      language.getSelectedItem().toString(), 
+                                                      temporalCoverage.getText(), 
+                                                      spatialCoverage.getText(), 
+                                                      accessLevel.getSelectedItem().toString());
                 parent.metadatachanger = new MetadataChanger(datasetName.getText(), fileChooser.getSelectedFile().toPath(), false, true, diI);
                 parent.remove(parent.mainPanel);
                 parent.mainPanel = parent.metadatachanger;

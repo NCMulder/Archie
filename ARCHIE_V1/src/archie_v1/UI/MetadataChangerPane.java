@@ -109,6 +109,13 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener{
                             value.setForeground(Color.LIGHT_GRAY);
                     }
                 });
+                ((JTextField)value).addActionListener(new ActionListener(){
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        System.out.println(e.getActionCommand());
+                        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                    }
+                });
             } else {
                 value = new JComboBox(metadata.getKey().getSetOptions());
                 ((JComboBox)value).setSelectedItem(metadata.getValue());

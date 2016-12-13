@@ -8,9 +8,9 @@ public class MetadataContainer {
     
     public LinkedHashMap<MetadataKey, String> metadataMap;
     public Boolean includeIslandora, includeDANS;
-    static String langs[] = {"English","French","German","Dutch","Spanish"};
-    static String access[] = {"Open access","Archaeology group","Request permission","Other access"};
-    static String toas[] = {"None","Dr.","Drs.","Prof.","MSc","BSc"};
+    public static String toas[] = {"None","Dr.","Drs.","Prof.","MSc","BSc"};
+    public static String langs[] = {"English","French","German","Dutch","Spanish"};
+    public static String access[] = {"Open access","Archaeology group","Request permission","Other access"};
     
     public enum MetadataKey{Title, Identifier, CreatorName("Creator name"), CreatorAffiliation("Creator affiliation"), CreatorTOA("Creator TOA", false, toas),
                             CreatorIdentifier("Creator identifier"), ContributorName("Contributor name"), Rightsholder, 
