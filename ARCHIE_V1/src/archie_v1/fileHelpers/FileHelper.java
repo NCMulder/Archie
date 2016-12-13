@@ -43,7 +43,7 @@ public abstract class FileHelper {
         setRecord(MetadataContainer.MetadataKey.FileContentType, "." + FilenameUtils.getExtension(filePath.toString()) + " file", true);
         
         for (int i = 0; i < MetadataContainer.MetadataKey.values().length; i++) {
-            setRecord(MetadataContainer.MetadataKey.values()[i], "unknown", false);
+            setRecord(MetadataContainer.MetadataKey.values()[i], MetadataContainer.MetadataKey.values()[i].getDefaultValue(), false);
         }
     }
 
@@ -138,8 +138,9 @@ public abstract class FileHelper {
         return elArray;
     }
     
+    //redo this later. TODO
     public void setRecord(MetadataContainer.MetadataKey key, String value, boolean hardSet){
-        if(!hardSet && (!"unknown".equals(metadataContainer.metadataMap.get(key))) && metadataContainer.metadataMap.containsKey(key))
+        if(!hardSet && (!key.getDefaultValue().equals(metadataContainer.metadataMap.get(key))) && metadataContainer.metadataMap.containsKey(key) && (!"".equals(metadataContainer.metadataMap.get(key))))
             return;
         metadataContainer.metadataMap.put(key, value);
     }

@@ -44,7 +44,7 @@ public class Dataset {
         files.add(folderHelper);
         
         for(Map.Entry<MetadataContainer.MetadataKey, String> kvPair : dII.initInfo.entrySet()){
-            if(kvPair.getValue()!="")
+            if(!"".equals(kvPair.getValue()))
                 folderHelper.setRecord(kvPair.getKey(), kvPair.getValue(), false);
         }
         return dirTree;

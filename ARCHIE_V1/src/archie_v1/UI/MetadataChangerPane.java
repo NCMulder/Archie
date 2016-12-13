@@ -9,6 +9,10 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JButton;
@@ -83,10 +87,10 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener{
             JLabel label = new JLabel(metadata.getKey().toString());
             JComponent value; 
             if(metadata.getKey().settable){
-                value = new JTextField(metadata.getValue());
-                if(metadata.getValue().equals("unknown"))
-                value.setForeground(Color.LIGHT_GRAY);
-                ((JTextField)value).getDocument().addDocumentListener(new DocumentListener() {
+                JTextField tobeValue = new JTextField(metadata.getValue());
+                if(metadata.getValue().equals(metadata.getKey().getDefaultValue()))
+                tobeValue.setForeground(Color.LIGHT_GRAY);
+                (tobeValue.getDocument()).addDocumentListener(new DocumentListener() {
                     @Override
                     public void insertUpdate(DocumentEvent e) {
                         changeColor();
@@ -103,19 +107,26 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener{
                     }
                     
                     public void changeColor(){
-                        if(!"unknown".equals(((JTextField)value).getText()))
-                            value.setForeground(Color.BLACK);
+                        if(!metadata.getKey().getDefaultValue().equals(tobeValue.getText()))
+                            tobeValue.setForeground(Color.BLACK);
                         else
-                            value.setForeground(Color.LIGHT_GRAY);
+                            tobeValue.setForeground(Color.LIGHT_GRAY);
                     }
                 });
-                ((JTextField)value).addActionListener(new ActionListener(){
+                tobeValue.addFocusListener(new FocusListener() {
                     @Override
-                    public void actionPerformed(ActionEvent e) {
-                        System.out.println(e.getActionCommand());
-                        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                    public void focusGained(FocusEvent e) {
+                        if(metadata.getKey().getDefaultValue().equals(tobeValue.getText()))
+                            tobeValue.setText("");
+                    }
+
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        if("".equals(tobeValue.getText()))
+                            tobeValue.setText(metadata.getKey().getDefaultValue());
                     }
                 });
+                value = tobeValue;
             } else {
                 value = new JComboBox(metadata.getKey().getSetOptions());
                 ((JComboBox)value).setSelectedItem(metadata.getValue());
