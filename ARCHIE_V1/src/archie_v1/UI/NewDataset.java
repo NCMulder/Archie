@@ -7,12 +7,14 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.border.Border;
 
 /**
  *
@@ -31,6 +33,7 @@ public class NewDataset extends JPanel implements ActionListener {
         this.parent = parent;
         
         this.setLayout(new GridLayout(0,1));
+        this.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 10));
         
         JPanel topPanel = new JPanel();
         topPanel.setLayout(new GridLayout(0,2));

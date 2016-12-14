@@ -15,6 +15,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -47,10 +48,7 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener{
         saveButton = new JButton("Save");
         saveButton.addActionListener(this);
         bottomPane.add(saveButton);
-        addButton = new JButton("Add");
-        addButton.addActionListener(this);
-        bottomPane.add(addButton);
-        saveChildrenButton = new JButton("Save for all files in folder");
+        saveChildrenButton = new JButton("Set for all files in folder");
         saveChildrenButton.addActionListener(this);
         bottomPane.add(saveChildrenButton);
         
@@ -80,7 +78,8 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener{
     
     public void setTopPane(){
         JPanel topPane = new JPanel();
-        topPane.setLayout(new GridLayout(0, 3, 10, 10));
+        topPane.setLayout(new GridLayout(0, 2, 10, 10));
+        topPane.setBorder(BorderFactory.createEmptyBorder(10,20,20,10));
         
         //this foreach randomizes things. How to order clearly? TODO
         for(Map.Entry<MetadataContainer.MetadataKey, String> metadata : fh.metadataContainer.metadataMap.entrySet()){
@@ -131,13 +130,9 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener{
                 value = new JComboBox(metadata.getKey().getSetOptions());
                 ((JComboBox)value).setSelectedItem(metadata.getValue());
             }
-            JButton remove = new JButton("remove");
-            remove.addActionListener(this);
             labelText.put(metadata.getKey(), value);
-            buttonLabel.put(remove, metadata.getKey());
             topPane.add(label);
             topPane.add(value);
-            topPane.add(remove);
         }
         
         JScrollPane panel = new JScrollPane(topPane);

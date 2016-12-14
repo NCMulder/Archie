@@ -3,11 +3,11 @@ package archie_v1.UI;
 
 import archie_v1.UI.MainFrame;
 
-public class UIManager{
+public class ArchieUIManager{
 
     public MainFrame mf;
 
-    public UIManager() {
+    public ArchieUIManager() {
         mf = new MainFrame(this);
     }
 }

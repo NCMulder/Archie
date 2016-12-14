@@ -1,13 +1,17 @@
 //License header
 package archie_v1;
 
-import archie_v1.UI.UIManager;
+import archie_v1.UI.ArchieUIManager;
 import archie_v1.fileHelpers.*;
 import java.nio.file.Path;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import org.apache.commons.io.FilenameUtils;
 
 public class ARCHIE {
-    static UIManager ui;
+    static ArchieUIManager ui;
     
     /**
      * This is a javadoc? Really? Squiggly lines?
@@ -25,7 +29,12 @@ public class ARCHIE {
 }
 
     public static void main(String[] args) {
-        ui = new UIManager();
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(ARCHIE.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        ui = new ArchieUIManager();
     }
     
     static public FileHelper fileSelector(Path filePath, boolean includeIslandora){

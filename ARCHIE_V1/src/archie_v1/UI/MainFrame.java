@@ -29,13 +29,13 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class MainFrame extends JFrame implements ActionListener {
 
-    UIManager parent;
+    ArchieUIManager parent;
     public JComponent mainPanel;
     JPanel welcome;
     JSplitPane metadatachanger;
     JMenuItem toIslandora, toDANS, toArchieXML;
 
-    public MainFrame(UIManager parent) {
+    public MainFrame(ArchieUIManager parent) {
         // base init
         this.parent = parent;
         this.setTitle("Archie");
