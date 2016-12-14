@@ -6,6 +6,7 @@
 package archie_v1.fileHelpers;
 
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 
 /**
  *
@@ -14,25 +15,27 @@ import java.util.LinkedHashMap;
 public class DatasetInitialInformation {
     
     public LinkedHashMap<MetadataContainer.MetadataKey, String> initInfo;
+    public LinkedList<MetadataContainer.MetadataKey> initKeys;
     
-    public DatasetInitialInformation(String creatorName, String creatorAffiliation,  String creatorTOA, 
-            String creatorIdentifier, String contributorName, String rightsholder, 
-            String subject, String description, String publisher, String language,
-            String temporalCoverage, String spatialCoverage, String accessLevel){
+    public DatasetInitialInformation(){
         initInfo = new LinkedHashMap();
-        initInfo.put(MetadataContainer.MetadataKey.CreatorName, creatorName);
-        initInfo.put(MetadataContainer.MetadataKey.CreatorAffiliation, creatorAffiliation);
-        initInfo.put(MetadataContainer.MetadataKey.CreatorTOA, creatorTOA);
-        initInfo.put(MetadataContainer.MetadataKey.CreatorIdentifier, creatorIdentifier);
-        initInfo.put(MetadataContainer.MetadataKey.ContributorName, contributorName);
-        initInfo.put(MetadataContainer.MetadataKey.Rightsholder, rightsholder);
-        initInfo.put(MetadataContainer.MetadataKey.Subject, subject);
-        initInfo.put(MetadataContainer.MetadataKey.Description, description);
-        initInfo.put(MetadataContainer.MetadataKey.Publisher, publisher);
-        initInfo.put(MetadataContainer.MetadataKey.Language, language);
-        initInfo.put(MetadataContainer.MetadataKey.TemporalCoverage, temporalCoverage);
-        initInfo.put(MetadataContainer.MetadataKey.SpatialCoverage, spatialCoverage);
-        initInfo.put(MetadataContainer.MetadataKey.AccesLevel, accessLevel);
+        initKeys = new LinkedList();
+        initKeys.add(MetadataContainer.MetadataKey.CreatorTOA);
+        initKeys.add(MetadataContainer.MetadataKey.CreatorName);
+        initKeys.add(MetadataContainer.MetadataKey.CreatorIdentifier);
+        initKeys.add(MetadataContainer.MetadataKey.CreatorAffiliation);
+        initKeys.add(MetadataContainer.MetadataKey.ContributorTOA);
+        initKeys.add(MetadataContainer.MetadataKey.ContributorName);
+        initKeys.add(MetadataContainer.MetadataKey.ContributorIdentifier);
+        initKeys.add(MetadataContainer.MetadataKey.ContributorAffiliation);
+        initKeys.add(MetadataContainer.MetadataKey.Rightsholder);
+        initKeys.add(MetadataContainer.MetadataKey.Subject);
+        initKeys.add(MetadataContainer.MetadataKey.Description);
+        initKeys.add(MetadataContainer.MetadataKey.Publisher);
+        initKeys.add(MetadataContainer.MetadataKey.Language);
+        initKeys.add(MetadataContainer.MetadataKey.TemporalCoverage);
+        initKeys.add(MetadataContainer.MetadataKey.SpatialCoverage);
+        initKeys.add(MetadataContainer.MetadataKey.AccessLevel);
     }
     
 }

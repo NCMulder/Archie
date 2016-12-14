@@ -4,17 +4,25 @@ package archie_v1.UI;
 import archie_v1.fileHelpers.DatasetInitialInformation;
 import archie_v1.fileHelpers.MetadataContainer;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  *
@@ -28,9 +36,12 @@ public class NewDataset extends JPanel implements ActionListener {
     public JComboBox creatorTOA, language, accessLevel;
     public JFileChooser fileChooser;
     private MainFrame parent;
+    private DatasetInitialInformation dataII = new DatasetInitialInformation();
+    private LinkedHashMap<MetadataContainer.MetadataKey, JComponent> keyToText;
     
     public NewDataset(MainFrame parent){
         this.parent = parent;
+        keyToText = new LinkedHashMap();
         
         this.setLayout(new GridLayout(0,1));
         this.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 10));
@@ -42,57 +53,56 @@ public class NewDataset extends JPanel implements ActionListener {
         datasetName = new JTextField("test");
         topPanel.add(datasetNameLabel); topPanel.add(datasetName);
         
-        JLabel creatorNameLabel = new JLabel("Creator name: ");
-        creatorName = new JTextField();
-        topPanel.add(creatorNameLabel); topPanel.add(creatorName);
-        
-        JLabel creatorAffiliationLabel = new JLabel("Creator affiliation: ");
-        creatorAffiliation = new JTextField();
-        topPanel.add(creatorAffiliationLabel); topPanel.add(creatorAffiliation);
-        
-        JLabel creatorTOALabel = new JLabel("Creator TOA: ");
-        creatorTOA = new JComboBox(MetadataContainer.toas);
-        topPanel.add(creatorTOALabel); topPanel.add(creatorTOA);
-        
-        JLabel creatorIdentifierLabel = new JLabel("Creator identifier: ");
-        creatorIdentifier = new JTextField();
-        topPanel.add(creatorIdentifierLabel); topPanel.add(creatorIdentifier);
-        
-        JLabel contributorNameLabel = new JLabel("Contributor name: ");
-        contributorName = new JTextField();
-        topPanel.add(contributorNameLabel); topPanel.add(contributorName);
-        
-        JLabel rightsholderLabel = new JLabel("Rightsholder: ");
-        rightsholder = new JTextField();
-        topPanel.add(rightsholderLabel); topPanel.add(rightsholder);
-        
-        JLabel subjectLabel = new JLabel("Subject: ");
-        subject = new JTextField();
-        topPanel.add(subjectLabel); topPanel.add(subject);
-        
-        JLabel descriptionLabel = new JLabel("Description: ");
-        description = new JTextField();
-        topPanel.add(descriptionLabel); topPanel.add(description);
-        
-        JLabel publisherLabel = new JLabel("Publisher: ");
-        publisher = new JTextField();
-        topPanel.add(publisherLabel); topPanel.add(publisher);
-        
-        JLabel languageLabel = new JLabel("Language: ");
-        language = new JComboBox(MetadataContainer.langs);
-        topPanel.add(languageLabel); topPanel.add(language);
-        
-        JLabel temporalCoverageLabel = new JLabel("Temporal coverage: ");
-        temporalCoverage = new JTextField();
-        topPanel.add(temporalCoverageLabel); topPanel.add(temporalCoverage);
-        
-        JLabel spatialCoverageLabel = new JLabel("Spatial coverage: ");
-        spatialCoverage = new JTextField();
-        topPanel.add(spatialCoverageLabel); topPanel.add(spatialCoverage);
-        
-        JLabel accessLevelLabel = new JLabel("Access level: ");
-        accessLevel = new JComboBox(MetadataContainer.access);
-        topPanel.add(accessLevelLabel); topPanel.add(accessLevel);
+        for(MetadataContainer.MetadataKey metadataKey : dataII.initKeys){
+            JLabel keyLabel = new JLabel(metadataKey.toString() + " :");
+            JComponent keyValue;
+            if(metadataKey.settable){
+                JTextField tobeValue = new JTextField(metadataKey.getDefaultValue(), 20);
+                tobeValue.setForeground(Color.LIGHT_GRAY);
+                (tobeValue.getDocument()).addDocumentListener(new DocumentListener() {
+                    @Override
+                    public void insertUpdate(DocumentEvent e) {
+                        changeColor();
+                    }
+
+                    @Override
+                    public void removeUpdate(DocumentEvent e) {
+                        changeColor();
+                    }
+
+                    @Override
+                    public void changedUpdate(DocumentEvent e) {
+                        changeColor();
+                    }
+                    
+                    public void changeColor(){
+                        if(!metadataKey.getDefaultValue().equals(tobeValue.getText()))
+                            tobeValue.setForeground(Color.BLACK);
+                        else
+                            tobeValue.setForeground(Color.LIGHT_GRAY);
+                    }
+                });
+                tobeValue.addFocusListener(new FocusListener() {
+                    @Override
+                    public void focusGained(FocusEvent e) {
+                        if(metadataKey.getDefaultValue().equals(tobeValue.getText()))
+                            tobeValue.setText("");
+                    }
+
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        if("".equals(tobeValue.getText()))
+                            tobeValue.setText(metadataKey.getDefaultValue());
+                    }
+                });
+                keyValue = tobeValue;
+            }
+            else
+                keyValue = new JComboBox(metadataKey.getSetOptions());
+            keyToText.put(metadataKey, keyValue);
+            topPanel.add(keyLabel);
+            topPanel.add(keyValue);
+        }
         
         //wont work?
         //JScrollPane scrollPane = new JScrollPane();
@@ -124,21 +134,15 @@ public class NewDataset extends JPanel implements ActionListener {
                 parent.pack();
                 parent.paint(parent.getGraphics());
                 
-                DatasetInitialInformation diI = 
-                        new DatasetInitialInformation(creatorName.getText(), 
-                                                      creatorAffiliation.getText(), 
-                                                      creatorTOA.getSelectedItem().toString(), 
-                                                      creatorIdentifier.getText(),
-                                                      contributorName.getText(), 
-                                                      rightsholder.getText(), 
-                                                      subject.getText(), 
-                                                      description.getText(), 
-                                                      publisher.getText(), 
-                                                      language.getSelectedItem().toString(), 
-                                                      temporalCoverage.getText(), 
-                                                      spatialCoverage.getText(), 
-                                                      accessLevel.getSelectedItem().toString());
-                parent.metadatachanger = new MetadataChanger(datasetName.getText(), fileChooser.getSelectedFile().toPath(), false, true, diI);
+                for(Map.Entry<MetadataContainer.MetadataKey, JComponent> keyComponent : keyToText.entrySet()){
+                    if(keyComponent.getKey().settable){
+                        dataII.initInfo.put(keyComponent.getKey(), ((JTextField)keyComponent.getValue()).getText());
+                    } else {
+                        dataII.initInfo.put(keyComponent.getKey(), ((JComboBox)keyComponent.getValue()).getSelectedItem().toString());
+                    }
+                }
+                
+                parent.metadatachanger = new MetadataChanger(datasetName.getText(), fileChooser.getSelectedFile().toPath(), false, true, dataII);
                 parent.remove(parent.mainPanel);
                 parent.mainPanel = parent.metadatachanger;
                 parent.add(parent.mainPanel,BorderLayout.CENTER);

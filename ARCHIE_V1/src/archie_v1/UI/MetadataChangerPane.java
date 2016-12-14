@@ -86,7 +86,7 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener{
             JLabel label = new JLabel(metadata.getKey().toString());
             JComponent value; 
             if(metadata.getKey().settable){
-                JTextField tobeValue = new JTextField(metadata.getValue());
+                JTextField tobeValue = new JTextField(metadata.getValue(), 20);
                 if(metadata.getValue().equals(metadata.getKey().getDefaultValue()))
                 tobeValue.setForeground(Color.LIGHT_GRAY);
                 (tobeValue.getDocument()).addDocumentListener(new DocumentListener() {

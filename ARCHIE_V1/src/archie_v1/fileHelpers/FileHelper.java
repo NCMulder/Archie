@@ -39,7 +39,8 @@ public abstract class FileHelper {
     public void Initialize(){
         metadata = getMetaData();
         //Seperate the islandora-element getters; put them in islandoraoutput?
-        setRecord(MetadataContainer.MetadataKey.Title, filePath.getFileName().toString(), true);
+        setRecord(MetadataContainer.MetadataKey.Title, FilenameUtils.removeExtension(filePath.getFileName().toString()), true);
+        setRecord(MetadataContainer.MetadataKey.Identifier, filePath.toString(), true);
         setRecord(MetadataContainer.MetadataKey.FileContentType, "." + FilenameUtils.getExtension(filePath.toString()) + " file", true);
         
         for (int i = 0; i < MetadataContainer.MetadataKey.values().length; i++) {

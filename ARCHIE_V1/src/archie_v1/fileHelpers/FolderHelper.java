@@ -34,18 +34,18 @@ public class FolderHelper extends FileHelper {
     
     @Override
     public void Initialize(){
-        setRecord(MetadataContainer.MetadataKey.CreatorName, MetadataContainer.MetadataKey.CreatorName.defaultValue, false);
-        setRecord(MetadataContainer.MetadataKey.CreatorAffiliation, MetadataContainer.MetadataKey.CreatorAffiliation.defaultValue, false);
-        setRecord(MetadataContainer.MetadataKey.CreatorTOA, MetadataContainer.MetadataKey.CreatorTOA.defaultValue, false);
-        setRecord(MetadataContainer.MetadataKey.CreatorIdentifier, MetadataContainer.MetadataKey.CreatorIdentifier.defaultValue, false);
-        setRecord(MetadataContainer.MetadataKey.ContributorName, MetadataContainer.MetadataKey.ContributorName.defaultValue, false);
-        setRecord(MetadataContainer.MetadataKey.Rightsholder, MetadataContainer.MetadataKey.Rightsholder.defaultValue, false);
-        setRecord(MetadataContainer.MetadataKey.Subject, MetadataContainer.MetadataKey.Subject.defaultValue, false);
-        setRecord(MetadataContainer.MetadataKey.Description, MetadataContainer.MetadataKey.Description.defaultValue, false);
-        setRecord(MetadataContainer.MetadataKey.Publisher, MetadataContainer.MetadataKey.Publisher.defaultValue, false);
-        setRecord(MetadataContainer.MetadataKey.Language, MetadataContainer.MetadataKey.Language.defaultValue, false);
-        setRecord(MetadataContainer.MetadataKey.TemporalCoverage, MetadataContainer.MetadataKey.TemporalCoverage.defaultValue, false);
-        setRecord(MetadataContainer.MetadataKey.SpatialCoverage, MetadataContainer.MetadataKey.SpatialCoverage.defaultValue, false);
-        setRecord(MetadataContainer.MetadataKey.AccesLevel, MetadataContainer.MetadataKey.AccesLevel.defaultValue, false);
+//        setRecord(MetadataContainer.MetadataKey.CreatorName, MetadataContainer.MetadataKey.CreatorName.defaultValue, false);
+//        setRecord(MetadataContainer.MetadataKey.CreatorAffiliation, MetadataContainer.MetadataKey.CreatorAffiliation.defaultValue, false);
+//        setRecord(MetadataContainer.MetadataKey.CreatorTOA, MetadataContainer.MetadataKey.CreatorTOA.defaultValue, false);
+//        setRecord(MetadataContainer.MetadataKey.CreatorIdentifier, MetadataContainer.MetadataKey.CreatorIdentifier.defaultValue, false);
+//        setRecord(MetadataContainer.MetadataKey.ContributorName, MetadataContainer.MetadataKey.ContributorName.defaultValue, false);
+//        setRecord(MetadataContainer.MetadataKey.Rightsholder, MetadataContainer.MetadataKey.Rightsholder.defaultValue, false);
+//        setRecord(MetadataContainer.MetadataKey.Subject, MetadataContainer.MetadataKey.Subject.defaultValue, false);
+//        setRecord(MetadataContainer.MetadataKey.Description, MetadataContainer.MetadataKey.Description.defaultValue, false);
+//        setRecord(MetadataContainer.MetadataKey.Publisher, MetadataContainer.MetadataKey.Publisher.defaultValue, false);
+//        setRecord(MetadataContainer.MetadataKey.Language, MetadataContainer.MetadataKey.Language.defaultValue, false);
+//        setRecord(MetadataContainer.MetadataKey.TemporalCoverage, MetadataContainer.MetadataKey.TemporalCoverage.defaultValue, false);
+//        setRecord(MetadataContainer.MetadataKey.SpatialCoverage, MetadataContainer.MetadataKey.SpatialCoverage.defaultValue, false);
+//        setRecord(MetadataContainer.MetadataKey.AccesLevel, MetadataContainer.MetadataKey.AccesLevel.defaultValue, false);
     }
 }
