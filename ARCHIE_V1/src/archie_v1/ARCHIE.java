@@ -12,21 +12,6 @@ import org.apache.commons.io.FilenameUtils;
 
 public class ARCHIE {
     static ArchieUIManager ui;
-    
-    /**
-     * This is a javadoc? Really? Squiggly lines?
-     */
-    public enum MetadataKey{CreatorName, RelatedItemID;
-    
-    public static String[] names(){
-        MetadataKey[] keys = values();
-        String[] names = new String[keys.length];
-        for (int i = 0; i < keys.length; i++) {
-            names[i] = keys[i].name();
-        }
-        return names;
-    }
-}
 
     public static void main(String[] args) {
         try {
@@ -37,6 +22,12 @@ public class ARCHIE {
         ui = new ArchieUIManager();
     }
     
+    /**
+     * FileHelper selects the correct FileHelper subclass based on the filePath input.
+     * @param filePath The file path for the desired FileHelper.
+     * @param includeIslandora Selects whether or not the file should be included in an Islandora output.
+     * @return
+     */
     static public FileHelper fileSelector(Path filePath, boolean includeIslandora){
         String fileExtension = FilenameUtils.getExtension(filePath.toString());
         switch(fileExtension){

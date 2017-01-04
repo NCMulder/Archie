@@ -130,6 +130,7 @@ public class outputIslandora extends outputAbstract {
         elementList.add(getTypeOfResource());
         elementList.add(getLanguage(fileHelper));
         elementList.add(getAccessLevel(fileHelper));
+        elementList.add(getFileSize(fileHelper));
 
         return elementList;
     }
@@ -413,7 +414,10 @@ public class outputIslandora extends outputAbstract {
     }
 
     public Element getFileSize(FileHelper fileHelper) {
-        return null;
+        System.out.println(fileHelper.filePath.toFile().length());
+        Element fileSize = new Element("FileSize");
+        fileSize.setText("boe");
+        return fileSize;
     }
 
     public Element getPhysicalForm(FileHelper fileHelper) {

@@ -29,12 +29,20 @@ public class MetadataChanger extends JSplitPane implements TreeSelectionListener
     Dataset dataset;
 
     public MetadataChanger(String name, Path path, boolean fromArchie, boolean includeIslandora, DatasetInitialInformation dII) {
+        long now, start = System.nanoTime();
         //Directory, dataset
         mainDirectory = path;
+        
         dataset = new Dataset(name, path, fromArchie, includeIslandora, dII);
+        now = System.nanoTime();
+        System.out.println("Creating the dataset: " + (now - start)/1000000 + "ms");
+        start = System.nanoTime();
         
         //UI
         createUI();
+        now = System.nanoTime();
+        System.out.println("Creating the UI: " + (now - start)/1000000 + "ms");
+        start = System.nanoTime();
     }
     
     public boolean Save(SaveType st, Path outputPath) throws IOException{

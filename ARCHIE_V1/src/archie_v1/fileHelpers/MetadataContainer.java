@@ -3,7 +3,6 @@ package archie_v1.fileHelpers;
 
 import java.util.LinkedHashMap;
 
-
 public class MetadataContainer {
     
     public LinkedHashMap<MetadataKey, String> metadataMap;
@@ -13,7 +12,7 @@ public class MetadataContainer {
     public static String access[] = {"Open access","Archaeology group","Request permission","Other access"};
     
     public enum MetadataKey{Title("unknown"), 
-                            Identifier("doi:10.1006/jmbi.1995.0238"), 
+                            Identifier("DOI1:0.1006/jmbi.1995.0238"), 
                             CreatorName("Creator name", "J.M. de Vries"), 
                             CreatorAffiliation("Creator affiliation", "Universiteit Leiden"), 
                             CreatorTOA("Creator TOA", false, toas),

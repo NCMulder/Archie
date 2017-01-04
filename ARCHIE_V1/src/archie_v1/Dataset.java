@@ -1,6 +1,7 @@
 //License
 package archie_v1;
 
+import archie_v1.UI.ProgressPanel;
 import archie_v1.fileHelpers.DatasetInitialInformation;
 import archie_v1.fileHelpers.FileHelper;
 import archie_v1.fileHelpers.FolderHelper;
@@ -9,10 +10,20 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Stack;
+import javax.swing.JProgressBar;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.jdom2.Document;
 import org.jdom2.Element;
 
+/**
+ * The Dataset class encapsulates a single dataset, defined by a name and
+ * directory. Multiple ways of generating a dataset are supported (from a
+ * directory or from a previously generated dataset file), and several
+ * dataset-wide properties can be set upon initialization.
+ *
+ * @author N.C. Mulder <n.c.mulder at students.uu.nl>
+ */
 public class Dataset {
 
     public String name;
@@ -21,6 +32,8 @@ public class Dataset {
     public ArrayList<FileHelper> files = new ArrayList();
     private DatasetInitialInformation dII;
     public boolean includeIslandora;
+
+    ProgressPanel pBar;
 
     public Dataset(String name, Path path, boolean fromArchie, boolean includeIslandora, DatasetInitialInformation dII) {
         this.name = name;
@@ -35,6 +48,11 @@ public class Dataset {
         }
     }
 
+    /**
+     *
+     * @param path
+     * @return
+     */
     public DefaultMutableTreeNode dirToTree(Path path) {
         DefaultMutableTreeNode dirTree = new DefaultMutableTreeNode(path);
         FolderHelper folderHelper = new FolderHelper(path, includeIslandora);
@@ -42,9 +60,9 @@ public class Dataset {
             createNodes(file.toPath(), dirTree, folderHelper);
         }
         files.add(folderHelper);
-        
-        for(Map.Entry<MetadataContainer.MetadataKey, String> kvPair : dII.initInfo.entrySet()){
-                folderHelper.setRecord(kvPair.getKey(), kvPair.getValue(), false);
+
+        for (Map.Entry<MetadataContainer.MetadataKey, String> kvPair : dII.initInfo.entrySet()) {
+            folderHelper.setRecord(kvPair.getKey(), kvPair.getValue(), false);
         }
         return dirTree;
     }
@@ -73,6 +91,11 @@ public class Dataset {
             FileHelper fileHelper = ARCHIE.fileSelector(file, includeIslandora);
             folderH.children.add(fileHelper);
             files.add(fileHelper);
+
+            //WIP
+            if (null != pBar) {
+                pBar.pingProgBar();
+            }
         }
     }
 

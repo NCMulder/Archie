@@ -31,7 +31,6 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener{
     JButton saveButton, resetButton, addButton, saveChildrenButton;
     FileHelper fh;
     HashMap<MetadataContainer.MetadataKey, JComponent> labelText;
-    HashMap<JButton, MetadataContainer.MetadataKey> buttonLabel;
     
     public MetadataChangerPane(FileHelper fileHelper, MetadataChanger parent){
         super(JSplitPane.VERTICAL_SPLIT);
@@ -39,7 +38,6 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener{
         this.setResizeWeight(1);
         
         labelText = new HashMap();
-        buttonLabel = new HashMap();
         
         JPanel bottomPane = new JPanel();
         resetButton = new JButton("Reset");
@@ -63,14 +61,8 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener{
             saveToFileHelper(false);
         } else if (e.getSource()==resetButton){
             setTopPane();
-        } else if (e.getSource()==addButton){
-            addMetadata();
         } else if(e.getSource()==saveChildrenButton){
             saveToFileHelper(true);
-        } else if(e.getActionCommand().equals("remove")){
-            System.out.println(e.getSource());
-            fh.metadataContainer.metadataMap.remove(buttonLabel.get(e.getSource()));
-            setTopPane();
         } else {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
@@ -146,9 +138,5 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener{
             String value = (metadataKeyTextEntry.getKey().settable)? ((JTextField)metadataKeyTextEntry.getValue()).getText() : ((JComboBox)metadataKeyTextEntry.getValue()).getSelectedItem().toString();
             fh.setRecord(metadataKeyTextEntry.getKey(), value, hardSet);
         }
-    }
-
-    private void addMetadata() {
-        AddMetadataField adder = new AddMetadataField();
     }
 }
