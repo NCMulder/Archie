@@ -28,12 +28,12 @@ public class MetadataChanger extends JSplitPane implements TreeSelectionListener
     JTree UITree;
     Dataset dataset;
 
-    public MetadataChanger(String name, Path path, boolean fromArchie, boolean includeIslandora, DatasetInitialInformation dII) {
+    public MetadataChanger(String name, Path path, boolean fromArchie, boolean includeIslandora, DatasetInitialInformation dII, ProgressPanel pP) {
         long now, start = System.nanoTime();
         //Directory, dataset
         mainDirectory = path;
         
-        dataset = new Dataset(name, path, fromArchie, includeIslandora, dII);
+        dataset = new Dataset(name, path, fromArchie, includeIslandora, dII, pP);
         now = System.nanoTime();
         System.out.println("Creating the dataset: " + (now - start)/1000000 + "ms");
         start = System.nanoTime();

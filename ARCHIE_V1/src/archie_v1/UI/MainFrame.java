@@ -35,6 +35,7 @@ public class MainFrame extends JFrame implements ActionListener {
     public JPanel welcome, working;
     JSplitPane metadatachanger;
     JMenuItem toIslandora, toDANS, toArchieXML;
+    public JMenu export;
 
     public MainFrame(ArchieUIManager parent) {
         // base init
@@ -81,27 +82,23 @@ public class MainFrame extends JFrame implements ActionListener {
 
         JMenuItem openMenu = new JMenuItem("Open");
         openMenu.addActionListener(this);
+        openMenu.setEnabled(false);
         dataSet.add(openMenu);
 
         JMenuItem saveItem = new JMenuItem("Save");
         saveItem.addActionListener(this);
-        saveItem.setIcon(UIManager.getIcon("FileChooser.floppyDriveIcon"));
+        saveItem.setEnabled(false);
         dataSet.add(saveItem);
 
-        JMenuItem saveAsItem = new JMenuItem("Save as...");
-        saveAsItem.addActionListener(this);
-        dataSet.add(saveAsItem);
-
-        JMenu export = new JMenu("Export as...    ");
+        export = new JMenu("Export as...    ");
+        export.setEnabled(false);
         toIslandora = new JMenuItem("Islandora .zip");
         toIslandora.addActionListener(this);
         toDANS = new JMenuItem("DANS repo");
         toDANS.addActionListener(this);
-        toArchieXML = new JMenuItem("Archie .xml");
-        toArchieXML.addActionListener(this);
+        toDANS.setEnabled(false);
         export.add(toIslandora);
         export.add(toDANS);
-        export.add(toArchieXML);
         dataSet.add(export);
 
         menuBar.add(dataSet);
@@ -167,20 +164,9 @@ public class MainFrame extends JFrame implements ActionListener {
         }
     }
 
-    //temp
+    //temp, rework this todo wip
     public JPanel WorkingOnItPanel(int totalSize) {
-        JPanel wOI = new JPanel();
-        wOI.setLayout(new BorderLayout());
-        JLabel wOIL = new JLabel("Working on it...", SwingConstants.CENTER);
-        Font ft = new Font("Helvetica", 36, 36);
-        wOIL.setFont(ft);
-        wOIL.setBorder(new EmptyBorder(100,0,0,0));
-
-        wOI.add(wOIL, BorderLayout.NORTH);
-        JPanel pPanel = new ProgressPanel(totalSize);
-        pPanel.setBorder(new EmptyBorder(50, 0,0,0));
-        wOI.add(pPanel);
-        return wOI;
+        return new ProgressPanel(totalSize);
     }
 
     public void goToHome() {

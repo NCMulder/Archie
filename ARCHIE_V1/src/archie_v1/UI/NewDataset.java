@@ -22,6 +22,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
@@ -57,7 +58,9 @@ public class NewDataset extends JPanel implements ActionListener {
         topPanel.add(datasetNameLabel);
         topPanel.add(datasetName);
 
-        for (MetadataContainer.MetadataKey metadataKey : dataII.initKeys) {
+        for (MetadataContainer.MetadataKey metadataKey : MetadataContainer.MetadataKey.values()) {
+            if(!metadataKey.dataset)
+                continue;
             JLabel keyLabel = new JLabel(metadataKey.toString() + " :");
             JComponent keyValue;
             if (metadataKey.settable) {
@@ -110,17 +113,16 @@ public class NewDataset extends JPanel implements ActionListener {
             topPanel.add(keyLabel);
             topPanel.add(keyValue);
         }
-
-        //wont work?
-        //JScrollPane scrollPane = new JScrollPane();
-        //scrollPane.add(topPanel);
-        //change default folder to more logical folder.
+        
         fileChooser = new JFileChooser("C:\\Users\\niels\\Documents\\Archie\\Testset\\testset");
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fileChooser.addActionListener(this);
         fileChooser.setApproveButtonText("Generate");
 
-        this.add(topPanel);
+        JScrollPane scrollPane = new JScrollPane(topPanel);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        
+        this.add(scrollPane);
         this.add(fileChooser);
     }
 
@@ -182,7 +184,7 @@ public class NewDataset extends JPanel implements ActionListener {
                 System.out.println("Putting standard data: " + (now - start) / 1000000 + "ms");
                 start = System.nanoTime();
 
-                parent.metadatachanger = new MetadataChanger(datasetName.getText(), path, false, true, dataII);
+                parent.metadatachanger = new MetadataChanger(datasetName.getText(), path, false, true, dataII, (ProgressPanel)parent.working);
 
                 now = System.nanoTime();
                 System.out.println("Getting all files: " + (now - start) / 1000000 + "ms");
@@ -191,6 +193,7 @@ public class NewDataset extends JPanel implements ActionListener {
                 parent.remove(parent.mainPanel);
                 parent.mainPanel = parent.metadatachanger;
                 parent.add(parent.mainPanel, BorderLayout.CENTER);
+                parent.export.setEnabled(true);
                 parent.validate();
                 parent.pack();
 

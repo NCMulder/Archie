@@ -287,13 +287,14 @@ public class outputIslandora extends outputAbstract {
         topic.setText(fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.Subject));
         subject.addContent(topic);
         
-        String[] temps = fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.TemporalCoverage).split("-");
+        String[] temps = fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.TemporalCoverage).split(" - ");
+        
         Element temporalStart = new Element("temporal", rootNamespace);
         temporalStart.setAttribute("point", "start");
         temporalStart.setText(temps[0].replace(" ", ""));
         subject.addContent(temporalStart);
         
-        if(temps.length>0){
+        if(temps.length>1){
             Element temporalEnd = new Element("temporal", rootNamespace);
             temporalEnd.setAttribute("point", "end");
             temporalEnd.setText(temps[1].replace(" ",""));

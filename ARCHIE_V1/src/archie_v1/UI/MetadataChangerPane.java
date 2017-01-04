@@ -2,6 +2,7 @@
 package archie_v1.UI;
 
 import archie_v1.fileHelpers.FileHelper;
+import archie_v1.fileHelpers.FolderHelper;
 import archie_v1.fileHelpers.MetadataContainer;
 import java.awt.Color;
 import java.awt.Component;
@@ -46,9 +47,10 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener{
         saveButton = new JButton("Save");
         saveButton.addActionListener(this);
         bottomPane.add(saveButton);
-        saveChildrenButton = new JButton("Set for all files in folder");
+        saveChildrenButton = new JButton("Save (overwrite)");
         saveChildrenButton.addActionListener(this);
-        bottomPane.add(saveChildrenButton);
+        if(fh instanceof FolderHelper)
+            bottomPane.add(saveChildrenButton);
         
         //do context switch for filehelper?
         setTopPane();
@@ -58,7 +60,7 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener{
     @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource()==saveButton){
-            saveToFileHelper(false);
+            saveToFileHelper(!(fh instanceof FolderHelper));
         } else if (e.getSource()==resetButton){
             setTopPane();
         } else if(e.getSource()==saveChildrenButton){

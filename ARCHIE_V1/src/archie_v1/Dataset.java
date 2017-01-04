@@ -11,8 +11,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JProgressBar;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.apache.commons.io.FilenameUtils;
 import org.jdom2.Document;
 import org.jdom2.Element;
 
@@ -30,19 +33,28 @@ public class Dataset {
     public Path mainDirectory;
     public DefaultMutableTreeNode fileTree;
     public ArrayList<FileHelper> files = new ArrayList();
+    public ArrayList<File> readmes = new ArrayList();
     private DatasetInitialInformation dII;
     public boolean includeIslandora;
 
-    ProgressPanel pBar;
+    ProgressPanel pP;
 
-    public Dataset(String name, Path path, boolean fromArchie, boolean includeIslandora, DatasetInitialInformation dII) {
+    public Dataset(String name, Path path, boolean fromArchie, boolean includeIslandora, DatasetInitialInformation dII, ProgressPanel pP) {
         this.name = name;
         this.mainDirectory = path;
         this.includeIslandora = includeIslandora;
         this.dII = dII;
+        this.pP = pP;
         
         if (!fromArchie) {
-            fileTree = dirToTree(path);
+            Thread tB = new Thread(new TreeBuilder(path));
+            tB.start();
+            try {
+                tB.join();
+                //dirToTree(path);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
+            }
         } else {
             fileTree = null;
         }
@@ -53,18 +65,18 @@ public class Dataset {
      * @param path
      * @return
      */
-    public DefaultMutableTreeNode dirToTree(Path path) {
+    public void dirToTree(Path path) {
         DefaultMutableTreeNode dirTree = new DefaultMutableTreeNode(path);
-        FolderHelper folderHelper = new FolderHelper(path, includeIslandora);
+        FolderHelper folderHelper = new FolderHelper(path, includeIslandora, true);
         for (File file : path.toFile().listFiles()) {
             createNodes(file.toPath(), dirTree, folderHelper);
         }
         files.add(folderHelper);
 
         for (Map.Entry<MetadataContainer.MetadataKey, String> kvPair : dII.initInfo.entrySet()) {
-            folderHelper.setRecord(kvPair.getKey(), kvPair.getValue(), false);
+            folderHelper.setRecord(kvPair.getKey(), kvPair.getValue(), false, true);
         }
-        return dirTree;
+        fileTree = dirTree;
     }
 
     //Available for planned xml-to-dataset conversion. WIP.
@@ -77,6 +89,18 @@ public class Dataset {
     }
 
     private void createNodes(Path file, DefaultMutableTreeNode tree, FolderHelper folderH) {
+        if("readme".equals(FilenameUtils.removeExtension(file.getFileName().toString()))){
+            readmes.add(file.toFile());
+            return;
+        } else if("Thumbs.db".equals(file.getFileName().toString())){
+            return;
+        } else if(file.getFileName().toString().contains("datanow_meta")){
+            return;
+        } else if(file.getFileName().toString().equals(".dataNowFolderUploads_")){
+            return;
+        }
+        
+        
         DefaultMutableTreeNode fileNode = new DefaultMutableTreeNode(file);
         tree.add(fileNode);
         if (file.toFile().isDirectory()) {
@@ -93,8 +117,8 @@ public class Dataset {
             files.add(fileHelper);
 
             //WIP
-            if (null != pBar) {
-                pBar.pingProgBar();
+            if (null != pP) {
+                pP.pingProgBar();
             }
         }
     }
@@ -107,6 +131,13 @@ public class Dataset {
             for (Element element : elem.getChildren()) {
                 createNodes(element, fileNode);
             }
+        }
+    }
+
+    private class TreeBuilder extends Thread {
+
+        public TreeBuilder(Path path) {
+            dirToTree(path);
         }
     }
 }

@@ -27,29 +27,50 @@ public abstract class FileHelper {
     public Map<String, String> metadata;
     public MetadataContainer metadataContainer;
     public LinkedList<FileHelper> children;
+    public boolean root = false;
 
     public FileHelper(Path filePath, boolean Islandora) {
         this.filePath = filePath;
         metadataContainer = new MetadataContainer(Islandora);
         children = new LinkedList();
-        
+
         Initialize();
     }
     
-    public void Initialize(){
-        metadata = getMetaData();
-        //Seperate the islandora-element getters; put them in islandoraoutput?
-        setRecord(MetadataContainer.MetadataKey.Title, FilenameUtils.removeExtension(filePath.getFileName().toString()), true);
-        setRecord(MetadataContainer.MetadataKey.Identifier, filePath.toString(), true);
-        setRecord(MetadataContainer.MetadataKey.FileContentType, "." + FilenameUtils.getExtension(filePath.toString()) + " file", true);
-        
+    public FileHelper(Path filePath, boolean Islandora, boolean root){
+        this.root = root;
+        this.filePath = filePath;
+        metadataContainer = new MetadataContainer(Islandora);
+        children = new LinkedList();
+
+        Initialize();
+    }
+
+    public void Initialize() {
+        if (root) {
+            for (int i = 0; i < MetadataContainer.MetadataKey.values().length; i++) {
+                if (MetadataContainer.MetadataKey.values()[i].dataset) {
+                    setRecord(MetadataContainer.MetadataKey.values()[i], MetadataContainer.MetadataKey.values()[i].getDefaultValue(), false, true);
+                }
+            }
+            return;
+        }
+
+        if (!(this instanceof FolderHelper)) {
+            metadata = getMetaData();
+            setRecord(MetadataContainer.MetadataKey.Title, FilenameUtils.removeExtension(filePath.getFileName().toString()), false, true);
+            setRecord(MetadataContainer.MetadataKey.Identifier, filePath.toString(), false, true);
+            setRecord(MetadataContainer.MetadataKey.FileContentType, "." + FilenameUtils.getExtension(filePath.toString()) + " file", false, true);
+        }
+
         for (int i = 0; i < MetadataContainer.MetadataKey.values().length; i++) {
-            setRecord(MetadataContainer.MetadataKey.values()[i], MetadataContainer.MetadataKey.values()[i].getDefaultValue(), false);
+            if (MetadataContainer.MetadataKey.values()[i].file) {
+                setRecord(MetadataContainer.MetadataKey.values()[i], MetadataContainer.MetadataKey.values()[i].getDefaultValue(), false, true);
+            }
         }
     }
 
     //Helper functions for all filehandlers.
-    
     public Map<String, String> getMetaData() {
         Map basedata = new HashMap<>();
 
@@ -77,17 +98,23 @@ public abstract class FileHelper {
 
         return basedata;
     }
-    
-    //redo this later. TODO
-    public void setRecord(MetadataContainer.MetadataKey key, String value, boolean hardSet){
-        if(!hardSet && (!key.getDefaultValue().equals(metadataContainer.metadataMap.get(key))) && metadataContainer.metadataMap.containsKey(key) && (!"".equals(metadataContainer.metadataMap.get(key))))
+
+    public void setRecord(MetadataContainer.MetadataKey key, String value, boolean hardSet, boolean init) {
+        if (!hardSet && (!key.getDefaultValue().equals(metadataContainer.metadataMap.get(key))) && metadataContainer.metadataMap.containsKey(key) && (!"".equals(metadataContainer.metadataMap.get(key)))) {
             return;
-        metadataContainer.metadataMap.put(key, value);
+        }
+        if (init || metadataContainer.metadataMap.containsKey(key)) {
+            metadataContainer.metadataMap.put(key, value);
+        }
     }
-    
-    public void setRecordThroughTika(MetadataContainer.MetadataKey key, String tikaString){
+
+    public void setRecord(MetadataContainer.MetadataKey key, String value, boolean hardSet) {
+        setRecord(key, value, hardSet, false);
+    }
+
+    public void setRecordThroughTika(MetadataContainer.MetadataKey key, String tikaString) {
         String tikaValue = metadata.get(tikaString);
-        if(tikaValue!=null){
+        if (tikaValue != null) {
             metadataContainer.metadataMap.put(key, tikaValue);
         }
     }
