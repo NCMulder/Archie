@@ -15,7 +15,7 @@ public class MetadataContainer {
                             Identifier("DOI1:0.1006/jmbi.1995.0238", true, false), 
                             CreatorName("Creator name", "J.M. de Vries"), 
                             CreatorAffiliation("Creator affiliation", "Universiteit Leiden"), 
-                            CreatorTOA("Creator TOA", false, toas),
+                            CreatorTOA("Creator Terms of Adress", "Dr."),
                             CreatorIdentifier("Creator identifier", "DAI_1"), 
                             ContributorName("Contributor name", "J.M. de Vries; A.F. Cornelis"),
                             ContributorAffiliation("Contributor affiliation", "Universiteit Leiden; UCLA"),
