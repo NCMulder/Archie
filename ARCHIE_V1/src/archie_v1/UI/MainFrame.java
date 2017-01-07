@@ -127,6 +127,7 @@ public class MainFrame extends JFrame implements ActionListener {
             mainPanel = nds;
             this.add(mainPanel);
             this.pack();
+            nds.gainFocus(nds.datasetName);
         } else if (e.getSource() == toIslandora) {
             if (mainPanel instanceof MetadataChanger) {
                 try {

@@ -198,7 +198,6 @@ public class NewDataset extends JPanel implements ActionListener {
         mainPanel.add(choose, gbc);
 
 //</editor-fold>
-
         //<editor-fold defaultstate="collapsed" desc="Bottom buttons">
         //Bottom panel containing generation and cancellation buttons
         JPanel bottomPanel = new JPanel(new GridBagLayout());
@@ -214,8 +213,7 @@ public class NewDataset extends JPanel implements ActionListener {
         bottomPanel.add(cancel, gbc);
 
         JPanel test = new JPanel();
-//        test.setBorder(BorderFactory.createLineBorder(Color.black));
-        
+
         gbc = new GridBagConstraints();
         gbc = new GridBagConstraints(
                 2, 0, //GridX, GridY
@@ -239,7 +237,7 @@ public class NewDataset extends JPanel implements ActionListener {
 //</editor-fold>
         JScrollPane scrollPane = new JScrollPane(mainPanel);
         Border paneBorder = BorderFactory.createTitledBorder(
-                       BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Dataset initialization");
+                BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Dataset initialization");
         scrollPane.setBorder(paneBorder);
         //scrollPane.setBorder(new EmptyBorder(10, 10, 10, 10));
 
@@ -254,6 +252,15 @@ public class NewDataset extends JPanel implements ActionListener {
         this.add(scrollPane, gbc);
         gbc = new GridBagConstraints(0, 1, 1, 1, 1, .05, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(10, 10, 10, 10), 0, 0);
         this.add(bottomPanel, gbc);
+
+        //datasetName.requestFocus();
+//        datasetName.requestFocusInWindow();
+//        generate.requestFocusInWindow();
+        gainFocus(datasetName);
+    }
+    
+    public void gainFocus(JComponent comp){
+        comp.requestFocusInWindow();
     }
 
     @Override
@@ -268,9 +275,9 @@ public class NewDataset extends JPanel implements ActionListener {
             parent.goToHome();
         } else if (e.getSource() == generate) {
             if ("".equals(datasetName.getText())) {
-                JOptionPane.showMessageDialog(this, "The name of a dataset can not be empty.","Dataset name", JOptionPane.PLAIN_MESSAGE);
-                datasetName.setBackground(new Color(255,100,100));
-                datasetName.requestFocus();
+                JOptionPane.showMessageDialog(this, "The name of a dataset can not be empty.", "Dataset name", JOptionPane.PLAIN_MESSAGE);
+                datasetName.setBackground(new Color(255, 100, 100));
+                gainFocus(datasetName);
                 return;
             }
 

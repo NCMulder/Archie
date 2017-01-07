@@ -70,7 +70,7 @@ public class MetadataChanger extends JSplitPane implements TreeSelectionListener
             if(nodeInfo.equals(fh.filePath)){
                 //do interesting stuff here
                 updateChangerPane(fh);
-                System.out.println(nodeInfo.toString());
+                //System.out.println(nodeInfo.toString());
                 return;
             }
         }

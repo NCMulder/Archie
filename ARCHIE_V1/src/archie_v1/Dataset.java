@@ -6,10 +6,13 @@ import archie_v1.fileHelpers.DatasetInitialInformation;
 import archie_v1.fileHelpers.FileHelper;
 import archie_v1.fileHelpers.FolderHelper;
 import archie_v1.fileHelpers.MetadataContainer;
+import archie_v1.fileHelpers.ReadmeParser;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,9 +36,11 @@ public class Dataset {
     public Path mainDirectory;
     public DefaultMutableTreeNode fileTree;
     public ArrayList<FileHelper> files = new ArrayList();
-    public ArrayList<File> readmes = new ArrayList();
+    public HashMap<Path, Path> readmes = new HashMap();
     private DatasetInitialInformation dII;
     public boolean includeIslandora;
+
+    private ReadmeParser readmeParser = new ReadmeParser();
 
     ProgressPanel pP;
 
@@ -45,7 +50,7 @@ public class Dataset {
         this.includeIslandora = includeIslandora;
         this.dII = dII;
         this.pP = pP;
-        
+
         if (!fromArchie) {
             Thread tB = new Thread(new TreeBuilder(path));
             tB.start();
@@ -58,6 +63,9 @@ public class Dataset {
         } else {
             fileTree = null;
         }
+        
+        for(Entry<Path, Path> readme : readmes.entrySet())
+            System.out.println("Readme [" + readme.getValue() + "] found in [" + readme.getKey() +"]");
     }
 
     /**
@@ -89,18 +97,17 @@ public class Dataset {
     }
 
     private void createNodes(Path file, DefaultMutableTreeNode tree, FolderHelper folderH) {
-        if("readme".equals(FilenameUtils.removeExtension(file.getFileName().toString()))){
-            readmes.add(file.toFile());
+        if ("readme".equals(FilenameUtils.removeExtension(file.getFileName().toString()))) {
+            readmes.put(file.getParent(), file);
             return;
-        } else if("Thumbs.db".equals(file.getFileName().toString())){
+        } else if ("Thumbs.db".equals(file.getFileName().toString())) {
             return;
-        } else if(file.getFileName().toString().contains("datanow_meta")){
+        } else if (file.getFileName().toString().contains("datanow_meta")) {
             return;
-        } else if(file.getFileName().toString().equals(".dataNowFolderUploads_")){
+        } else if (file.getFileName().toString().equals(".dataNowFolderUploads_")) {
             return;
         }
-        
-        
+
         DefaultMutableTreeNode fileNode = new DefaultMutableTreeNode(file);
         tree.add(fileNode);
         if (file.toFile().isDirectory()) {
@@ -109,6 +116,17 @@ public class Dataset {
                 createNodes(dirFile.toPath(), fileNode, folderHelper);
             }
             folderH.children.add(folderHelper);
+
+            if (readmes.containsKey(file)) {
+                ReadmeParser rms = new ReadmeParser();
+                Path readmePath = readmes.get(file);
+                HashMap<MetadataContainer.MetadataKey, String> readmeMetadata = rms.getData(readmePath);
+
+                for (Entry<MetadataContainer.MetadataKey, String> s : readmeMetadata.entrySet()) {
+                    folderHelper.setRecord(s.getKey(), s.getValue(), true);
+                }
+            }
+
             files.add(folderHelper);
         } else {
             //possibly do this concurrently, most time lost doing this.
