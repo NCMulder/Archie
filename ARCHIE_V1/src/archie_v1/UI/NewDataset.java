@@ -89,7 +89,7 @@ public class NewDataset extends JPanel implements ActionListener {
 
         //<editor-fold defaultstate="collapsed" desc="Metadata key fields">
         int gbcy = 1;
-        for (MetadataContainer.MetadataKey metadataKey : MetadataContainer.MetadataKey.values()) {
+        for (final MetadataContainer.MetadataKey metadataKey : MetadataContainer.MetadataKey.values()) {
             if (!metadataKey.dataset) {
                 continue;
             }
@@ -108,7 +108,7 @@ public class NewDataset extends JPanel implements ActionListener {
             //Field textfield, which can be a textfield or a combobox.
             JComponent keyValue;
             if (metadataKey.settable) {
-                JTextField tobeValue = new JTextField(metadataKey.getDefaultValue(), 20);
+                final JTextField tobeValue = new JTextField(metadataKey.getDefaultValue(), 20);
                 tobeValue.setForeground(Color.LIGHT_GRAY);
                 (tobeValue.getDocument()).addDocumentListener(new DocumentListener() {
                     @Override
