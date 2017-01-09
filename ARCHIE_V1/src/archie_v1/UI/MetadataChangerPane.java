@@ -76,11 +76,11 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener{
         topPane.setBorder(BorderFactory.createEmptyBorder(10,20,20,10));
         
         //this foreach randomizes things. How to order clearly? TODO
-        for(Map.Entry<MetadataContainer.MetadataKey, String> metadata : fh.metadataContainer.metadataMap.entrySet()){
+        for(final Map.Entry<MetadataContainer.MetadataKey, String> metadata : fh.metadataContainer.metadataMap.entrySet()){
             JLabel label = new JLabel(metadata.getKey().toString());
             JComponent value; 
             if(metadata.getKey().settable){
-                JTextField tobeValue = new JTextField(metadata.getValue(), 20);
+                final JTextField tobeValue = new JTextField(metadata.getValue(), 20);
                 if(metadata.getValue().equals(metadata.getKey().getDefaultValue()))
                 tobeValue.setForeground(Color.LIGHT_GRAY);
                 (tobeValue.getDocument()).addDocumentListener(new DocumentListener() {

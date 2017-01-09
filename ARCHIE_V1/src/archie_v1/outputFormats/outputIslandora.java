@@ -288,6 +288,7 @@ public class outputIslandora extends outputAbstract {
         subject.addContent(topic);
         
         //Not for all files...
+        
 //        String[] temps = fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.TemporalCoverage).split(" - ");
 //        
 //        Element temporalStart = new Element("temporal", rootNamespace);
