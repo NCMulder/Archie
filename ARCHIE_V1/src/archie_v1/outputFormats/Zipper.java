@@ -59,7 +59,7 @@ public class Zipper {
     private String[] checkDuplicateNames(Path path) {
         int version = 0;
         String fileName = FilenameUtils.removeExtension(path.getFileName().toString());
-        String fileExtension = fileName.replace(path.toString(), "");
+        String fileExtension = path.getFileName().toString().replace(fileName, "");
         while (names.contains(fileName)) {
             if (version != 0) {
                 fileName = fileName.substring(0, fileName.length() - 3);
