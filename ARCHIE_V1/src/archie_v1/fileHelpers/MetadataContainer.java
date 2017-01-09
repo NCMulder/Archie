@@ -1,11 +1,14 @@
 //License
 package archie_v1.fileHelpers;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.prefs.Preferences;
 
 public class MetadataContainer {
     
     public LinkedHashMap<MetadataKey, String> metadataMap;
+    public static HashMap<MetadataKey, String> defaultValues;
     public Boolean includeIslandora, includeDANS;
     public static String toas[] = {"None","Dr.","Drs.","Prof.","MSc","BSc"};
     public static String langs[] = {"English","French","German","Dutch","Spanish","Other"};
@@ -53,36 +56,36 @@ public class MetadataContainer {
     public boolean settable = true, dataset = true, file = true;
     
     MetadataKey(String defaultValue){
-        this.defaultValue = defaultValue;
+        setDefaultValue(defaultValue);
     }
     
     MetadataKey(String defaultValue, boolean dataset, boolean file){
-        this.defaultValue = defaultValue;
+        setDefaultValue(defaultValue);
         this.dataset = dataset;
         this.file = file;
     }
     
     MetadataKey(String text, String defaultValue){
         this.keyText = text;
-        this.defaultValue = defaultValue;
+        setDefaultValue(defaultValue);
     }
     
     MetadataKey(String text, String defaultValue, boolean dataset, boolean file){
         this.keyText = text;
-        this.defaultValue = defaultValue;
+        setDefaultValue(defaultValue);
         this.dataset = dataset;
         this.file = file;
     }
     
     MetadataKey(boolean settable, String[] setOptions){
         this.settable = settable;
-        this.defaultValue = setOptions[0];
+        setDefaultValue(defaultValue);
         this.setOptions = setOptions;
     }
     
     MetadataKey(boolean settable, String[] setOptions, boolean dataset, boolean file){
         this.settable = settable;
-        this.defaultValue = setOptions[0];
+        setDefaultValue(defaultValue);
         this.setOptions = setOptions;
         this.dataset = dataset;
         this.file = file;
@@ -90,14 +93,14 @@ public class MetadataContainer {
     
     MetadataKey(String text, boolean settable, String[] setOptions){
         this.keyText = text;
-        this.defaultValue = setOptions[0];
+        setDefaultValue(defaultValue);
         this.settable = settable;
         this.setOptions = setOptions;
     }
     
     MetadataKey(String text, boolean settable, String[] setOptions, boolean dataset, boolean file){
         this.keyText = text;
-        this.defaultValue = setOptions[0];
+        setDefaultValue(defaultValue);
         this.settable = settable;
         this.setOptions = setOptions;
         this.dataset = dataset;
@@ -116,6 +119,11 @@ public class MetadataContainer {
     public String getDefaultValue(){
         return defaultValue;
     }
+    
+    private void setDefaultValue(String value){
+        Preferences prefs = Preferences.userNodeForPackage(this.getClass());
+        defaultValue = prefs.get(name(), value);
+    }
                             
     public static String[] names(){
         MetadataKey[] keys = values();
@@ -130,6 +138,13 @@ public class MetadataContainer {
     public MetadataContainer(boolean includeIslandora){
         this.includeIslandora = includeIslandora;
         metadataMap = new LinkedHashMap();
+//        defaultValues = new HashMap();
+//        
+//        Preferences prefs = Preferences.userNodeForPackage(this.getClass());
+//        
+//        for(MetadataKey mdKey : MetadataKey.values()){
+//            defaultValues.put(mdKey, prefs.get(mdKey.name(), ""));
+//        }
     }
     
     public MetadataContainer(boolean includeIslandora, boolean includeDANS){

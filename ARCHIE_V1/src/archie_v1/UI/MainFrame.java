@@ -33,10 +33,11 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class MainFrame extends JFrame implements ActionListener {
 
     ArchieUIManager parent;
-    public JComponent mainPanel;
-    public JPanel welcome, working;
-    JSplitPane metadatachanger;
-    JMenuItem toIslandora, toDANS, toArchieXML;
+    private JComponent mainPanel;
+    public JComponent prevPanel;
+    public JPanel welcome, working, preferences;
+    public JSplitPane metadatachanger;
+    JMenuItem toIslandora, toDANS, toArchieXML, editPrefs;
     public JMenu export;
 
     public MainFrame(ArchieUIManager parent) {
@@ -59,7 +60,9 @@ public class MainFrame extends JFrame implements ActionListener {
 
         // loading welcome screen
         welcome = new WelcomeScreen();
+        prevPanel = welcome;
         working = WorkingOnItPanel(10);
+        preferences = new PreferenceChanger(this);
 
         mainPanel = welcome;
         this.add(mainPanel, BorderLayout.CENTER);
@@ -113,9 +116,30 @@ public class MainFrame extends JFrame implements ActionListener {
         dataSet.add(export);
 
         menuBar.add(dataSet);
+        
+        JMenu preferencesMenu = new JMenu("Preferences");
+        preferencesMenu.setPreferredSize(new Dimension(100, 40));
+        preferencesMenu.setFont(new Font(dataSet.getFont().getFontName(), dataSet.getFont().getStyle(), 16));
+        preferencesMenu.setIconTextGap(8);
+        
+        editPrefs = new JMenuItem("Edit preferences");
+        editPrefs.addActionListener(this);
+        preferencesMenu.add(editPrefs);
+        
+        menuBar.add(preferencesMenu);
 
         this.setJMenuBar(menuBar);
         //todo: more menu imps, event listeners
+    }
+    
+    public void ChangeMainPanel(JComponent newPanel){
+        if(!(newPanel.getClass() == mainPanel.getClass()))
+            prevPanel = mainPanel;
+        remove(mainPanel);
+        mainPanel = newPanel;
+        add(mainPanel, BorderLayout.CENTER);
+        pack();
+        repaint();
     }
 
     @Override
@@ -123,11 +147,12 @@ public class MainFrame extends JFrame implements ActionListener {
 
         if (e.getActionCommand() == "From directory") {
             NewDataset nds = new NewDataset(this);
-            this.remove(mainPanel);
-            mainPanel = nds;
-            this.add(mainPanel);
-            this.pack();
+            ChangeMainPanel(nds);
             nds.gainFocus(nds.datasetName);
+        } else if (e.getSource() == editPrefs){
+            PreferenceChanger pfc = new PreferenceChanger(this);
+            preferences = pfc;
+            ChangeMainPanel(preferences);
         } else if (e.getSource() == toIslandora) {
             if (mainPanel instanceof MetadataChanger) {
                 try {
@@ -183,10 +208,7 @@ public class MainFrame extends JFrame implements ActionListener {
 
     public void goToHome() {
         //todo: better home screen implementation? recent files, etc
-        this.remove(mainPanel);
         welcome = new WelcomeScreen();
-        mainPanel = welcome;
-        this.add(mainPanel, BorderLayout.CENTER);
-        this.pack();
+        ChangeMainPanel(welcome);
     }
 }

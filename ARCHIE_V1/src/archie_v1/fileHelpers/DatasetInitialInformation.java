@@ -20,6 +20,8 @@ public class DatasetInitialInformation {
     public DatasetInitialInformation(){
         initInfo = new LinkedHashMap();
         initKeys = new LinkedList();
+        MetadataContainer mdc = new MetadataContainer(true);
+        
         initKeys.add(MetadataContainer.MetadataKey.CreatorTOA);
         initKeys.add(MetadataContainer.MetadataKey.CreatorName);
         initKeys.add(MetadataContainer.MetadataKey.CreatorIdentifier);

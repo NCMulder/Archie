@@ -306,11 +306,9 @@ public class NewDataset extends JPanel implements ActionListener {
             }
 
             //Setting the mainpanel to a progresspanel
-            parent.remove(parent.mainPanel);
+            
             parent.working = parent.WorkingOnItPanel(fileCount);
-            parent.mainPanel = parent.working;
-            parent.add(parent.mainPanel, BorderLayout.CENTER);
-            parent.pack();
+            parent.ChangeMainPanel(parent.working);
 
             //Storing initial data
             for (Map.Entry<MetadataContainer.MetadataKey, JComponent> keyComponent : keyToText.entrySet()) {
@@ -323,10 +321,11 @@ public class NewDataset extends JPanel implements ActionListener {
 
             //Setting the mainpanel to a metadatachanger
             parent.metadatachanger = new MetadataChanger(datasetName.getText(), path, false, true, dataII, (ProgressPanel) parent.working);
-            parent.remove(parent.mainPanel);
-            parent.mainPanel = parent.metadatachanger;
-            parent.add(parent.mainPanel, BorderLayout.CENTER);
+            parent.ChangeMainPanel(parent.metadatachanger);
             parent.export.setEnabled(true);
+            
+            
+            //CHECK THIS
             parent.validate();
             parent.pack();
         }

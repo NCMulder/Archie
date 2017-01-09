@@ -3,9 +3,14 @@ package archie_v1;
 
 import archie_v1.UI.ArchieUIManager;
 import archie_v1.fileHelpers.*;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.apache.commons.io.FilenameUtils;
@@ -14,6 +19,13 @@ public class ARCHIE {
     static ArchieUIManager ui;
 
     public static void main(String[] args) {
+        //User preferences
+        
+        Preferences prefs = Preferences.userNodeForPackage(MetadataContainer.MetadataKey.class);
+        prefs.put("Publisher", "hahatesttitel");
+        
+        
+        
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
