@@ -287,19 +287,20 @@ public class outputIslandora extends outputAbstract {
         topic.setText(fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.Subject));
         subject.addContent(topic);
         
-        String[] temps = fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.TemporalCoverage).split(" - ");
-        
-        Element temporalStart = new Element("temporal", rootNamespace);
-        temporalStart.setAttribute("point", "start");
-        temporalStart.setText(temps[0].replace(" ", ""));
-        subject.addContent(temporalStart);
-        
-        if(temps.length>1){
-            Element temporalEnd = new Element("temporal", rootNamespace);
-            temporalEnd.setAttribute("point", "end");
-            temporalEnd.setText(temps[1].replace(" ",""));
-            subject.addContent(temporalEnd);
-        }
+        //Not for all files...
+//        String[] temps = fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.TemporalCoverage).split(" - ");
+//        
+//        Element temporalStart = new Element("temporal", rootNamespace);
+//        temporalStart.setAttribute("point", "start");
+//        temporalStart.setText(temps[0].replace(" ", ""));
+//        subject.addContent(temporalStart);
+//        
+//        if(temps.length>1){
+//            Element temporalEnd = new Element("temporal", rootNamespace);
+//            temporalEnd.setAttribute("point", "end");
+//            temporalEnd.setText(temps[1].replace(" ",""));
+//            subject.addContent(temporalEnd);
+//        }
         
         String[] coords = fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.SpatialCoverage).split(";");
         Element cartographics = new Element("cartographics", rootNamespace);

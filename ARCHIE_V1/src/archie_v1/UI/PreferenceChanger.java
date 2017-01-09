@@ -7,11 +7,16 @@ package archie_v1.UI;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
 
 /**
  *
@@ -26,7 +31,16 @@ public class PreferenceChanger extends JPanel implements ActionListener{
         this.parent = parent;
         this.setLayout(new BorderLayout());
         
-        JPanel options = new JPanel(new GridLayout(0,1));
+        JPanel options = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        options.setBorder(new EmptyBorder(10,10,10,10));
+        
+        JLabel textSize = new JLabel("Text size");
+        addAsPanel(textSize, options);
+        
+        JLabel language = new JLabel("Language");
+        addAsPanel(language, options);
+        
         
         JPanel test = new JPanel();
         defaultValuesButton = new JButton("Change default values");
@@ -38,7 +52,7 @@ public class PreferenceChanger extends JPanel implements ActionListener{
         options.add(test);
         
         
-        this.add(options, BorderLayout.CENTER);
+        this.add(options, BorderLayout.WEST);
         
         JPanel bottom = new JPanel();
         
@@ -53,6 +67,12 @@ public class PreferenceChanger extends JPanel implements ActionListener{
         bottom.add(reset);
         
         this.add(bottom, BorderLayout.SOUTH);
+    }
+    
+    private void addAsPanel(JComponent toAdd, JComponent toAddTo){
+        JPanel temp = new JPanel();
+        temp.add(toAdd);
+        toAddTo.add(temp);
     }
 
     @Override

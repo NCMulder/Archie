@@ -84,7 +84,7 @@ public class MetadataChanger extends JSplitPane implements TreeSelectionListener
     
     private void createUI(){
         this.orientation = JSplitPane.HORIZONTAL_SPLIT;
-        this.setResizeWeight(0.5);
+        this.setResizeWeight(0.2);
         
         UITree = new JTree(dataset.fileTree) {
             @Override
