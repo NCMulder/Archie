@@ -82,13 +82,15 @@ public abstract class FileHelper {
             inputstream = new FileInputStream(filePath.toFile());
         } catch (FileNotFoundException ex) {
             Logger.getLogger(FileHelper.class.getName()).log(Level.SEVERE, null, ex);
+            return basedata;
         }
         ParseContext context = new ParseContext();
 
         try {
             parser.parse(inputstream, handler, metadataTemp, context);
         } catch (IOException | SAXException | TikaException ex) {
-            Logger.getLogger(FileHelper.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Tika error debugger: " + filePath);
+            Logger.getLogger(FileHelper.class.getName()).log(Level.SEVERE, null, "test");
         }
 
         String[] names = metadataTemp.names();

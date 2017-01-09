@@ -7,15 +7,21 @@ import archie_v1.fileHelpers.FileHelper;
 import archie_v1.fileHelpers.FolderHelper;
 import archie_v1.fileHelpers.MetadataContainer;
 import archie_v1.fileHelpers.ReadmeParser;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.apache.commons.io.FilenameUtils;
@@ -39,6 +45,9 @@ public class Dataset {
     public HashMap<Path, Path> readmes = new HashMap();
     private DatasetInitialInformation dII;
     public boolean includeIslandora;
+    
+    //Debugging
+    private ArrayList<String> probfiles = new ArrayList();
 
     private ReadmeParser readmeParser = new ReadmeParser();
 
@@ -64,8 +73,27 @@ public class Dataset {
             fileTree = null;
         }
         
-        for(Entry<Path, Path> readme : readmes.entrySet())
-            System.out.println("Readme [" + readme.getValue() + "] found in [" + readme.getKey() +"]");
+        
+        //Temporary debugging.
+        
+        String test = "There was a problem parsing the following files:\n\n";
+        for(String s : probfiles){
+            test+=s+"\n";
+        }
+        //System.out.println(test);
+        
+        try {
+            File archielog = new File("Archie(o)Lo(o)g.txt");
+            BufferedWriter writer = new BufferedWriter(new FileWriter(archielog));
+            writer.write("Log file for dataset " + name + "\n\n");
+            writer.write(test);
+            writer.close();
+        } catch (IOException ex) {
+            Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        test+="Please report this error, enclosing all problematic file names.\nA log file has been saved to the ARCHIE directory.";
+        
+        JOptionPane.showMessageDialog(pP, test);
     }
 
     /**
@@ -107,10 +135,22 @@ public class Dataset {
         } else if (file.getFileName().toString().equals(".dataNowFolderUploads_")) {
             return;
         }
+        
+        //Removing problematic filetypes:
+        String[] errFiles = {".zip",".cache", ".svn-base", };
+        String fileType = file.getFileName().toString().replace(FilenameUtils.removeExtension(file.getFileName().toString()), "");
+        if(Arrays.asList(errFiles).contains(fileType)){
+            return;
+        }
 
         DefaultMutableTreeNode fileNode = new DefaultMutableTreeNode(file);
         tree.add(fileNode);
         if (file.toFile().isDirectory()) {
+            if(file.toFile().listFiles()==null){
+                System.out.println("nullexeperror for file " + file.getFileName());
+                probfiles.add(file.toString());
+                return;
+            }
             FolderHelper folderHelper = new FolderHelper(file, includeIslandora);
             for (File dirFile : file.toFile().listFiles()) {
                 createNodes(dirFile.toPath(), fileNode, folderHelper);
