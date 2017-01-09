@@ -10,3 +10,7 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+ARCHIE_V1/dist/ARCHIE_1.7.zip
+ARCHIE_V1/output.xml
+ARCHIE_V1/test/
