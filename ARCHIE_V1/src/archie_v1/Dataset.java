@@ -45,7 +45,7 @@ public class Dataset {
     public HashMap<Path, Path> readmes = new HashMap();
     private DatasetInitialInformation dII;
     public boolean includeIslandora;
-    
+
     //Debugging
     private ArrayList<String> probfiles = new ArrayList();
 
@@ -72,28 +72,28 @@ public class Dataset {
         } else {
             fileTree = null;
         }
-        
-        
+
         //Temporary debugging.
-        
-        String test = "There was a problem parsing the following files:\n\n";
-        for(String s : probfiles){
-            test+=s+"\n";
+        if (!probfiles.isEmpty()) {
+            String test = "There was a problem parsing the following files:\n\n";
+            for (String s : probfiles) {
+                test += s + "\n";
+            }
+            //System.out.println(test);
+
+            try {
+                File archielog = new File("Archie(o)Lo(o)g.txt");
+                BufferedWriter writer = new BufferedWriter(new FileWriter(archielog));
+                writer.write("Log file for dataset " + name + "\n\n");
+                writer.write(test);
+                writer.close();
+            } catch (IOException ex) {
+                Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            test += "\nPlease report this error, enclosing all problematic file names.\nA log file has been saved to the ARCHIE directory.";
+
+            JOptionPane.showMessageDialog(pP, test);
         }
-        //System.out.println(test);
-        
-        try {
-            File archielog = new File("Archie(o)Lo(o)g.txt");
-            BufferedWriter writer = new BufferedWriter(new FileWriter(archielog));
-            writer.write("Log file for dataset " + name + "\n\n");
-            writer.write(test);
-            writer.close();
-        } catch (IOException ex) {
-            Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        test+="Please report this error, enclosing all problematic file names.\nA log file has been saved to the ARCHIE directory.";
-        
-        JOptionPane.showMessageDialog(pP, test);
     }
 
     /**
@@ -125,6 +125,9 @@ public class Dataset {
     }
 
     private void createNodes(Path file, DefaultMutableTreeNode tree, FolderHelper folderH) {
+            if (null != pP) {
+                pP.pingProgBar();
+            }
         if ("readme".equals(FilenameUtils.removeExtension(file.getFileName().toString()))) {
             readmes.put(file.getParent(), file);
             return;
@@ -135,18 +138,18 @@ public class Dataset {
         } else if (file.getFileName().toString().equals(".dataNowFolderUploads_")) {
             return;
         }
-        
+
         //Removing problematic filetypes:
-        String[] errFiles = {".zip",".cache", ".svn-base", };
+        String[] errFiles = {".zip", ".cache", ".svn-base",};
         String fileType = file.getFileName().toString().replace(FilenameUtils.removeExtension(file.getFileName().toString()), "");
-        if(Arrays.asList(errFiles).contains(fileType)){
+        if (Arrays.asList(errFiles).contains(fileType)) {
             return;
         }
 
         DefaultMutableTreeNode fileNode = new DefaultMutableTreeNode(file);
         tree.add(fileNode);
         if (file.toFile().isDirectory()) {
-            if(file.toFile().listFiles()==null){
+            if (file.toFile().listFiles() == null) {
                 System.out.println("nullexeperror for file " + file.getFileName());
                 probfiles.add(file.toString());
                 return;
@@ -175,9 +178,6 @@ public class Dataset {
             files.add(fileHelper);
 
             //WIP
-            if (null != pP) {
-                pP.pingProgBar();
-            }
         }
     }
 

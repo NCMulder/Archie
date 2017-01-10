@@ -19,13 +19,18 @@ import javax.swing.border.EmptyBorder;
  */
 public class ProgressPanel extends JPanel{
     JProgressBar progBar;
-    int taskLength;
+    JLabel wOIL;
+    int taskLength, progress = 0;
+    float interval;
+    String fileText = "0 / 0", baseText = "<html>Generating metadata...<br > File ";
         
     public ProgressPanel(int taskLength){
         this.taskLength = taskLength;
+        interval = 100/taskLength;
         this.setDoubleBuffered(true);
         this.setLayout(new BorderLayout());
-        JLabel wOIL = new JLabel("Generating metadata...", SwingConstants.CENTER);
+        fileText = progress + " / " + taskLength;
+        wOIL = new JLabel(baseText + fileText, SwingConstants.CENTER);
         Font ft = new Font("Helvetica", 36, 36);
         wOIL.setFont(ft);
         wOIL.setBorder(new EmptyBorder(100,0,0,0));
@@ -37,9 +42,15 @@ public class ProgressPanel extends JPanel{
     }
     
     public void pingProgBar(){
-        progBar.setValue(progBar.getValue() + 1);
-        //redo this concurrently.
-        super.paint(super.getGraphics());
+        progress++;
+        fileText = progress + " / " + taskLength;
+        wOIL.setText(baseText + fileText);
+        //if(interval < 1 || progress%(int)interval==0){
+            progBar.setValue(progress);
+            System.out.println("pbv: " + progBar.getValue());
+            //redo this concurrently.
+            super.paint(super.getGraphics());
+        //}
     }
     
     public void setProgBar(int value){

@@ -34,6 +34,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 
 //Currently using a borderlayout for the panel as a whole, with a gridbaglayout within a scrollpane for the data fields
 //at the center and a gridbaglayout with the main buttons at the page end. Would like to change the main panel to 
@@ -284,26 +286,28 @@ public class NewDataset extends JPanel implements ActionListener {
             //Start generating the metadata and UI.
             Path path = Paths.get(locText.getText());
 
+            int fileCount = FileUtils.listFilesAndDirs(path.toFile(), TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size();
+            
             //Counting number of files
-            int fileCount = 0;
-            if (path.toFile().isDirectory()) {
-                Stack<File> dirs = new Stack();
-                dirs.add(path.toFile());
-
-                while (!dirs.empty()) {
-                    File dir = dirs.pop();
-                    if (dir.listFiles() == null) {
-                        continue;
-                    }
-                    for (File f : dir.listFiles()) {
-                        if (f.isDirectory()) {
-                            dirs.push(f);
-                        } else {
-                            fileCount++;
-                        }
-                    }
-                }
-            }
+//            int fileCount = 0;
+//            if (path.toFile().isDirectory()) {
+//                Stack<File> dirs = new Stack();
+//                dirs.add(path.toFile());
+//
+//                while (!dirs.empty()) {
+//                    File dir = dirs.pop();
+//                    if (dir.listFiles() == null) {
+//                        continue;
+//                    }
+//                    for (File f : dir.listFiles()) {
+//                        if (f.isDirectory()) {
+//                            dirs.push(f);
+//                        } else {
+//                            fileCount++;
+//                        }
+//                    }
+//                }
+//            }
 
             //Setting the mainpanel to a progresspanel
             
