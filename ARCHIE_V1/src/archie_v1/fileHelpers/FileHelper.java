@@ -59,7 +59,6 @@ public abstract class FileHelper {
         if (!(this instanceof FolderHelper)) {
             metadata = getMetaData();
             setRecord(MetadataContainer.MetadataKey.Title, FilenameUtils.removeExtension(filePath.getFileName().toString()), false, true);
-            setRecord(MetadataContainer.MetadataKey.Identifier, filePath.toString(), false, true);
             setRecord(MetadataContainer.MetadataKey.FileContentType, "." + FilenameUtils.getExtension(filePath.toString()) + " file", false, true);
         }
 

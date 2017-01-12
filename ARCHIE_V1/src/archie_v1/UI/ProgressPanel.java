@@ -7,6 +7,7 @@ package archie_v1.UI;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
+import java.awt.GridLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
@@ -17,43 +18,54 @@ import javax.swing.border.EmptyBorder;
  *
  * @author N.C. Mulder <n.c.mulder at students.uu.nl>
  */
-public class ProgressPanel extends JPanel{
-    JProgressBar progBar;
-    JLabel wOIL;
-    int taskLength, progress = 0;
-    float interval;
-    String fileText = "0 / 0", baseText = "<html>Generating metadata...<br > File ";
-        
-    public ProgressPanel(int taskLength){
-        this.taskLength = taskLength;
-        interval = 100/taskLength;
-        this.setDoubleBuffered(true);
-        this.setLayout(new BorderLayout());
-        fileText = progress + " / " + taskLength;
-        wOIL = new JLabel(baseText + fileText, SwingConstants.CENTER);
-        Font ft = new Font("Helvetica", 36, 36);
-        wOIL.setFont(ft);
-        wOIL.setBorder(new EmptyBorder(100,0,0,0));
+public class ProgressPanel extends JPanel {
 
-        this.add(wOIL, BorderLayout.NORTH);
+    JProgressBar progBar;
+    JLabel progressLabel;
+    int taskLength, progress = 0;
+    String fileText = "File 0 / 0", baseText = "Generating metadata...";
+
+    public ProgressPanel(int taskLength) {
+        this.taskLength = taskLength;
         
+        SetupUI();
+    }
+    
+    private void SetupUI(){
+        this.setLayout(new BorderLayout());
+
+        Font ft = new Font("Helvetica", 36, 36);
+        fileText = "File " + progress + " / " + taskLength;
+
+        JLabel baseLabel = new JLabel(baseText, SwingConstants.CENTER);
+        baseLabel.setFont(ft);
+        baseLabel.setBorder(new EmptyBorder(100, 0, 0, 0));
+
+        progressLabel = new JLabel(fileText, SwingConstants.CENTER);
+        progressLabel.setFont(ft);
+        progressLabel.setBorder(new EmptyBorder(100, 0, 0, 0));
+
+        JPanel textPane = new JPanel(new GridLayout(0, 1));
+        textPane.add(baseLabel);
+        textPane.add(progressLabel);
+
+        this.add(textPane, BorderLayout.NORTH);
+
         progBar = new JProgressBar(0, taskLength);
         this.add(progBar, BorderLayout.SOUTH);
     }
-    
-    public void pingProgBar(){
+
+    public void pingProgBar() {
         progress++;
-        fileText = progress + " / " + taskLength;
-        wOIL.setText(baseText + fileText);
-        //if(interval < 1 || progress%(int)interval==0){
-            progBar.setValue(progress);
-            System.out.println("pbv: " + progBar.getValue());
-            //redo this concurrently.
-            super.paint(super.getGraphics());
-        //}
+        fileText = "File " + progress + " / " + taskLength;
+        progressLabel.setText(fileText);
+        progBar.setValue(progress);
+        
+        //REDO TODO WIP: Very bad code smell. Make concurrently so paint is called automaticaaly (or at least repaint suffices).
+        super.paint(super.getGraphics());
     }
-    
-    public void setProgBar(int value){
+
+    public void setProgBar(int value) {
         progBar.setValue(value);
     }
 }

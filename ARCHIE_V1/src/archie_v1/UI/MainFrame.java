@@ -39,6 +39,7 @@ public class MainFrame extends JFrame implements ActionListener {
     public JSplitPane metadatachanger;
     JMenuItem toIslandora, toDANS, toArchieXML, editPrefs;
     public JMenu export;
+    private JMenuItem tempMenuItem;
 
     public MainFrame(ArchieUIManager parent) {
         // base init
@@ -127,6 +128,10 @@ public class MainFrame extends JFrame implements ActionListener {
         preferencesMenu.add(editPrefs);
         
         menuBar.add(preferencesMenu);
+        
+        tempMenuItem = new JMenuItem("testing");
+        tempMenuItem.addActionListener(this);
+        menuBar.add(tempMenuItem);
 
         this.setJMenuBar(menuBar);
         //todo: more menu imps, event listeners
@@ -149,6 +154,12 @@ public class MainFrame extends JFrame implements ActionListener {
             NewDataset nds = new NewDataset(this);
             ChangeMainPanel(nds);
             nds.gainFocus(nds.datasetName);
+        } else if (e.getSource()==tempMenuItem){
+            //Temp menu item exists for testing purposes only.
+          SetPart sp = new SetPart(SetPart.Role.Contributor);
+          Object[] buttons  = {"Add","Cancel"};
+          int result = JOptionPane.showOptionDialog(this, sp, "Role addition", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
+          //ChangeMainPanel(sp);
         } else if (e.getSource() == editPrefs){
             PreferenceChanger pfc = new PreferenceChanger(this);
             preferences = pfc;
