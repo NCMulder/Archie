@@ -44,7 +44,7 @@ public class MainFrame extends JFrame implements ActionListener {
     public MainFrame(ArchieUIManager parent) {
         // base init
         this.parent = parent;
-        
+
         this.setTitle("Archie");
         String imagePath = "/resources/icon2.png";
         try {
@@ -53,7 +53,7 @@ public class MainFrame extends JFrame implements ActionListener {
         } catch (IOException ex) {
             Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         this.setLayout(new BorderLayout());
         this.setPreferredSize(new Dimension(1000, 800));
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -117,18 +117,18 @@ public class MainFrame extends JFrame implements ActionListener {
         dataSet.add(export);
 
         menuBar.add(dataSet);
-        
+
         JMenu preferencesMenu = new JMenu("Preferences");
         preferencesMenu.setPreferredSize(new Dimension(100, 40));
         preferencesMenu.setFont(new Font(dataSet.getFont().getFontName(), dataSet.getFont().getStyle(), 16));
         preferencesMenu.setIconTextGap(8);
-        
+
         editPrefs = new JMenuItem("Edit preferences");
         editPrefs.addActionListener(this);
         preferencesMenu.add(editPrefs);
-        
+
         menuBar.add(preferencesMenu);
-        
+
         tempMenuItem = new JMenuItem("testing");
         tempMenuItem.addActionListener(this);
         menuBar.add(tempMenuItem);
@@ -136,10 +136,11 @@ public class MainFrame extends JFrame implements ActionListener {
         this.setJMenuBar(menuBar);
         //todo: more menu imps, event listeners
     }
-    
-    public void ChangeMainPanel(JComponent newPanel){
-        if(!(newPanel.getClass() == mainPanel.getClass()))
+
+    public void ChangeMainPanel(JComponent newPanel) {
+        if (!(newPanel.getClass() == mainPanel.getClass())) {
             prevPanel = mainPanel;
+        }
         remove(mainPanel);
         mainPanel = newPanel;
         add(mainPanel, BorderLayout.CENTER);
@@ -154,13 +155,16 @@ public class MainFrame extends JFrame implements ActionListener {
             NewDataset nds = new NewDataset(this);
             ChangeMainPanel(nds);
             nds.gainFocus(nds.datasetName);
-        } else if (e.getSource()==tempMenuItem){
+        } else if (e.getSource() == tempMenuItem) {
             //Temp menu item exists for testing purposes only.
-          SetPart sp = new SetPart(SetPart.Role.Contributor);
-          Object[] buttons  = {"Add","Cancel"};
-          int result = JOptionPane.showOptionDialog(this, sp, "Role addition", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
-          //ChangeMainPanel(sp);
-        } else if (e.getSource() == editPrefs){
+            String[] test = {"Voornaam Achternaam;Jantje Pietje;Prof Dr Fransen","123;456;789","UU;UL;RUN"};
+            AddablePanel ap = new AddablePanel("Creator", "Creators", test);
+            ChangeMainPanel(ap);
+//            SetPart sp = new SetPart(SetPart.Role.Contributor);
+//            Object[] buttons = {"Add", "Cancel"};
+//            int result = JOptionPane.showOptionDialog(this, sp, "Role addition", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
+            //ChangeMainPanel(sp);
+        } else if (e.getSource() == editPrefs) {
             PreferenceChanger pfc = new PreferenceChanger(this);
             preferences = pfc;
             ChangeMainPanel(preferences);

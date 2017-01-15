@@ -2,7 +2,10 @@
 package archie_v1.UI;
 
 import archie_v1.fileHelpers.DatasetInitialInformation;
+import archie_v1.fileHelpers.FileHelper;
+import archie_v1.fileHelpers.FolderHelper;
 import archie_v1.fileHelpers.MetadataContainer;
+import archie_v1.fileHelpers.basicFile;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -67,6 +70,10 @@ public class NewDataset extends JPanel implements ActionListener {
         //Panel setup
         JPanel mainPanel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
+        
+        FileHelper datasetHelper = new FolderHelper(Paths.get("C:\\Users\\niels\\Documents\\Archie\\Testset\\testset"), true, true);
+        
+        MetadataChangerFields fields = new MetadataChangerFields(datasetHelper);
 
         // <editor-fold defaultstate="collapsed" desc="Dataset name fields">
         //Dataset name fields
