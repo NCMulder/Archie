@@ -5,7 +5,7 @@ import archie_v1.UI.ProgressPanel;
 import archie_v1.fileHelpers.DatasetInitialInformation;
 import archie_v1.fileHelpers.FileHelper;
 import archie_v1.fileHelpers.FolderHelper;
-import archie_v1.fileHelpers.MetadataContainer;
+import archie_v1.fileHelpers.MetadataKey;
 import archie_v1.fileHelpers.ReadmeParser;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -109,7 +109,7 @@ public class Dataset {
         }
         files.add(folderHelper);
 
-        for (Map.Entry<MetadataContainer.MetadataKey, String> kvPair : dII.initInfo.entrySet()) {
+        for (Map.Entry<MetadataKey, String> kvPair : dII.initInfo.entrySet()) {
             folderHelper.setRecord(kvPair.getKey(), kvPair.getValue(), false, true);
         }
         fileTree = dirTree;
@@ -163,9 +163,9 @@ public class Dataset {
             if (readmes.containsKey(file)) {
                 ReadmeParser rms = new ReadmeParser();
                 Path readmePath = readmes.get(file);
-                HashMap<MetadataContainer.MetadataKey, String> readmeMetadata = rms.getData(readmePath);
+                HashMap<MetadataKey, String> readmeMetadata = rms.getData(readmePath);
 
-                for (Entry<MetadataContainer.MetadataKey, String> s : readmeMetadata.entrySet()) {
+                for (Entry<MetadataKey, String> s : readmeMetadata.entrySet()) {
                     if(folderHelper.metadataMap.containsKey(s.getKey()))
                     folderHelper.setRecord(s.getKey(), s.getValue(), true);
                 }

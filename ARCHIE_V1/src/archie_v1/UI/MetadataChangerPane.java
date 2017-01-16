@@ -3,7 +3,7 @@ package archie_v1.UI;
 
 import archie_v1.fileHelpers.FileHelper;
 import archie_v1.fileHelpers.FolderHelper;
-import archie_v1.fileHelpers.MetadataContainer;
+import archie_v1.fileHelpers.MetadataKey;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Map;
@@ -68,7 +68,7 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener {
     }
 
     private void saveToFileHelper(boolean hardSet) {
-        for (Map.Entry<MetadataContainer.MetadataKey, JComponent> metadataKeyTextEntry : topPane.labelText.entrySet()) {
+        for (Map.Entry<MetadataKey, JComponent> metadataKeyTextEntry : topPane.labelText.entrySet()) {
             String value = (metadataKeyTextEntry.getKey().settable) ? ((JTextField) metadataKeyTextEntry.getValue()).getText() : ((JComboBox) metadataKeyTextEntry.getValue()).getSelectedItem().toString();
             fileHelper.setRecord(metadataKeyTextEntry.getKey(), value, hardSet);
         }

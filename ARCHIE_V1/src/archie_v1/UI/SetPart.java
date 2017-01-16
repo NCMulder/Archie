@@ -5,7 +5,7 @@
  */
 package archie_v1.UI;
 
-import archie_v1.fileHelpers.MetadataContainer;
+import archie_v1.fileHelpers.MetadataKey;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -198,32 +198,32 @@ public class SetPart extends JPanel {
         }
     }
 
-    public HashMap<MetadataContainer.MetadataKey, String> getInfo() {
-        HashMap<MetadataContainer.MetadataKey, String> info = new HashMap();
+    public HashMap<MetadataKey, String> getInfo() {
+        HashMap<MetadataKey, String> info = new HashMap();
 
         switch (role) {
             case Creator:
                 //Todo: differentiate between ID types
-                info.put(MetadataContainer.MetadataKey.CreatorIdentifier, idComboBox.getSelectedItem().toString() + " " + idField.getText());
-                info.put(MetadataContainer.MetadataKey.CreatorTOA, toaField.getText());
+                info.put(MetadataKey.CreatorIdentifier, idComboBox.getSelectedItem().toString() + " " + idField.getText());
+                info.put(MetadataKey.CreatorTOA, toaField.getText());
                 //Todo: differentiate between name parts
-                info.put(MetadataContainer.MetadataKey.CreatorName, nameGivenField.getText() + " " + nameFamilyField.getText());
-                info.put(MetadataContainer.MetadataKey.CreatorAffiliation, affiliationField.getText());
+                info.put(MetadataKey.CreatorName, nameGivenField.getText() + " " + nameFamilyField.getText());
+                info.put(MetadataKey.CreatorAffiliation, affiliationField.getText());
                 break;
             case Contributor:
                 //Todo: differentiate between ID types
-                info.put(MetadataContainer.MetadataKey.ContributorIdentifier, idComboBox.getSelectedItem().toString() + " " + idField.getText());
-                info.put(MetadataContainer.MetadataKey.ContributorTOA, toaField.getText());
+                info.put(MetadataKey.ContributorIdentifier, idComboBox.getSelectedItem().toString() + " " + idField.getText());
+                info.put(MetadataKey.ContributorTOA, toaField.getText());
                 //Todo: differentiate between name parts
-                info.put(MetadataContainer.MetadataKey.ContributorName, nameGivenField.getText() + " " + nameFamilyField.getText());
-                info.put(MetadataContainer.MetadataKey.ContributorAffiliation, affiliationField.getText());
+                info.put(MetadataKey.ContributorName, nameGivenField.getText() + " " + nameFamilyField.getText());
+                info.put(MetadataKey.ContributorAffiliation, affiliationField.getText());
                 break;
             case Subject:
-                info.put(MetadataContainer.MetadataKey.Subject, subjectField.getText());
+                info.put(MetadataKey.Subject, subjectField.getText());
                 break;
             case RelatedDataset:
-                info.put(MetadataContainer.MetadataKey.RelatedDatasetName, relatedDatasetNameField.getText());
-                info.put(MetadataContainer.MetadataKey.RelatedDatasetLocation, relatedDatasetLocationField.getText());
+                info.put(MetadataKey.RelatedDatasetName, relatedDatasetNameField.getText());
+                info.put(MetadataKey.RelatedDatasetLocation, relatedDatasetLocationField.getText());
                 break;
         }
 

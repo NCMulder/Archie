@@ -3,7 +3,7 @@ package archie_v1.UI;
 
 import archie_v1.fileHelpers.DatasetInitialInformation;
 import archie_v1.fileHelpers.FolderHelper;
-import archie_v1.fileHelpers.MetadataContainer;
+import archie_v1.fileHelpers.MetadataKey;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -94,7 +94,7 @@ public class NewDataset extends JPanel implements ActionListener {
         if (e.getSource() == cancel) {
             parent.goToHome();
         } else if (e.getSource() == generate) {
-            String datasetName = datasetHelper.metadataMap.get(MetadataContainer.MetadataKey.DatasetTitle);
+            String datasetName = datasetHelper.metadataMap.get(MetadataKey.DatasetTitle);
             if ("".equals(datasetName)) {
                 JOptionPane.showMessageDialog(this, "The name of a dataset can not be empty.", "Dataset name", JOptionPane.PLAIN_MESSAGE);
                 return;
@@ -112,7 +112,7 @@ public class NewDataset extends JPanel implements ActionListener {
             parent.ChangeMainPanel(parent.working);
 
             //Storing initial data
-            for (Map.Entry<MetadataContainer.MetadataKey, JComponent> keyComponent : fields.labelText.entrySet()) {
+            for (Map.Entry<MetadataKey, JComponent> keyComponent : fields.labelText.entrySet()) {
                 if (keyComponent.getKey().settable) {
                     dataII.initInfo.put(keyComponent.getKey(), ((JTextField) keyComponent.getValue()).getText());
                 } else {

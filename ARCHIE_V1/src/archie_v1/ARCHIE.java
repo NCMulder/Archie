@@ -21,7 +21,7 @@ public class ARCHIE {
     public static void main(String[] args) {
         //User preferences
         
-        Preferences prefs = Preferences.userNodeForPackage(MetadataContainer.MetadataKey.class);
+        Preferences prefs = Preferences.userNodeForPackage(MetadataKey.class);
         prefs.put("Publisher", "hahatesttitel");
         
         

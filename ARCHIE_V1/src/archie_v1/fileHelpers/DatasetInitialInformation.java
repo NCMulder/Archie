@@ -14,30 +14,29 @@ import java.util.LinkedList;
  */
 public class DatasetInitialInformation {
     
-    public LinkedHashMap<MetadataContainer.MetadataKey, String> initInfo;
-    public LinkedList<MetadataContainer.MetadataKey> initKeys;
+    public LinkedHashMap<MetadataKey, String> initInfo;
+    public LinkedList<MetadataKey> initKeys;
     
     public DatasetInitialInformation(){
         initInfo = new LinkedHashMap();
         initKeys = new LinkedList();
-        MetadataContainer mdc = new MetadataContainer(true);
         
-        initKeys.add(MetadataContainer.MetadataKey.CreatorTOA);
-        initKeys.add(MetadataContainer.MetadataKey.CreatorName);
-        initKeys.add(MetadataContainer.MetadataKey.CreatorIdentifier);
-        initKeys.add(MetadataContainer.MetadataKey.CreatorAffiliation);
-        initKeys.add(MetadataContainer.MetadataKey.ContributorTOA);
-        initKeys.add(MetadataContainer.MetadataKey.ContributorName);
-        initKeys.add(MetadataContainer.MetadataKey.ContributorIdentifier);
-        initKeys.add(MetadataContainer.MetadataKey.ContributorAffiliation);
-        initKeys.add(MetadataContainer.MetadataKey.Rightsholder);
-        initKeys.add(MetadataContainer.MetadataKey.Subject);
-        initKeys.add(MetadataContainer.MetadataKey.Description);
-        initKeys.add(MetadataContainer.MetadataKey.Publisher);
-        initKeys.add(MetadataContainer.MetadataKey.Language);
-        initKeys.add(MetadataContainer.MetadataKey.TemporalCoverage);
-        initKeys.add(MetadataContainer.MetadataKey.SpatialCoverage);
-        initKeys.add(MetadataContainer.MetadataKey.AccessLevel);
+        initKeys.add(MetadataKey.CreatorTOA);
+        initKeys.add(MetadataKey.CreatorName);
+        initKeys.add(MetadataKey.CreatorIdentifier);
+        initKeys.add(MetadataKey.CreatorAffiliation);
+        initKeys.add(MetadataKey.ContributorTOA);
+        initKeys.add(MetadataKey.ContributorName);
+        initKeys.add(MetadataKey.ContributorIdentifier);
+        initKeys.add(MetadataKey.ContributorAffiliation);
+        initKeys.add(MetadataKey.Rightsholder);
+        initKeys.add(MetadataKey.Subject);
+        initKeys.add(MetadataKey.Description);
+        initKeys.add(MetadataKey.Publisher);
+        initKeys.add(MetadataKey.Language);
+        initKeys.add(MetadataKey.TemporalCoverage);
+        initKeys.add(MetadataKey.SpatialCoverage);
+        initKeys.add(MetadataKey.AccessLevel);
     }
     
 }

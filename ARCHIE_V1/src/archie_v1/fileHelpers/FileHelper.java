@@ -37,15 +37,13 @@ public abstract class FileHelper {
 
     public Path filePath;
     public Map<String, String> metadata;
-    public MetadataContainer metadataContainer;
     public LinkedList<FileHelper> children;
     public boolean root = false;
-    public LinkedHashMap<MetadataContainer.MetadataKey, String> metadataMap;
+    public LinkedHashMap<MetadataKey, String> metadataMap;
 
     public FileHelper(Path filePath, boolean Islandora) {
         metadataMap = new LinkedHashMap();
         this.filePath = filePath;
-        metadataContainer = new MetadataContainer(Islandora);
         children = new LinkedList();
 
         Initialize();
@@ -55,7 +53,6 @@ public abstract class FileHelper {
         metadataMap = new LinkedHashMap();
         this.root = root;
         this.filePath = filePath;
-        metadataContainer = new MetadataContainer(Islandora);
         children = new LinkedList();
 
         Initialize();
@@ -63,9 +60,9 @@ public abstract class FileHelper {
 
     public void Initialize() {
         if (root) {
-            for (int i = 0; i < MetadataContainer.MetadataKey.values().length; i++) {
-                if (MetadataContainer.MetadataKey.values()[i].dataset) {
-                    setRecord(MetadataContainer.MetadataKey.values()[i], MetadataContainer.MetadataKey.values()[i].getDefaultValue(), false, true);
+            for (int i = 0; i < MetadataKey.values().length; i++) {
+                if (MetadataKey.values()[i].dataset) {
+                    setRecord(MetadataKey.values()[i], MetadataKey.values()[i].getDefaultValue(), false, true);
                 }
             }
             return;
@@ -73,14 +70,14 @@ public abstract class FileHelper {
 
         if (!(this instanceof FolderHelper)) {
             metadata = getMetaData();
-            //setRecord(MetadataContainer.MetadataKey.Title, FilenameUtils.removeExtension(filePath.getFileName().toString()), false, true);
-            setRecord(MetadataContainer.MetadataKey.FileContentType, "." + FilenameUtils.getExtension(filePath.toString()) + " file", false, true);
-            setRecordThroughTika(MetadataContainer.MetadataKey.DateCreated, "date");
+            //setRecord(MetadataKey.Title, FilenameUtils.removeExtension(filePath.getFileName().toString()), false, true);
+            setRecord(MetadataKey.FileContentType, "." + FilenameUtils.getExtension(filePath.toString()) + " file", false, true);
+            setRecordThroughTika(MetadataKey.DateCreated, "date");
         }
 
-        for (int i = 0; i < MetadataContainer.MetadataKey.values().length; i++) {
-            if (MetadataContainer.MetadataKey.values()[i].file) {
-                setRecord(MetadataContainer.MetadataKey.values()[i], MetadataContainer.MetadataKey.values()[i].getDefaultValue(), false, true);
+        for (int i = 0; i < MetadataKey.values().length; i++) {
+            if (MetadataKey.values()[i].file) {
+                setRecord(MetadataKey.values()[i], MetadataKey.values()[i].getDefaultValue(), false, true);
             }
         }
     }
@@ -140,7 +137,7 @@ public abstract class FileHelper {
         return basedata;
     }
 
-    public void setRecord(MetadataContainer.MetadataKey key, String value, boolean hardSet, boolean init) {
+    public void setRecord(MetadataKey key, String value, boolean hardSet, boolean init) {
         if (!hardSet && (!key.getDefaultValue().equals(metadataMap.get(key))) && metadataMap.containsKey(key) && (!"".equals(metadataMap.get(key)))) {
             return;
         }
@@ -149,11 +146,11 @@ public abstract class FileHelper {
         }
     }
 
-    public void setRecord(MetadataContainer.MetadataKey key, String value, boolean hardSet) {
+    public void setRecord(MetadataKey key, String value, boolean hardSet) {
         setRecord(key, value, hardSet, false);
     }
 
-    public void setRecordThroughTika(MetadataContainer.MetadataKey key, String tikaString) {
+    public void setRecordThroughTika(MetadataKey key, String tikaString) {
         String tikaValue = metadata.get(tikaString);
         if (tikaValue != null) {
             metadataMap.put(key, tikaValue);

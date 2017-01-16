@@ -5,7 +5,7 @@
  */
 package archie_v1.UI;
 
-import archie_v1.fileHelpers.MetadataContainer;
+import archie_v1.fileHelpers.MetadataKey;
 import java.awt.GridLayout;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -22,7 +22,7 @@ public class AddMetadataField extends JFrame {
     
     public AddMetadataField(){
         super();
-        metadataKey = new JComboBox(MetadataContainer.MetadataKey.names());
+        metadataKey = new JComboBox(MetadataKey.names());
         metadataValue = new JTextField("your value here");
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(0,2));
