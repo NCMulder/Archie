@@ -48,6 +48,19 @@ public class ARCHIE {
             case "jpeg": 
             case "JPEG": return new pictureFile(filePath, includeIslandora);
             case "accdb": return new databaseFile(filePath, includeIslandora);
+            case "doc":
+            case "docx":
+            case "xls":
+            case "xlsx": return new xlsxFile(filePath, includeIslandora);
+            case "dbf":
+            case "pdf":
+            case "mxd":
+            case "cpg":
+            case "sbn":
+            case "sbx":
+            case "shp":
+            case "shx":
+            case "png":
             default: return new basicFile(filePath, includeIslandora);
         }
     }

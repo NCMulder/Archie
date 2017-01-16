@@ -9,6 +9,8 @@ public class pictureFile extends FileHelper {
     public pictureFile(Path filePath, boolean Islandora) {
         super(filePath, Islandora);
         setRecordThroughTika(MetadataContainer.MetadataKey.DateCreated, "dcterms:created");
-        setRecordThroughTika(MetadataContainer.MetadataKey.Subject, "Scene Type");
+        setRecordThroughTika(MetadataContainer.MetadataKey.Subject, "User Comment");
+        setRecordThroughTika(MetadataContainer.MetadataKey.FileSize, "File Size");
+        setRecordThroughTika(MetadataContainer.MetadataKey.FileDescription, "title");
     }
 }

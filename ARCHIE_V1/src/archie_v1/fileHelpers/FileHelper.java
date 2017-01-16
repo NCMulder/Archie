@@ -1,13 +1,25 @@
 //License header
 package archie_v1.fileHelpers;
 
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FilenameUtils;
@@ -28,8 +40,10 @@ public abstract class FileHelper {
     public MetadataContainer metadataContainer;
     public LinkedList<FileHelper> children;
     public boolean root = false;
+    public LinkedHashMap<MetadataContainer.MetadataKey, String> metadataMap;
 
     public FileHelper(Path filePath, boolean Islandora) {
+        metadataMap = new LinkedHashMap();
         this.filePath = filePath;
         metadataContainer = new MetadataContainer(Islandora);
         children = new LinkedList();
@@ -38,6 +52,7 @@ public abstract class FileHelper {
     }
     
     public FileHelper(Path filePath, boolean Islandora, boolean root){
+        metadataMap = new LinkedHashMap();
         this.root = root;
         this.filePath = filePath;
         metadataContainer = new MetadataContainer(Islandora);
@@ -58,8 +73,9 @@ public abstract class FileHelper {
 
         if (!(this instanceof FolderHelper)) {
             metadata = getMetaData();
-            setRecord(MetadataContainer.MetadataKey.Title, FilenameUtils.removeExtension(filePath.getFileName().toString()), false, true);
+            //setRecord(MetadataContainer.MetadataKey.Title, FilenameUtils.removeExtension(filePath.getFileName().toString()), false, true);
             setRecord(MetadataContainer.MetadataKey.FileContentType, "." + FilenameUtils.getExtension(filePath.toString()) + " file", false, true);
+            setRecordThroughTika(MetadataContainer.MetadataKey.DateCreated, "date");
         }
 
         for (int i = 0; i < MetadataContainer.MetadataKey.values().length; i++) {
@@ -71,7 +87,7 @@ public abstract class FileHelper {
 
     //Helper functions for all filehandlers.
     public Map<String, String> getMetaData() {
-        Map basedata = new HashMap<>();
+        HashMap<String, String> basedata = new HashMap();
 
         Parser parser = new AutoDetectParser();
         BodyContentHandler handler = new BodyContentHandler(-1);
@@ -96,16 +112,40 @@ public abstract class FileHelper {
         for (String metaType : names) {
             basedata.put(metaType, metadataTemp.get(metaType));
         }
+        
+        try{
+            (new File("temp")).mkdirs();
+            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("temp/" + filePath.getFileName() + "_tika.txt")));
+            
+            for(Map.Entry<String, String> kvPair : basedata.entrySet()){
+                out.println("[" + kvPair.getKey() + "] : " + kvPair.getValue());
+            }
+            
+            out.close();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+        
+//        try{
+//            (new File("temp")).mkdirs();
+//            FileOutputStream fileOut = new FileOutputStream("temp/" + filePath.getFileName() + "_tika.txt");
+//            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+//            out.writeObject(basedata);
+//            out.close();
+//            fileOut.close();
+//        } catch (IOException e){
+//            e.printStackTrace();
+//        }
 
         return basedata;
     }
 
     public void setRecord(MetadataContainer.MetadataKey key, String value, boolean hardSet, boolean init) {
-        if (!hardSet && (!key.getDefaultValue().equals(metadataContainer.metadataMap.get(key))) && metadataContainer.metadataMap.containsKey(key) && (!"".equals(metadataContainer.metadataMap.get(key)))) {
+        if (!hardSet && (!key.getDefaultValue().equals(metadataMap.get(key))) && metadataMap.containsKey(key) && (!"".equals(metadataMap.get(key)))) {
             return;
         }
-        if (init || metadataContainer.metadataMap.containsKey(key)) {
-            metadataContainer.metadataMap.put(key, value);
+        if (init || metadataMap.containsKey(key)) {
+            metadataMap.put(key, value);
         }
     }
 
@@ -116,7 +156,7 @@ public abstract class FileHelper {
     public void setRecordThroughTika(MetadataContainer.MetadataKey key, String tikaString) {
         String tikaValue = metadata.get(tikaString);
         if (tikaValue != null) {
-            metadataContainer.metadataMap.put(key, tikaValue);
+            metadataMap.put(key, tikaValue);
         }
     }
 }

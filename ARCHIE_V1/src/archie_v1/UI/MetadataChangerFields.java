@@ -14,11 +14,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -31,15 +31,30 @@ import javax.swing.JTextField;
  */
 public class MetadataChangerFields extends JScrollPane implements ActionListener{
     
-    private int panelY;
+    public int panelY;
     private JButton addCreator, addContributor, addSubject, addRelatedDataset;
     private FileHelper fileHelper;
+    private boolean newDataset = false;
+    
+    public String datasetLocation = null;
     
     public HashMap<MetadataContainer.MetadataKey, JComponent> labelText;
+    public JTextField datasetLocationField;
+    private JButton chooseButton;
     
     public MetadataChangerFields(FileHelper fileHelper){
         this.fileHelper = fileHelper;
         labelText = new HashMap();
+        
+        resetPane();
+    }
+    
+    public MetadataChangerFields(FileHelper fileHelper, boolean newDataset){
+        this.fileHelper = fileHelper;
+        labelText = new HashMap();
+        
+        this.newDataset = true;
+        this.datasetLocation = "C:\\Users\\niels\\Documents\\Archie\\Testset\\testset";
         
         resetPane();
     }
@@ -54,8 +69,38 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
 
         panelY = 0;
 
-        for (MetadataContainer.MetadataKey key : fileHelper.metadataContainer.metadataMap.keySet()) {
+        for (MetadataContainer.MetadataKey key : fileHelper.metadataMap.keySet()) {
             createValueFields(key, panel);
+        }
+        
+        if(newDataset){
+            JLabel label = new JLabel("Dataset location");
+            GridBagConstraints gbc = new GridBagConstraints(
+                    0, panelY, //GridX, GridY
+                    2, 1, //GridWidth, GridHeight
+                    .4, 1, //WeightX, WeightY
+                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, //Anchor, Fill
+                    new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
+            panel.add(label, gbc);
+            
+            datasetLocationField = new JTextField(datasetLocation);
+            gbc = new GridBagConstraints(
+                    2, panelY, //GridX, GridY
+                    2, 1, //GridWidth, GridHeight
+                    .3, 1, //WeightX, WeightY
+                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, //Anchor, Fill
+                    new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
+            panel.add(datasetLocationField, gbc);
+            
+            chooseButton = new JButton("Choose");
+            chooseButton.addActionListener(this);
+            gbc = new GridBagConstraints(
+                    4, panelY, //GridX, GridY
+                    1, 1, //GridWidth, GridHeight
+                    .3, 1, //WeightX, WeightY
+                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, //Anchor, Fill
+                    new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
+            panel.add(chooseButton, gbc);
         }
 
         return panel;
@@ -80,20 +125,20 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
         switch (key) {
             case CreatorName:
                 String[] creatorStrings
-                        = {fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.CreatorTOA),
-                            fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.CreatorName),
-                            fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.CreatorIdentifier),
-                            fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.CreatorAffiliation)};
+                        = {fileHelper.metadataMap.get(MetadataContainer.MetadataKey.CreatorTOA),
+                            fileHelper.metadataMap.get(MetadataContainer.MetadataKey.CreatorName),
+                            fileHelper.metadataMap.get(MetadataContainer.MetadataKey.CreatorIdentifier),
+                            fileHelper.metadataMap.get(MetadataContainer.MetadataKey.CreatorAffiliation)};
                 AddablePanel creatorPanel = createAddable(parent, "Creator", "Creators", creatorStrings);
                 addCreator = creatorPanel.addItem;
                 addCreator.addActionListener(this);
                 return creatorPanel;
             case ContributorName:
                 String[] contributorStrings
-                        = {fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.ContributorTOA),
-                            fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.ContributorName),
-                            fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.ContributorIdentifier),
-                            fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.ContributorAffiliation)};
+                        = {fileHelper.metadataMap.get(MetadataContainer.MetadataKey.ContributorTOA),
+                            fileHelper.metadataMap.get(MetadataContainer.MetadataKey.ContributorName),
+                            fileHelper.metadataMap.get(MetadataContainer.MetadataKey.ContributorIdentifier),
+                            fileHelper.metadataMap.get(MetadataContainer.MetadataKey.ContributorAffiliation)};
                 AddablePanel contributorPanel = createAddable(parent, "Contributor", "Contributors", contributorStrings);
                 addContributor = contributorPanel.addItem;
                 addContributor.addActionListener(this);
@@ -106,15 +151,15 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
             case ContributorAffiliation:
                 return null;
             case Subject:
-                String[] subjectStrings = {fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.Subject)};
+                String[] subjectStrings = {fileHelper.metadataMap.get(MetadataContainer.MetadataKey.Subject)};
                 AddablePanel subjectPanel = createAddable(parent, "Subject", "Subjects", subjectStrings);
                 addSubject = subjectPanel.addItem;
                 addSubject.addActionListener(this);
                 return subjectPanel;
             case RelatedDatasetName:
                 String[] relatedDatasetStrings
-                        = {fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.RelatedDatasetName),
-                            fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.RelatedDatasetLocation)};
+                        = {fileHelper.metadataMap.get(MetadataContainer.MetadataKey.RelatedDatasetName),
+                            fileHelper.metadataMap.get(MetadataContainer.MetadataKey.RelatedDatasetLocation)};
                 AddablePanel relatedDatasetPanel = createAddable(parent, "Related dataset", "Related datasets", relatedDatasetStrings);
                 addRelatedDataset = relatedDatasetPanel.addItem;
                 addRelatedDataset.addActionListener(this);
@@ -131,9 +176,9 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 parent.add(label, gbc);
 
-                JComponent value = (key.settable) ? new JTextField(fileHelper.metadataContainer.metadataMap.get(key), 20) : new JComboBox(key.getSetOptions());
+                JComponent value = (key.settable) ? new JTextField(fileHelper.metadataMap.get(key), 20) : new JComboBox(key.getSetOptions());
                 if (!key.settable) {
-                    ((JComboBox) value).setSelectedItem(fileHelper.metadataContainer.metadataMap.get(key));
+                    ((JComboBox) value).setSelectedItem(fileHelper.metadataMap.get(key));
                 }
                 gbc = new GridBagConstraints(
                         2, panelY++, //GridX, GridY
@@ -170,9 +215,16 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
             int result = JOptionPane.showOptionDialog(this, sp, title, JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
                 if (result == JOptionPane.OK_OPTION) {
                 for (Map.Entry<MetadataContainer.MetadataKey, String> metadata : sp.getInfo().entrySet()) {
-                    fileHelper.setRecord(metadata.getKey(), fileHelper.metadataContainer.metadataMap.get(metadata.getKey()) + ";" + metadata.getValue(), true);
+                    fileHelper.setRecord(metadata.getKey(), fileHelper.metadataMap.get(metadata.getKey()) + ";" + metadata.getValue(), true);
                 }
                 resetPane();
+            }
+        } else if (e.getSource() == chooseButton){
+            JFileChooser fileChooser = new JFileChooser(datasetLocation);
+            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            int status = fileChooser.showOpenDialog(this);
+            if (status == JFileChooser.APPROVE_OPTION) {
+                datasetLocationField.setText(fileChooser.getSelectedFile().toString());
             }
         } else {
             System.out.println(e.getSource());

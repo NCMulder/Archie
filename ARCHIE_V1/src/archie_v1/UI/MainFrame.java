@@ -154,7 +154,6 @@ public class MainFrame extends JFrame implements ActionListener {
         if (e.getActionCommand() == "From directory") {
             NewDataset nds = new NewDataset(this);
             ChangeMainPanel(nds);
-            nds.gainFocus(nds.datasetName);
         } else if (e.getSource() == tempMenuItem) {
             //Temp menu item exists for testing purposes only.
             String[] test = {"Voornaam Achternaam;Jantje Pietje;Prof Dr Fransen","123;456;789","UU;UL;RUN"};

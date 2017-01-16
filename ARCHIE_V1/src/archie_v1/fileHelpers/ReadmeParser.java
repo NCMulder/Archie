@@ -61,7 +61,7 @@ public class ReadmeParser {
                         break;
                     case "title":
                         if (item) {
-                            putInDictionary(dict, MetadataContainer.MetadataKey.Title, keyValue[1].replace("\"", "").replaceAll(",$", ""));
+                            //putInDictionary(dict, MetadataContainer.MetadataKey.Title, keyValue[1].replace("\"", "").replaceAll(",$", ""));
                         } else if (creator) {
                             putInDictionary(dict, MetadataContainer.MetadataKey.CreatorTOA, keyValue[1].replaceAll(",$", ""));
                         } else if (contributor) {

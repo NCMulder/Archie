@@ -117,7 +117,7 @@ public class outputIslandora extends outputAbstract {
     public LinkedList<Element> getMODSElements(FileHelper fileHelper) {
         LinkedList<Element> elementList = new LinkedList();
 
-        elementList.add(getTitle(fileHelper));
+        //elementList.add(getTitle(fileHelper));
         elementList.add(getIdentifier(fileHelper));
         elementList.add(getCreator(fileHelper));
         elementList.addAll(Arrays.asList(getContributors(fileHelper)));
@@ -140,7 +140,7 @@ public class outputIslandora extends outputAbstract {
         //Can be extracted directly from the filepath.
         Element titleInfo = new Element("titleInfo", rootNamespace);
         Element title = new Element("title", rootNamespace);
-        title.setText(fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.Title));
+        title.setText(fileHelper.metadataMap.get(MetadataContainer.MetadataKey.FileUnits));
         titleInfo.addContent(title);
 
         return titleInfo;
@@ -149,12 +149,12 @@ public class outputIslandora extends outputAbstract {
     public Element getIdentifier(FileHelper fileHelper) {
         Element identifier = new Element("identifier", rootNamespace);
         identifier.setAttribute("type", "doi");
-        identifier.setText(fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.Identifier));
+        identifier.setText(fileHelper.metadataMap.get(MetadataContainer.MetadataKey.Identifier));
         return identifier;
     }
 
     public Element getCreator(FileHelper fileHelper) {
-        Element[] names = nameHandler(fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.CreatorName), fileHelper);
+        Element[] names = nameHandler(fileHelper.metadataMap.get(MetadataContainer.MetadataKey.CreatorName), fileHelper);
 
         Element name = new Element("name", rootNamespace);
         name.setAttribute("type", "personal");
@@ -168,7 +168,7 @@ public class outputIslandora extends outputAbstract {
         role.addContent(roleTerm);
         name.addContent(role);
 
-        String TOA = fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.CreatorTOA);
+        String TOA = fileHelper.metadataMap.get(MetadataContainer.MetadataKey.CreatorTOA);
         if (!"None".equals(TOA)) {
             Element namePartTOA = new Element("namePart", rootNamespace);
             namePartTOA.setAttribute("type", "termsOfAdress");
@@ -181,21 +181,21 @@ public class outputIslandora extends outputAbstract {
         //How do we implement name identifiers?
         Element nameIdentifier = new Element("nameIdentifier", rootNamespace);
         nameIdentifier.setAttribute("type", "DAI");
-        nameIdentifier.setText(fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.CreatorIdentifier));
+        nameIdentifier.setText(fileHelper.metadataMap.get(MetadataContainer.MetadataKey.CreatorIdentifier));
         name.addContent(nameIdentifier);
 
         Element affiliation = new Element("affiliation", rootNamespace);
-        affiliation.setText(fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.CreatorAffiliation));
+        affiliation.setText(fileHelper.metadataMap.get(MetadataContainer.MetadataKey.CreatorAffiliation));
         name.addContent(affiliation);
 
         return name;
     }
 
     public Element[] getContributors(FileHelper fileHelper) {
-        String[] contributorTOA = fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.ContributorTOA).split(";");
-        String[] contributorNames = fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.ContributorName).split(";");
-        String[] contributorIdentifier = fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.ContributorIdentifier).split(";");
-        String[] contributorAffiliation = fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.ContributorAffiliation).split(";");
+        String[] contributorTOA = fileHelper.metadataMap.get(MetadataContainer.MetadataKey.ContributorTOA).split(";");
+        String[] contributorNames = fileHelper.metadataMap.get(MetadataContainer.MetadataKey.ContributorName).split(";");
+        String[] contributorIdentifier = fileHelper.metadataMap.get(MetadataContainer.MetadataKey.ContributorIdentifier).split(";");
+        String[] contributorAffiliation = fileHelper.metadataMap.get(MetadataContainer.MetadataKey.ContributorAffiliation).split(";");
         Element[] contributors = new Element[contributorNames.length];
 
         for (int i = 0; i < contributorNames.length; i++) {
@@ -265,7 +265,7 @@ public class outputIslandora extends outputAbstract {
         
         Element relatedTitleInfo = new Element("titleInfo", rootNamespace);
         Element relatedTitle = new Element("title", rootNamespace);
-        relatedTitle.setText(fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.RelatedDatasetName));
+        relatedTitle.setText(fileHelper.metadataMap.get(MetadataContainer.MetadataKey.RelatedDatasetName));
         relatedTitleInfo.addContent(relatedTitle);
         relatedItem.addContent(relatedTitleInfo);
         
@@ -273,7 +273,7 @@ public class outputIslandora extends outputAbstract {
         Element relatedURL = new Element("url", rootNamespace);
         //is this really necessary?
         relatedURL.setAttribute("usage","primary");
-        relatedURL.setText(fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.RelatedDatasetLocation));
+        relatedURL.setText(fileHelper.metadataMap.get(MetadataContainer.MetadataKey.RelatedDatasetLocation));
         relatedLocation.addContent(relatedURL);
         relatedItem.addContent(relatedLocation);
         
@@ -284,7 +284,7 @@ public class outputIslandora extends outputAbstract {
         Element subject = new Element("subject", rootNamespace);
         
         Element topic = new Element("topic", rootNamespace);
-        topic.setText(fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.Subject));
+        topic.setText(fileHelper.metadataMap.get(MetadataContainer.MetadataKey.Subject));
         subject.addContent(topic);
         
         //Not for all files...
@@ -303,7 +303,7 @@ public class outputIslandora extends outputAbstract {
 //            subject.addContent(temporalEnd);
 //        }
         
-        String[] coords = fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.SpatialCoverage).split(";");
+        String[] coords = fileHelper.metadataMap.get(MetadataContainer.MetadataKey.SpatialCoverage).split(";");
         Element cartographics = new Element("cartographics", rootNamespace);
         for(String coord : coords){
             Element coordinates = new Element("coordinates", rootNamespace);
@@ -317,7 +317,7 @@ public class outputIslandora extends outputAbstract {
 
     public Element getAbstract(FileHelper fileHelper) {
         Element abstractEl = new Element("abstract", rootNamespace);
-        abstractEl.setText(fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.Description));
+        abstractEl.setText(fileHelper.metadataMap.get(MetadataContainer.MetadataKey.Description));
         
         return abstractEl;
     }
@@ -325,10 +325,10 @@ public class outputIslandora extends outputAbstract {
     public Element getOriginInfo(FileHelper fileHelper) {
         Element originInfo = new Element("originInfo", rootNamespace);
         Element publisher = new Element("publisher", rootNamespace);
-        publisher.setText(fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.Publisher));
+        publisher.setText(fileHelper.metadataMap.get(MetadataContainer.MetadataKey.Publisher));
         originInfo.addContent(publisher);
         Element creationDate = new Element("dateCreated", rootNamespace);
-        creationDate.setText(fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.DateCreated));
+        creationDate.setText(fileHelper.metadataMap.get(MetadataContainer.MetadataKey.DateCreated));
         originInfo.addContent(creationDate);
 
         return originInfo;
@@ -353,7 +353,7 @@ public class outputIslandora extends outputAbstract {
         Element languageTerm = new Element("languageTerm", rootNamespace);
         //todo: redo languages from text to code
         languageTerm.setAttribute("type","text");
-        languageTerm.setText(fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.Language));
+        languageTerm.setText(fileHelper.metadataMap.get(MetadataContainer.MetadataKey.Language));
         language.addContent(languageTerm);
         
         return language;
@@ -361,7 +361,7 @@ public class outputIslandora extends outputAbstract {
 
     public Element getAccessLevel(FileHelper fileHelper) {
         Element accessCondition = new Element("accessCondition", rootNamespace);
-        accessCondition.setText(fileHelper.metadataContainer.metadataMap.get(MetadataContainer.MetadataKey.AccessLevel));
+        accessCondition.setText(fileHelper.metadataMap.get(MetadataContainer.MetadataKey.AccessLevel));
         
         return accessCondition;
     }

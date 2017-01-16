@@ -166,7 +166,7 @@ public class Dataset {
                 HashMap<MetadataContainer.MetadataKey, String> readmeMetadata = rms.getData(readmePath);
 
                 for (Entry<MetadataContainer.MetadataKey, String> s : readmeMetadata.entrySet()) {
-                    if(folderHelper.metadataContainer.metadataMap.containsKey(s.getKey()))
+                    if(folderHelper.metadataMap.containsKey(s.getKey()))
                     folderHelper.setRecord(s.getKey(), s.getValue(), true);
                 }
             }
