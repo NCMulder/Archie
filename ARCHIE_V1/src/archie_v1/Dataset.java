@@ -12,17 +12,14 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
-import javax.swing.JProgressBar;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.apache.commons.io.FilenameUtils;
 import org.jdom2.Document;
@@ -109,9 +106,9 @@ public class Dataset {
         }
         files.add(folderHelper);
 
-        for (Map.Entry<MetadataKey, String> kvPair : dII.initInfo.entrySet()) {
-            folderHelper.setRecord(kvPair.getKey(), kvPair.getValue(), false, true);
-        }
+//        for (Map.Entry<MetadataKey, String> kvPair : dII.initInfo.entrySet()) {
+//            folderHelper.setRecord(kvPair.getKey(), kvPair.getValue(), false, true);
+//        }
         fileTree = dirTree;
     }
 

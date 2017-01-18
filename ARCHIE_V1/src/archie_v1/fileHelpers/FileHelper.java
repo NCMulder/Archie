@@ -5,21 +5,14 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.FilenameUtils;
@@ -29,8 +22,6 @@ import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.sax.BodyContentHandler;
-import org.jdom2.Element;
-import org.jdom2.Namespace;
 import org.xml.sax.SAXException;
 
 public abstract class FileHelper {
@@ -138,7 +129,7 @@ public abstract class FileHelper {
     }
 
     public void setRecord(MetadataKey key, String value, boolean hardSet, boolean init) {
-        if (!hardSet && (!key.getDefaultValue().equals(metadataMap.get(key))) && metadataMap.containsKey(key) && (!"".equals(metadataMap.get(key)))) {
+        if (!hardSet && metadataMap.containsKey(key) && (!"".equals(metadataMap.get(key)))) {
             return;
         }
         if (init || metadataMap.containsKey(key)) {

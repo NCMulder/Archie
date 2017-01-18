@@ -14,7 +14,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 
 /**
  *
@@ -25,8 +24,8 @@ public class SetPart extends JPanel {
     private String[] identifierTypes = {"DAI", "ORCID", "ISNI"};
     public JComboBox idComboBox;
 
-    public JTextField idField, toaField, nameGivenField, nameFamilyField, affiliationField;
-    public JTextField subjectField, relatedDatasetNameField, relatedDatasetLocationField;
+    public ArchieTextField idField, toaField, nameGivenField, nameFamilyField, affiliationField;
+    public ArchieTextField subjectField, relatedDatasetNameField, relatedDatasetLocationField;
     private Addable role;
 
     public enum Addable {
@@ -64,7 +63,7 @@ public class SetPart extends JPanel {
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 this.add(idComboBox, gbc);
 
-                idField = new JTextField(20);
+                idField = new ArchieTextField(20, "E.G. " + MetadataKey.CreatorIdentifier.getDefaultValue());
                 gbc = new GridBagConstraints(
                         3, 0, //GridX, GridY
                         2, 1, //GridWidth, GridHeight
@@ -82,7 +81,7 @@ public class SetPart extends JPanel {
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 this.add(toaLabel, gbc);
 
-                toaField = new JTextField(20);
+                toaField = new ArchieTextField(20, "E.G. " + MetadataKey.CreatorTOA.getDefaultValue());
                 gbc = new GridBagConstraints(
                         2, 1, //GridX, GridY
                         3, 1, //GridWidth, GridHeight
@@ -100,7 +99,7 @@ public class SetPart extends JPanel {
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 this.add(nameLabel, gbc);
 
-                nameGivenField = new JTextField("H.F.");
+                nameGivenField = new ArchieTextField(0, "E.G. J.M.");
                 gbc = new GridBagConstraints(
                         2, 2, //GridX, GridY
                         1, 1, //GridWidth, GridHeight
@@ -109,7 +108,7 @@ public class SetPart extends JPanel {
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 this.add(nameGivenField, gbc);
 
-                nameFamilyField = new JTextField("Coninck", 20);
+                nameFamilyField = new ArchieTextField(20, "E.G. van der Scheers");
                 gbc = new GridBagConstraints(
                         3, 2, //GridX, GridY
                         2, 1, //GridWidth, GridHeight
@@ -127,7 +126,7 @@ public class SetPart extends JPanel {
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 this.add(affiliationLabel, gbc);
 
-                affiliationField = new JTextField(20);
+                affiliationField = new ArchieTextField(20, "E.G. " + MetadataKey.CreatorAffiliation.getDefaultValue());
                 gbc = new GridBagConstraints(
                         2, 3, //GridX, GridY
                         3, 1, //GridWidth, GridHeight
@@ -147,7 +146,7 @@ public class SetPart extends JPanel {
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 this.add(subjectLabel, gbc);
 
-                subjectField = new JTextField(20);
+                subjectField = new ArchieTextField(20, "E.G. " + MetadataKey.Subject.getDefaultValue());
                 gbc = new GridBagConstraints(
                         2, 0, //GridX, GridY
                         3, 1, //GridWidth, GridHeight
@@ -167,7 +166,7 @@ public class SetPart extends JPanel {
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 this.add(relatedDatasetNameLabel, gbc);
 
-                relatedDatasetNameField = new JTextField(20);
+                relatedDatasetNameField = new ArchieTextField(20, "E.G. " + MetadataKey.RelatedDatasetName.getDefaultValue());
                 gbc = new GridBagConstraints(
                         2, 0, //GridX, GridY
                         3, 1, //GridWidth, GridHeight
@@ -185,7 +184,7 @@ public class SetPart extends JPanel {
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 this.add(relatedDatasetLocationLabel, gbc);
 
-                relatedDatasetLocationField = new JTextField(20);
+                relatedDatasetLocationField = new ArchieTextField(20, "E.G. " + MetadataKey.RelatedDatasetLocation.getDefaultValue());
                 gbc = new GridBagConstraints(
                         2, 1, //GridX, GridY
                         3, 1, //GridWidth, GridHeight

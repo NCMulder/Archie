@@ -12,6 +12,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.BorderFactory;
@@ -23,7 +24,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
 
 /**
  *
@@ -39,7 +39,7 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
     public String datasetLocation = null;
     
     public HashMap<MetadataKey, JComponent> labelText;
-    public JTextField datasetLocationField;
+    public ArchieTextField datasetLocationField;
     private JButton chooseButton;
     
     public MetadataChangerFields(FileHelper fileHelper){
@@ -83,7 +83,7 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
                     new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
             panel.add(label, gbc);
             
-            datasetLocationField = new JTextField(datasetLocation);
+            datasetLocationField = new ArchieTextField(datasetLocation);
             gbc = new GridBagConstraints(
                     2, panelY, //GridX, GridY
                     2, 1, //GridWidth, GridHeight
@@ -176,9 +176,12 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 parent.add(label, gbc);
 
-                JComponent value = (key.settable) ? new JTextField(fileHelper.metadataMap.get(key), 20) : new JComboBox(key.getSetOptions());
+                JComponent value = (key.settable) ? new ArchieTextField(20, "E.G. " + key.getDefaultValue()) : new JComboBox(key.getSetOptions());
                 if (!key.settable) {
-                    ((JComboBox) value).setSelectedItem(fileHelper.metadataMap.get(key));
+                    if(Arrays.asList(key.getSetOptions()).contains(fileHelper.metadataMap.get(key)))
+                        ((JComboBox) value).setSelectedItem(fileHelper.metadataMap.get(key));
+                    else
+                        ((JComboBox) value).setSelectedIndex(0);
                 }
                 gbc = new GridBagConstraints(
                         2, panelY++, //GridX, GridY
@@ -215,7 +218,14 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
             int result = JOptionPane.showOptionDialog(this, sp, title, JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
                 if (result == JOptionPane.OK_OPTION) {
                 for (Map.Entry<MetadataKey, String> metadata : sp.getInfo().entrySet()) {
-                    fileHelper.setRecord(metadata.getKey(), fileHelper.metadataMap.get(metadata.getKey()) + ";" + metadata.getValue(), true);
+                    if(metadata.getValue()==null || metadata.getKey() == null)
+                        System.out.println("OOOOOOOOOOOOOOOOOOOOOOh");
+                    if(fileHelper.metadataMap.containsKey(metadata.getKey())){
+                        System.out.println("OOOOOOOOOOOOOOOOOOOOOOh");
+                        System.out.println(fileHelper.metadataMap.get(metadata.getKey()));
+                    }
+                    String previousRecord = (fileHelper.metadataMap.get(metadata.getKey()) != null)? fileHelper.metadataMap.get(metadata.getKey()) + ";" : "";
+                    fileHelper.setRecord(metadata.getKey(), previousRecord + metadata.getValue(), true);
                 }
                 resetPane();
             }

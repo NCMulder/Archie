@@ -17,7 +17,6 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 
@@ -114,7 +113,7 @@ public class NewDataset extends JPanel implements ActionListener {
             //Storing initial data
             for (Map.Entry<MetadataKey, JComponent> keyComponent : fields.labelText.entrySet()) {
                 if (keyComponent.getKey().settable) {
-                    dataII.initInfo.put(keyComponent.getKey(), ((JTextField) keyComponent.getValue()).getText());
+                    dataII.initInfo.put(keyComponent.getKey(), ((ArchieTextField) keyComponent.getValue()).getText());
                 } else {
                     dataII.initInfo.put(keyComponent.getKey(), ((JComboBox) keyComponent.getValue()).getSelectedItem().toString());
                 }

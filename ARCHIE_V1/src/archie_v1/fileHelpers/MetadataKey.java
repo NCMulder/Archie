@@ -16,28 +16,28 @@ import java.util.prefs.Preferences;
 public enum MetadataKey {
     DatasetTitle("Dataset Title", "Dataset_01", true, false),
     /*Title("unknown", false, true),*/
-    Identifier("DOI1:0.1006/jmbi.1995.0238", true, false),
-    CreatorName("Creator name", "J.M. de Vries"),
-    CreatorAffiliation("Creator affiliation", "Universiteit Leiden"),
-    CreatorTOA("Creator Terms of Adress", "Dr."),
-    CreatorIdentifier("Creator identifier", "DAI_1"),
-    ContributorName("Contributor name", "J.M. de Vries; A.F. Cornelis"),
-    ContributorAffiliation("Contributor affiliation", "Universiteit Leiden; UCLA"),
-    ContributorTOA("Contributor TOA", "None; Dr."),
-    ContributorIdentifier("Contributor identifier", "DAI_1; DAI_2"),
-    RelatedDatasetName("Related dataset name", "Dataset_01", true, false),
-    RelatedDatasetLocation("Related dataset location", "doi", true, false),
-    Subject("Short description", true, false),
-    Description("Longer description", true, false),
-    Rightsholder("Universiteit Leiden", true, false),
-    Publisher("Universiteit Leiden", true, false),
+    Identifier("Identifier","DOI1:0.1006/jmbi.1995.0238", true, false),
+    CreatorName("Creator name"),
+    CreatorAffiliation("Creator affiliation"),
+    CreatorTOA("Creator Terms of Adress"),
+    CreatorIdentifier("Creator identifier"),
+    ContributorName("Contributor name"),
+    ContributorAffiliation("Contributor affiliation"),
+    ContributorTOA("Contributor TOA"),
+    ContributorIdentifier("Contributor identifier"),
+    RelatedDatasetName("Related dataset name", true, false),
+    RelatedDatasetLocation("Related dataset location", true, false),
+    Subject(true, false),
+    Description("Description", "This dataset encompasses all pottery from Grenada, as well as several papers.", true, false),
+    Rightsholder("Rightsholder", "Universiteit Leiden", true, false),
+    Publisher("Publisher", "Universiteit Leiden", true, false),
     DateCreated("Date created", LocalDateTime.now().toLocalDate().toString()),
     /*TotalSize("Total size", "234221324 bytes", true, false),*/
     Language(false, true, false, "English", "French", "German", "Dutch", "Spanish", "Other"),
     TemporalCoverage("Temporal coverage", "-3000 - 1267", true, false),
     SpatialCoverage("Spatial coverage", "25°\"N 90°\"W; 10°\"N 90°\"W; 10°\"N 60°\"W; 25°\"N 60°\"W"),
     AccessLevel("Access level", false, true, false, "Open access", "Archaeology group", "Request permission", "Other access"),
-    Collector("J.M. de Vries; A.F. Cornelis", false, true),
+    Collector("Collector", "J.M. de Vries; A.F. Cornelis", false, true),
     FileDescription("File description", "Longer description", false, true),
     FilePurpose("File purpose", "Research/saving purpose", false, true),
     FileCollection("File collection", "format to be decided", false, true),
@@ -57,12 +57,17 @@ public enum MetadataKey {
     public boolean settable = true, dataset = true, file = true;
     public static HashMap<MetadataKey, String> defaultValues;
 
-    MetadataKey(String defaultValue) {
-        setDefaultValue(defaultValue);
+    MetadataKey(String text) {
+        this.keyText = text;
+    }
+    
+    MetadataKey(boolean dataset, boolean file){
+        this.dataset = dataset;
+        this.file = file;
     }
 
-    MetadataKey(String defaultValue, boolean dataset, boolean file) {
-        setDefaultValue(defaultValue);
+    MetadataKey(String text, boolean dataset, boolean file) {
+        this.keyText = text;
         this.dataset = dataset;
         this.file = file;
     }

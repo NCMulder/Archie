@@ -13,7 +13,6 @@ import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import javax.swing.JTextField;
 
 public class MetadataChangerPane extends JSplitPane implements ActionListener {
 
@@ -69,7 +68,9 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener {
 
     private void saveToFileHelper(boolean hardSet) {
         for (Map.Entry<MetadataKey, JComponent> metadataKeyTextEntry : topPane.labelText.entrySet()) {
-            String value = (metadataKeyTextEntry.getKey().settable) ? ((JTextField) metadataKeyTextEntry.getValue()).getText() : ((JComboBox) metadataKeyTextEntry.getValue()).getSelectedItem().toString();
+            String value = (metadataKeyTextEntry.getKey().settable) ? ((ArchieTextField) metadataKeyTextEntry.getValue()).getText() : ((JComboBox) metadataKeyTextEntry.getValue()).getSelectedItem().toString();
+            if(value==null)
+                System.out.println("OOOOOOOh");
             fileHelper.setRecord(metadataKeyTextEntry.getKey(), value, hardSet);
         }
     }
