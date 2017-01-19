@@ -14,7 +14,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -32,7 +31,6 @@ import javax.swing.JScrollPane;
 public class MetadataChangerFields extends JScrollPane implements ActionListener{
     
     public int panelY;
-    private JButton addCreator, addContributor, addSubject, addRelatedDataset;
     private FileHelper fileHelper;
     private boolean newDataset = false;
     
@@ -125,13 +123,9 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
         switch (key) {
             case CreatorName:
                 AddablePanel creatorPanel = createAddable(parent, "Creator", "Creators", MetadataKey.creatorKeys);
-//                addCreator = creatorPanel.addItem;
-//                addCreator.addActionListener(this);
                 return creatorPanel;
             case ContributorName:
                 AddablePanel contributorPanel = createAddable(parent, "Contributor", "Contributors", MetadataKey.contributorKeys);
-//                addContributor = contributorPanel.addItem;
-//                addContributor.addActionListener(this);
                 return contributorPanel;
             case CreatorIdentifier:
             case CreatorTOA:
@@ -142,13 +136,9 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
                 return null;
             case Subject:
                 AddablePanel subjectPanel = createAddable(parent, "Subject", "Subjects", MetadataKey.subjectKeys);
-//                addSubject = subjectPanel.addItem;
-//                addSubject.addActionListener(this);
                 return subjectPanel;
             case RelatedDatasetName:
                 AddablePanel relatedDatasetPanel = createAddable(parent, "Related dataset", "Related datasets", MetadataKey.relatedDatasetKeys);
-//                addRelatedDataset = relatedDatasetPanel.addItem;
-//                addRelatedDataset.addActionListener(this);
                 return relatedDatasetPanel;
             case RelatedDatasetLocation:
                 return null;
@@ -184,32 +174,6 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
 
     @Override
     public void actionPerformed(ActionEvent e) {
-//        if (e.getSource() == addCreator || e.getSource() == addContributor || e.getSource() == addSubject || e.getSource() == addRelatedDataset) {
-//            SetPart sp = null;
-//            String title = "";
-//            if (e.getSource() == addCreator) {
-//                sp = new SetPart(SetPart.Addable.Creator);
-//                title = "Creator addition";
-//            } else if (e.getSource() == addContributor){
-//                sp = new SetPart(SetPart.Addable.Contributor);
-//                title = "Contributor addition";
-//            } else if (e.getSource() == addSubject){
-//                sp = new SetPart(SetPart.Addable.Subject);
-//                title = "Subject addition";
-//            } else if (e.getSource() == addRelatedDataset){
-//                sp = new SetPart(SetPart.Addable.RelatedDataset);
-//                title = "Related dataset addition";
-//            } 
-//            Object[] buttons = {"Add", "Cancel"};
-//            int result = JOptionPane.showOptionDialog(this, sp, title, JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
-//                if (result == JOptionPane.OK_OPTION) {
-//                for (Map.Entry<MetadataKey, String> metadata : sp.getInfo().entrySet()) {
-//                    String previousRecord = (fileHelper.metadataMap.get(metadata.getKey()) != null)? fileHelper.metadataMap.get(metadata.getKey()) + ";" : "";
-//                    fileHelper.setRecord(metadata.getKey(), previousRecord + metadata.getValue(), true);
-//                }
-//                resetPane();
-//            }
-//        } else 
         if (e.getSource() == chooseButton){
             JFileChooser fileChooser = new JFileChooser(datasetLocation);
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -223,5 +187,4 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }
-    
 }
