@@ -57,6 +57,11 @@ public enum MetadataKey {
     public boolean settable = true, dataset = true, file = true;
     public static HashMap<MetadataKey, String> defaultValues;
 
+    static public MetadataKey[] creatorKeys = {CreatorName, CreatorIdentifier, CreatorTOA, CreatorAffiliation};
+    static public MetadataKey[] contributorKeys = {ContributorName, ContributorIdentifier, ContributorTOA, ContributorAffiliation};
+    static public MetadataKey[] relatedDatasetKeys = {RelatedDatasetName, RelatedDatasetLocation};
+    static public MetadataKey[] subjectKeys = {Subject};
+    
     MetadataKey(String text) {
         this.keyText = text;
     }

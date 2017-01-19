@@ -26,13 +26,13 @@ public class SetPart extends JPanel {
 
     public ArchieTextField idField, toaField, nameGivenField, nameFamilyField, affiliationField;
     public ArchieTextField subjectField, relatedDatasetNameField, relatedDatasetLocationField;
-    private Addable role;
+    private MetadataKey role;
 
     public enum Addable {
         Creator, Contributor, Subject, RelatedDataset
     };
 
-    public SetPart(Addable role) {
+    public SetPart(MetadataKey role) {
         this.role = role;
         setUI();
     }
@@ -43,8 +43,8 @@ public class SetPart extends JPanel {
         GridBagConstraints gbc = new GridBagConstraints();
 
         switch (role) {
-            case Creator:
-            case Contributor:
+            case CreatorName:
+            case ContributorName:
                 JLabel identifier = new JLabel("Identifier");
                 gbc = new GridBagConstraints(
                         0, 0, //GridX, GridY
@@ -90,7 +90,7 @@ public class SetPart extends JPanel {
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 this.add(toaField, gbc);
 
-                JLabel nameLabel = (role == Addable.Creator) ? new JLabel("Creator Name") : new JLabel("Contributor Name");
+                JLabel nameLabel = (role == MetadataKey.CreatorName) ? new JLabel("Creator Name") : new JLabel("Contributor Name");
                 gbc = new GridBagConstraints(
                         0, 2, //GridX, GridY
                         2, 1, //GridWidth, GridHeight
@@ -156,7 +156,7 @@ public class SetPart extends JPanel {
                 this.add(subjectField, gbc);
 
                 break;
-            case RelatedDataset:
+            case RelatedDatasetName:
                 JLabel relatedDatasetNameLabel = new JLabel("Dataset name");
                 gbc = new GridBagConstraints(
                         0, 0, //GridX, GridY
@@ -201,7 +201,7 @@ public class SetPart extends JPanel {
         HashMap<MetadataKey, String> info = new HashMap();
 
         switch (role) {
-            case Creator:
+            case CreatorName:
                 //Todo: differentiate between ID types
                 info.put(MetadataKey.CreatorIdentifier, idComboBox.getSelectedItem().toString() + " " + idField.getText());
                 info.put(MetadataKey.CreatorTOA, toaField.getText());
@@ -209,7 +209,7 @@ public class SetPart extends JPanel {
                 info.put(MetadataKey.CreatorName, nameGivenField.getText() + " " + nameFamilyField.getText());
                 info.put(MetadataKey.CreatorAffiliation, affiliationField.getText());
                 break;
-            case Contributor:
+            case ContributorName:
                 //Todo: differentiate between ID types
                 info.put(MetadataKey.ContributorIdentifier, idComboBox.getSelectedItem().toString() + " " + idField.getText());
                 info.put(MetadataKey.ContributorTOA, toaField.getText());
@@ -220,7 +220,7 @@ public class SetPart extends JPanel {
             case Subject:
                 info.put(MetadataKey.Subject, subjectField.getText());
                 break;
-            case RelatedDataset:
+            case RelatedDatasetName:
                 info.put(MetadataKey.RelatedDatasetName, relatedDatasetNameField.getText());
                 info.put(MetadataKey.RelatedDatasetLocation, relatedDatasetLocationField.getText());
                 break;

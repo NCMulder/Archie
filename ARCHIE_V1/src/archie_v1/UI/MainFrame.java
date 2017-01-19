@@ -1,6 +1,7 @@
 //License
 package archie_v1.UI;
 
+import archie_v1.fileHelpers.MetadataKey;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -156,9 +157,6 @@ public class MainFrame extends JFrame implements ActionListener {
             ChangeMainPanel(nds);
         } else if (e.getSource() == tempMenuItem) {
             //Temp menu item exists for testing purposes only.
-            String[] test = {"Voornaam Achternaam;Jantje Pietje;Prof Dr Fransen","123;456;789","UU;UL;RUN"};
-            AddablePanel ap = new AddablePanel("Creator", "Creators", test);
-            ChangeMainPanel(ap);
 //            SetPart sp = new SetPart(SetPart.Role.Contributor);
 //            Object[] buttons = {"Add", "Cancel"};
 //            int result = JOptionPane.showOptionDialog(this, sp, "Role addition", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
