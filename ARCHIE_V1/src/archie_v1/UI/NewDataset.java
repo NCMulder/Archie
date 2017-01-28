@@ -1,7 +1,6 @@
 //License
 package archie_v1.UI;
 
-import archie_v1.fileHelpers.DatasetInitialInformation;
 import archie_v1.fileHelpers.FolderHelper;
 import archie_v1.fileHelpers.MetadataKey;
 import java.awt.GridBagConstraints;
@@ -28,27 +27,25 @@ public class NewDataset extends JPanel implements ActionListener {
 
     private JButton generate, cancel;
     private MainFrame parent;
-    private DatasetInitialInformation dataII = new DatasetInitialInformation();
     private MetadataChangerFields fields;
     private FolderHelper datasetHelper;
 
     public NewDataset(MainFrame parent) {
         this.parent = parent;
+        datasetHelper = new FolderHelper(Paths.get("C:\\Users\\niels\\Documents\\Archie\\Testset\\testset"), true, true);
         createUI();
     }
-    
-    private void createUI(){
+
+    private void createUI() {
         this.setLayout(new GridBagLayout());
 
         //Panel setup
         GridBagConstraints gbc;
-        
-        datasetHelper = new FolderHelper(Paths.get("C:\\Users\\niels\\Documents\\Archie\\Testset\\testset"), true, true);
         fields = new MetadataChangerFields(datasetHelper, true);
-        
+
         gbc = new GridBagConstraints(0, 0, 1, 1, 1, .95, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(10, 10, 10, 10), 0, 0);
         this.add(fields, gbc);
-        
+
         //Bottom panel containing generation and cancellation buttons
         JPanel bottomPanel = new JPanel(new GridBagLayout());
         cancel = new JButton("Cancel");
@@ -83,7 +80,7 @@ public class NewDataset extends JPanel implements ActionListener {
                 GridBagConstraints.CENTER, GridBagConstraints.BOTH, //Anchor, Fill
                 new Insets(0, 0, 0, 0), 0, 0);                              //Insets, IpadX, IpadY
         bottomPanel.add(generate, gbc);
-        
+
         gbc = new GridBagConstraints(0, 1, 1, 1, 1, .05, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(10, 10, 10, 10), 0, 0);
         this.add(bottomPanel, gbc);
     }
@@ -93,8 +90,13 @@ public class NewDataset extends JPanel implements ActionListener {
         if (e.getSource() == cancel) {
             parent.goToHome();
         } else if (e.getSource() == generate) {
+            for (Map.Entry<MetadataKey, JComponent> metadataKeyTextEntry : fields.labelText.entrySet()) {
+                String value = (metadataKeyTextEntry.getKey().unrestricted) ? ((ArchieTextField) metadataKeyTextEntry.getValue()).getText() : ((JComboBox) metadataKeyTextEntry.getValue()).getSelectedItem().toString();
+                datasetHelper.setRecord(metadataKeyTextEntry.getKey(), value, false);
+            }
+
             String datasetName = datasetHelper.metadataMap.get(MetadataKey.DatasetTitle);
-            if ("".equals(datasetName)) {
+            if (datasetName == null || "".equals(datasetName)) {
                 JOptionPane.showMessageDialog(this, "The name of a dataset can not be empty.", "Dataset name", JOptionPane.PLAIN_MESSAGE);
                 return;
             }
@@ -102,28 +104,18 @@ public class NewDataset extends JPanel implements ActionListener {
 
             //Start generating the metadata and UI.
             Path path = Paths.get(fields.datasetLocationField.getText());
-
             int fileCount = FileUtils.listFilesAndDirs(path.toFile(), TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size();
 
             //Setting the mainpanel to a progresspanel
-            
             parent.working = parent.WorkingOnItPanel(fileCount);
             parent.ChangeMainPanel(parent.working);
-
-            //Storing initial data
-            for (Map.Entry<MetadataKey, JComponent> keyComponent : fields.labelText.entrySet()) {
-                if (keyComponent.getKey().settable) {
-                    dataII.initInfo.put(keyComponent.getKey(), ((ArchieTextField) keyComponent.getValue()).getText());
-                } else {
-                    dataII.initInfo.put(keyComponent.getKey(), ((JComboBox) keyComponent.getValue()).getSelectedItem().toString());
-                }
-            }
+            parent.revalidate();
 
             //Setting the mainpanel to a metadatachanger
-            parent.metadatachanger = new MetadataChanger(datasetName, path, false, true, dataII, (ProgressPanel) parent.working);
+            parent.metadatachanger = new MetadataChanger(datasetName, path, false, true, (ProgressPanel) parent.working);
             parent.ChangeMainPanel(parent.metadatachanger);
             parent.export.setEnabled(true);
-            
+
             //CHECK THIS
             parent.validate();
             parent.pack();

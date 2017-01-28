@@ -17,10 +17,13 @@ public class xlsxFile extends FileHelper {
     public xlsxFile(Path filePath, boolean Islandora) {
         super(filePath, Islandora);
         String author = metadata.get("creator");
-        setRecordThroughTika(MetadataKey.CreatorName, "creator");
+        setRecordThroughTika(MetadataKey.CreatorGivenName, "creator");
+        setRecordThroughTika(MetadataKey.CreatorFamilyName, "creator");
         String contributor = metadata.get("Last-Author");
-        if(null!=author && null!=contributor && !author.equals(contributor))
-            setRecordThroughTika(MetadataKey.ContributorName, "Last-Author");
+        if(null!=author && null!=contributor && !author.equals(contributor)){
+            setRecordThroughTika(MetadataKey.ContributorGivenName, "Last-Author");
+            setRecordThroughTika(MetadataKey.ContributorFamilyName, "Last-Author");
+        }
     }
 
 }

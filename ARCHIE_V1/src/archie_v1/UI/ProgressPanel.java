@@ -61,7 +61,8 @@ public class ProgressPanel extends JPanel {
         progressLabel.setText(fileText);
         progBar.setValue(progress);
         
-        //REDO TODO WIP: Very bad code smell. Make concurrently so paint is called automaticaaly (or at least repaint suffices).
+        //REDO TODO WIP: Very bad code smell. Make concurrently so paint is called automatically (or at least repaint suffices).
+        revalidate();
         super.paint(super.getGraphics());
     }
 

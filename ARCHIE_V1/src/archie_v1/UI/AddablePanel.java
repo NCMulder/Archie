@@ -28,7 +28,7 @@ import javax.swing.border.EtchedBorder;
  *
  * @author N.C. Mulder <n.c.mulder at students.uu.nl>
  */
-public class AddablePanel extends JPanel implements ActionListener{
+public class AddablePanel extends JPanel implements ActionListener {
 
     MetadataKey[] Values;
     String singleTitle, pluralTitle;
@@ -37,9 +37,9 @@ public class AddablePanel extends JPanel implements ActionListener{
 
     JButton addItem;
     HashMap<JButton, Integer> removeButtons;
-    
+
     HashMap<Integer, JPanel> valuePanels;
-    
+
     private float xweight;
     private FileHelper fileHelper;
 
@@ -50,11 +50,11 @@ public class AddablePanel extends JPanel implements ActionListener{
         this.fileHelper = fileHelper;
         removeButtons = new HashMap();
         valuePanels = new HashMap();
-        
+
         createPanel();
     }
-    
-    private void resetMainPanel(){
+
+    private void resetMainPanel() {
         this.remove(mainPanel);
         createPanel();
         revalidate();
@@ -67,7 +67,7 @@ public class AddablePanel extends JPanel implements ActionListener{
         this.setBorder(paneBorder);
 
         mainPanel = Values();
-        
+
         GridBagConstraints gbc = new GridBagConstraints(
                 0, 0, //GridX, GridY
                 5, height, //GridWidth, GridHeight
@@ -80,10 +80,9 @@ public class AddablePanel extends JPanel implements ActionListener{
     private JComponent Values() {
         JPanel gridPane = new JPanel(new GridBagLayout());
         GridBagConstraints gbc;
-        
-        
 
         if (fileHelper.metadataMap.get(Values[0]) != null) {
+            System.out.println("Addable " + Values[0] + " with value " + fileHelper.metadataMap.get(Values[0]) + " is being prepared.");
 
             xweight = .8f / (Values.length);
             String[] mainKeys = fileHelper.metadataMap.get(Values[0]).split(";");
@@ -91,10 +90,37 @@ public class AddablePanel extends JPanel implements ActionListener{
 
             for (int i = 0; i < height; i++) {
                 JPanel singleValue = new JPanel(new GridBagLayout());
-                
-                
+
                 for (int j = 0; j < Values.length; j++) {
-                    JLabel label = new JLabel(fileHelper.metadataMap.get(Values[j]).split(";")[i].trim());
+                    String labelText = "";
+                    try {
+                        labelText = fileHelper.metadataMap.get(Values[j]).split(";")[i].trim();
+                    } catch (NullPointerException | ArrayIndexOutOfBoundsException ex) {
+                        String errorMessage = "No " + Values[j] + " found for " + singleTitle + " " + fileHelper.metadataMap.get(Values[0]).split(";")[i].trim();
+                        errorMessage += ". \nPlease provide the missing component.";
+                        JOptionPane.showConfirmDialog(this, errorMessage, "Missing " + Values[j], 0);
+
+                        String[] availableStrings = new String[5];
+
+                        for (int k = 0; k < Values.length; k++) {
+                            try {
+                                availableStrings[k] = fileHelper.metadataMap.get(Values[k]).split(";")[i].trim();
+                            } catch (Exception e) {
+                                availableStrings[k] = "";
+                            }
+                        }
+
+                        SetPart sp = new SetPart(Values[0], availableStrings);
+                        Object[] buttons = {"Add", "Cancel"};
+                        int result = JOptionPane.showOptionDialog(this, sp, "Missing " + Values[j], JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
+                        if (result == JOptionPane.OK_OPTION) {
+                            for (Map.Entry<MetadataKey, String> metadata : sp.getInfo().entrySet()) {
+                                String previousRecord = (fileHelper.metadataMap.get(metadata.getKey()) != null) ? fileHelper.metadataMap.get(metadata.getKey()) + ";" : "";
+                                fileHelper.setRecord(metadata.getKey(), previousRecord + metadata.getValue(), true);
+                            }
+                        }
+                    }
+                    JLabel label = new JLabel(labelText);
                     gbc = new GridBagConstraints(
                             j, 0, //GridX, GridY
                             1, 1, //GridWidth, GridHeight
@@ -114,7 +140,7 @@ public class AddablePanel extends JPanel implements ActionListener{
                         GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, //Anchor, Fill
                         new Insets(2, 2, 2, 2), 0, 0); //Insets, IpadX, IpadY
                 singleValue.add(remove, gbc);
-                
+
                 gbc = new GridBagConstraints(
                         0, i, //GridX, GridY
                         5, 1, //GridWidth, GridHeight
@@ -122,7 +148,7 @@ public class AddablePanel extends JPanel implements ActionListener{
                         GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, //Anchor, Fill
                         new Insets(2, 2, 2, 2), 0, 0); //Insets, IpadX, IpadY
                 gridPane.add(singleValue, gbc);
-                
+
                 valuePanels.put(i, singleValue);
                 removeButtons.put(remove, i);
             }
@@ -148,37 +174,28 @@ public class AddablePanel extends JPanel implements ActionListener{
     public void actionPerformed(ActionEvent e) {
         int f = removeButtons.getOrDefault(e.getSource(), -1);
         //Todo: only do this on save from above.
-        if(f!=-1){
+        if (f != -1) {
             for (int i = 0; i < Values.length; i++) {
-                String[] keyValues = fileHelper.metadataMap.get(Values[i]).split(";");
-                String newString = "";
-                for (int j = 0; j < keyValues.length; j++) {
-                    if(j!=f)
-                        newString+=keyValues[j];
-                }
-                newString.replace(";$", "");
-                
-                if(newString.equals(""))
-                    newString = null;
-                fileHelper.setRecord(Values[i], newString, false);
-                
-                resetMainPanel();
+                fileHelper.removeRecord(Values[i], f, true, true);
             }
+            resetMainPanel();
         } else if (e.getSource() == addItem) {
-            SetPart sp = new SetPart(Values[0]);
-            String title = singleTitle + "addition";
+            String[] strings = new String[Values.length];
             
+            
+            SetPart sp = new SetPart(Values[0]);
+            String title = singleTitle + " addition";
+
             Object[] buttons = {"Add", "Cancel"};
             int result = JOptionPane.showOptionDialog(this, sp, title, JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
-                if (result == JOptionPane.OK_OPTION) {
+            if (result == JOptionPane.OK_OPTION) {
                 for (Map.Entry<MetadataKey, String> metadata : sp.getInfo().entrySet()) {
-                    String previousRecord = (fileHelper.metadataMap.get(metadata.getKey()) != null)? fileHelper.metadataMap.get(metadata.getKey()) + ";" : "";
-                    fileHelper.setRecord(metadata.getKey(), previousRecord + metadata.getValue(), true);
+                    fileHelper.setRecord(metadata.getKey(), metadata.getValue(), true);
                 }
                 resetMainPanel();
             }
         } else {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }
 }

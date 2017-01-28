@@ -2,7 +2,6 @@
 package archie_v1.UI;
 
 import archie_v1.Dataset;
-import archie_v1.fileHelpers.DatasetInitialInformation;
 import archie_v1.fileHelpers.FileHelper;
 import archie_v1.outputFormats.*;
 import java.awt.event.ActionEvent;
@@ -28,12 +27,12 @@ public class MetadataChanger extends JSplitPane implements TreeSelectionListener
     JTree UITree;
     Dataset dataset;
 
-    public MetadataChanger(String name, Path path, boolean fromArchie, boolean includeIslandora, DatasetInitialInformation dII, ProgressPanel pP) {
+    public MetadataChanger(String name, Path path, boolean fromArchie, boolean includeIslandora, ProgressPanel pP) {
         long now, start = System.nanoTime();
         //Directory, dataset
         mainDirectory = path;
         
-        dataset = new Dataset(name, path, fromArchie, includeIslandora, dII, pP);
+        dataset = new Dataset(name, path, fromArchie, includeIslandora, pP);
         now = System.nanoTime();
         System.out.println("Creating the dataset: " + (now - start)/1000000 + "ms");
         start = System.nanoTime();

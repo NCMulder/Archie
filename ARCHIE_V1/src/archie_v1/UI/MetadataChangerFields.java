@@ -121,17 +121,19 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
     //possibly change to void return type
     private JPanel createValueFields(MetadataKey key, JComponent parent) {
         switch (key) {
-            case CreatorName:
+            case CreatorGivenName:
                 AddablePanel creatorPanel = createAddable(parent, "Creator", "Creators", MetadataKey.creatorKeys);
                 return creatorPanel;
-            case ContributorName:
+            case ContributorGivenName:
                 AddablePanel contributorPanel = createAddable(parent, "Contributor", "Contributors", MetadataKey.contributorKeys);
                 return contributorPanel;
             case CreatorIdentifier:
             case CreatorTOA:
+            case CreatorFamilyName:
             case CreatorAffiliation:
             case ContributorIdentifier:
             case ContributorTOA:
+            case ContributorFamilyName:
             case ContributorAffiliation:
                 return null;
             case Subject:
@@ -151,13 +153,24 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
                         GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, //Anchor, Fill
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 parent.add(label, gbc);
-
-                JComponent value = (key.settable) ? new ArchieTextField(20, "E.G. " + key.getDefaultValue()) : new JComboBox(key.getSetOptions());
-                if (!key.settable) {
-                    if(Arrays.asList(key.getSetOptions()).contains(fileHelper.metadataMap.get(key)))
-                        ((JComboBox) value).setSelectedItem(fileHelper.metadataMap.get(key));
-                    else
-                        ((JComboBox) value).setSelectedIndex(0);
+                
+                String valueString = fileHelper.metadataMap.get(key);
+                JComponent value;
+                
+                if(valueString==null){
+                    value = (key.unrestricted) ? new ArchieTextField(20, "E.G. " + key.getDefaultValue()) : new JComboBox(key.getSetOptions());
+                    if (!key.unrestricted) {
+                        if (Arrays.asList(key.getSetOptions()).contains(fileHelper.metadataMap.get(key))) {
+                            ((JComboBox) value).setSelectedItem(fileHelper.metadataMap.get(key));
+                        } else {
+                            ((JComboBox) value).setSelectedIndex(0);
+                        }
+                    }
+                } else {
+                    value = (key.unrestricted) ? new ArchieTextField(valueString, 20, "E.G. " + key.getDefaultValue()) : new JComboBox(key.getSetOptions());
+                    if (!key.unrestricted) {
+                        ((JComboBox) value).setSelectedItem(valueString);
+                    }
                 }
                 gbc = new GridBagConstraints(
                         2, panelY++, //GridX, GridY

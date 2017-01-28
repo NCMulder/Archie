@@ -5,12 +5,15 @@
  */
 package archie_v1.fileHelpers;
 
+import archie_v1.UI.SetPart;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -19,16 +22,18 @@ import java.util.Map;
 public class ReadmeParser {
 
     String splitter = ",";
+    private FileHelper fileHelper;
 
-    public ReadmeParser() {
-
+    public ReadmeParser(FileHelper fileHelper, Path path) {
+        this.fileHelper = fileHelper;
+        parseData(path);
     }
 
-    public HashMap<MetadataKey, String> getData(Path path) {
+    public void parseData(Path path) {
         System.out.println("Parsing readme for folder " + path.getParent().toString());
-        
+
         HashMap<MetadataKey, String> dict = new HashMap();
-        String[] ContributorInitials = null, ContributorNames = null;
+        //String[] ContributorInitials = null, ContributorNames = null;
         //Because the readme's use "Title" for multiple fields (item, creator and contributor),
         //these have to be separated using booleans to track where we are in the readme.
         boolean item = true, creator = false, contributor = false;
@@ -37,97 +42,111 @@ public class ReadmeParser {
             BufferedReader br = new BufferedReader(new FileReader(readmePath.toFile()));
             String line = "";
             while ((line = br.readLine()) != null) {
-                //String[] keyValue = line.split(splitter);
                 String[] keyValue = line.split(splitter, 2);
                 String key = keyValue[0].replace("o ", "").trim().toLowerCase();
                 switch (key) {
                     case "item":
+                        String itemIdentifier = br.readLine().split(splitter, 2)[1].replaceAll(",$", "");
+                        setForFileHelper(MetadataKey.Identifier, itemIdentifier, true, true);
+                        String title = br.readLine().split(splitter, 2)[1].replace("\"", "").replaceAll(",$", "");
+                        //do something with title?
                         item = true;
                         creator = false;
                         contributor = false;
                         break;
                     case "author":
+                        String authorTitle = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
+                        String authorInitials = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
+                        String authorName = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
+                        String authorIdentifier = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
+                        String authorAffiliation = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
                         item = false;
                         creator = true;
                         contributor = false;
                         break;
                     case "contributor":
+                        String contributorTitle = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
+                        String contributorInitials = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
+                        String contributorName = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
+                        String contributorIdentifier = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
+                        String contributorAffiliation = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
                         item = false;
                         creator = false;
                         contributor = true;
                         break;
-                    case "identifier":
-                        putInDictionary(dict, MetadataKey.Identifier, keyValue[1].replaceAll(",$", ""));
-                        break;
-                    case "title":
-                        if (item) {
-                            //putInDictionary(dict, MetadataKey.Title, keyValue[1].replace("\"", "").replaceAll(",$", ""));
-                        } else if (creator) {
-                            putInDictionary(dict, MetadataKey.CreatorTOA, keyValue[1].replaceAll(",$", ""));
-                        } else if (contributor) {
-                            putInDictionary(dict, MetadataKey.ContributorTOA, keyValue[1].replaceAll(",$", "").replace(",", "; "));
-                        }
-                        break;
-                    case "initials":
-                        if (creator) {
-                            putInDictionary(dict, MetadataKey.CreatorName, keyValue[1].replaceAll(",$", ""));
-                        } else if (contributor) {
-                            ContributorInitials = keyValue[1].replaceAll(",$", "").split(",");
-                        }
-                        break;
-                    case "last name":
-                        if (creator) {
-                            putInDictionary(dict, MetadataKey.CreatorName, dict.get(MetadataKey.CreatorName) + " " + keyValue[1].replaceAll(",$", ""));
-                        } else if (contributor) {
-                            ContributorNames = keyValue[1].replaceAll(",$", "").split(",");
-                        }
-                        break;
-                    case "dai":
-                        if (creator) {
-                            putInDictionary(dict, MetadataKey.CreatorIdentifier, keyValue[1].replaceAll(",$", ""));
-                        } else if (contributor) {
-                            putInDictionary(dict, MetadataKey.ContributorIdentifier, keyValue[1].replaceAll(",$", "").replace(",", "; "));
-                        }
-                        break;
-                    case "organization":
-                        if(creator){
-                            putInDictionary(dict, MetadataKey.CreatorAffiliation, keyValue[1].replaceAll(",$", ""));
-                        } else if (contributor){
-                            putInDictionary(dict, MetadataKey.ContributorAffiliation, keyValue[1].replaceAll(",$", "").replace(",", "; "));
-                        }
-                        break;
+//                    case "identifier":
+//                        setForFileHelper(MetadataKey.Identifier, keyValue[1].replaceAll(",$", ""), true, true);
+////                        putInDictionary(dict, MetadataKey.Identifier, keyValue[1].replaceAll(",$", ""));
+//                        break;
+//                    case "title":
+//                        if (item) {
+//                            //putInDictionary(dict, MetadataKey.Title, keyValue[1].replace("\"", "").replaceAll(",$", ""));
+//                        } else if (creator) {
+//                            setForFileHelper(MetadataKey.CreatorTOA, keyValue[1].replaceAll(",$", "").replaceAll(",", ";"), true, true);
+//                        } else if (contributor) {
+//                            setForFileHelper(MetadataKey.ContributorTOA, keyValue[1].replaceAll(",$", "").replaceAll(",", ";"), true, true);
+//                        }
+//                        break;
+//                    case "initials":
+//                        if (creator) {
+//                            setForFileHelper(MetadataKey.CreatorGivenName, keyValue[1].replaceAll(",$", "").replaceAll(",", ";"), true, true);
+//                        } else if (contributor) {
+//                            setForFileHelper(MetadataKey.ContributorGivenName, keyValue[1].replaceAll(",$", "").replaceAll(",", ";"), true, true);
+//                        }
+//                        break;
+//                    case "last name":
+//                        if (creator) {
+//                            setForFileHelper(MetadataKey.CreatorFamilyName, keyValue[1].replaceAll(",$", "").replaceAll(",", ";"), true, true);
+//                        } else if (contributor) {
+//                            setForFileHelper(MetadataKey.ContributorFamilyName, keyValue[1].replaceAll(",$", "").replaceAll(",", ";"), true, true);
+//                        }
+//                        break;
+//                    case "dai":
+//                        if (creator) {
+//                            setForFileHelper(MetadataKey.CreatorIdentifier, keyValue[1].replaceAll(",$", "").replaceAll(",", ";"), true, true);
+//                        } else if (contributor) {
+//                            setForFileHelper(MetadataKey.ContributorIdentifier, keyValue[1].replaceAll(",$", "").replaceAll(",", ";"), true, true);
+//                        }
+//                        break;
+//                    case "organization":
+//                        if (creator) {
+//                            setForFileHelper(MetadataKey.CreatorAffiliation, keyValue[1].replaceAll(",$", "").replaceAll(",", ";"), true, true);
+//                        } else if (contributor) {
+//                            setForFileHelper(MetadataKey.ContributorAffiliation, keyValue[1].replaceAll(",$", "").replaceAll(",", ";"), true, true);
+//                        }
+//                        break;
                     case "date created":
-                        putInDictionary(dict, MetadataKey.DateCreated, keyValue[1].replaceAll(",$", "")); 
+                        setForFileHelper(MetadataKey.DateCreated, keyValue[1].replaceAll(",$", ""), true, true);
                         break;
                     case "rights holder":
-                        putInDictionary(dict, MetadataKey.Rightsholder, keyValue[1].replaceAll(",$", ""));
+                        setForFileHelper(MetadataKey.Rightsholder, keyValue[1].replaceAll(",$", ""), true, true);
                         break;
                     case "publisher":
-                        putInDictionary(dict, MetadataKey.Publisher, keyValue[1].replaceAll(",$", ""));
+                        setForFileHelper(MetadataKey.Publisher, keyValue[1].replaceAll(",$", ""), true, true);
                         break;
                     case "description":
-                        putInDictionary(dict, MetadataKey.Description, keyValue[1].replaceAll(",$", ""));
+                        setForFileHelper(MetadataKey.Description, keyValue[1].replaceAll(",$", ""), true, true);
                         break;
                     case "subject":
-                        putInDictionary(dict, MetadataKey.Subject, keyValue[1].replaceAll(",$", ""));
+                        setForFileHelper(MetadataKey.Subject, keyValue[1].replaceAll(",$", "").replaceAll(",", ";"), true, true);
                         break;
                     case "spatial coverage":
-                        putInDictionary(dict, MetadataKey.SpatialCoverage, keyValue[1].substring(0, keyValue[1].indexOf(",\"")).replace("\"", ""));
+                        setForFileHelper(MetadataKey.SpatialCoverage, keyValue[1].substring(0, keyValue[1].indexOf(",\"")).replace("\"", ""), true, true);
                         break;
                     case "temporal coverage":
-                        putInDictionary(dict, MetadataKey.TemporalCoverage, keyValue[1].substring(0, keyValue[1].indexOf(",\"")));
+                        setForFileHelper(MetadataKey.TemporalCoverage, keyValue[1].substring(0, keyValue[1].indexOf(",\"")), true, true);
                         break;
                     case "related datasets":
-                        putInDictionary(dict, MetadataKey.RelatedDatasetName, keyValue[1].substring(0, keyValue[1].indexOf(",Names")));
+                        setForFileHelper(MetadataKey.RelatedDatasetName, keyValue[1].substring(0, keyValue[1].indexOf(",Names")), true, true);
                         break;
                     case "type":
-                        putInDictionary(dict, MetadataKey.FileContentType, keyValue[1].substring(0, keyValue[1].indexOf(",always")));
+                        setForFileHelper(MetadataKey.FileContentType, keyValue[1].substring(0, keyValue[1].indexOf(",always")), true, true);
                         break;
                     case "language":
-                        putInDictionary(dict, MetadataKey.Language, keyValue[1].substring(0, keyValue[1].indexOf(",\"default") + 1));
+                        setForFileHelper(MetadataKey.FileContentType, keyValue[1].substring(0, keyValue[1].indexOf(",\"default") + 1), true, true);
                         break;
                     case "rights":
-                        putInDictionary(dict, MetadataKey.AccessLevel, keyValue[1].substring(0, keyValue[1].indexOf(",\"either") + 1));
+                        setForFileHelper(MetadataKey.AccessLevel, keyValue[1].substring(0, keyValue[1].indexOf(",\"either") + 1), true, true);
                         break;
                     case "embarg":
                         //to be implemented
@@ -140,22 +159,64 @@ public class ReadmeParser {
             }
         } catch (IOException ex) {
             System.out.println("Readme for folder " + path.getParent().toString() + " not found.");
-            return null;
+            //return null;
         }
 
         //do things with names
-        if(ContributorNames!=null && ContributorInitials!=null){
-            String names = "";
-            for(int i = 0; i < ContributorInitials.length; i++){
-                String initial = ContributorInitials[i];
-                if ("".equals(initial))
-                    continue;
-                names+=initial + " " + ContributorNames[i] + "; ";
+//        if(ContributorNames!=null && ContributorInitials!=null){
+//            String initials = "";
+//            String names = "";
+//            for(int i = 0; i < ContributorInitials.length; i++){
+//                String initial = ContributorInitials[i];
+//                if (!"".equals(initial))
+//                    initials+=initial + ";";
+//            }
+//            for(int i = 0; i < ContributorNames.length; i++){
+//                String name = ContributorNames[i];
+//                if (!"".equals(name))
+//                    names+=name + ";";
+//            }
+//            //names = names.substring(0, names.length());
+//            putInDictionary(dict, MetadataKey.ContributorGivenName, initials.replaceAll("; $", ""));
+//            putInDictionary(dict, MetadataKey.ContributorFamilyName, initials.replaceAll("; $", ""));
+//        }
+        //return dict;
+    }
+
+    public void setForFileHelper(MetadataKey key, String value, boolean hardSet, boolean init) {
+        if (value == null || value.equals("")) {
+            if(key.addable){
+                //escape when not first addable?
             }
-            //names = names.substring(0, names.length());
-            putInDictionary(dict, MetadataKey.ContributorName, names.replaceAll("; $", ""));
+            SetPart sp = new SetPart(key);
+            Object[] buttons = {"Add", "Cancel"};
+            int result = JOptionPane.showOptionDialog(null, sp, "Missing " + key + " in readme.", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
+            if (result == JOptionPane.OK_OPTION) {
+                for (Map.Entry<MetadataKey, String> metadata : sp.getInfo().entrySet()) {
+                    if(metadata.getKey()==key)
+                        value = metadata.getValue();
+                }
+            }
+            return;
         }
-        return dict;
+        fileHelper.setRecord(key, value, hardSet, init);
+    }
+    
+    public void setForFileHelper(MetadataKey[] keys, String[] values, boolean hardSet, boolean init){
+        
+        if(Arrays.asList(values).contains(null) || Arrays.asList(values).contains("")){
+            SetPart sp = new SetPart(keys[0], values);
+            Object[] buttons = {"Add", "Cancel"};
+            int result = JOptionPane.showOptionDialog(null, sp, "Missing parts in readme.", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
+            if (result == JOptionPane.OK_OPTION) {
+                for (Map.Entry<MetadataKey, String> metadata : sp.getInfo().entrySet()) {
+                    fileHelper.setRecord(metadata.getKey(), metadata.getValue(), hardSet, init);
+                }
+            }
+            return;
+        }
+        for(int i = 0; i<)
+        
     }
 
     public void putInDictionary(Map<MetadataKey, String> dict, MetadataKey key, String value) {

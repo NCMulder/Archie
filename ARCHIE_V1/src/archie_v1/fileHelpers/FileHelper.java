@@ -53,7 +53,7 @@ public abstract class FileHelper {
         if (root) {
             for (int i = 0; i < MetadataKey.values().length; i++) {
                 if (MetadataKey.values()[i].dataset) {
-                    setRecord(MetadataKey.values()[i], MetadataKey.values()[i].getDefaultValue(), false, true);
+                    setRecord(MetadataKey.values()[i], null, false, true);
                 }
             }
             return;
@@ -68,7 +68,7 @@ public abstract class FileHelper {
 
         for (int i = 0; i < MetadataKey.values().length; i++) {
             if (MetadataKey.values()[i].file) {
-                setRecord(MetadataKey.values()[i], MetadataKey.values()[i].getDefaultValue(), false, true);
+                setRecord(MetadataKey.values()[i], null, false, true);
             }
         }
     }
@@ -113,17 +113,6 @@ public abstract class FileHelper {
         } catch (IOException e){
             e.printStackTrace();
         }
-        
-//        try{
-//            (new File("temp")).mkdirs();
-//            FileOutputStream fileOut = new FileOutputStream("temp/" + filePath.getFileName() + "_tika.txt");
-//            ObjectOutputStream out = new ObjectOutputStream(fileOut);
-//            out.writeObject(basedata);
-//            out.close();
-//            fileOut.close();
-//        } catch (IOException e){
-//            e.printStackTrace();
-//        }
 
         return basedata;
     }
@@ -133,18 +122,66 @@ public abstract class FileHelper {
             return;
         }
         if (init || metadataMap.containsKey(key)) {
-            metadataMap.put(key, value);
+            if(key.addable)
+                AddAddable(key, value);
+            else
+                metadataMap.put(key, value);
+        }
+    }
+    
+    /**
+     * Only in use for addable fields, such as <code>CreatorName</code>s and <code>Subject</code>s.
+     * @param key
+     * @param value
+     * @param hardSet
+     * @param init
+     */
+    public void removeRecord(MetadataKey key, int index, boolean hardSet, boolean init){
+        if (!hardSet && metadataMap.containsKey(key) && (!"".equals(metadataMap.get(key)))) {
+            return;
+        }
+        if (init || metadataMap.containsKey(key)) {
+            if(key.addable)
+                RemoveAddable(key, index);
+            else
+                return;
         }
     }
 
     public void setRecord(MetadataKey key, String value, boolean hardSet) {
         setRecord(key, value, hardSet, false);
     }
+    
+    public void AddAddable(MetadataKey key, String value){
+        String currentValue = metadataMap.get(key);
+        if(currentValue != null && !currentValue.equals(""))
+            currentValue+=";" + value;
+        else
+            currentValue = value;
+        metadataMap.put(key, currentValue);
+    }
+
+    private void RemoveAddable(MetadataKey key, int index) {
+        String[] keyValues = metadataMap.get(key).split(";");
+        String newString = "";
+        for (int j = 0; j < keyValues.length; j++) {
+            newString += (j==index) ? "" : keyValues[j] + ";";
+        }
+        System.out.println("Before trimming:" + newString);
+        newString = newString.replaceAll(";$", "");
+        System.out.println("After trimming:" + newString);
+
+        if (newString.equals("")) {
+            newString = null;
+        }
+        metadataMap.put(key, newString);
+    }
 
     public void setRecordThroughTika(MetadataKey key, String tikaString) {
         String tikaValue = metadata.get(tikaString);
         if (tikaValue != null) {
-            metadataMap.put(key, tikaValue);
+            setRecord(key, tikaValue, false, true);
+            //metadataMap.put(key, tikaValue);
         }
     }
 }

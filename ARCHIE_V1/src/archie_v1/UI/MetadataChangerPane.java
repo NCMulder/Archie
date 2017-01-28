@@ -68,10 +68,11 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener {
 
     private void saveToFileHelper(boolean hardSet) {
         for (Map.Entry<MetadataKey, JComponent> metadataKeyTextEntry : topPane.labelText.entrySet()) {
-            String value = (metadataKeyTextEntry.getKey().settable) ? ((ArchieTextField) metadataKeyTextEntry.getValue()).getText() : ((JComboBox) metadataKeyTextEntry.getValue()).getSelectedItem().toString();
+            String value = (metadataKeyTextEntry.getKey().unrestricted) ? ((ArchieTextField) metadataKeyTextEntry.getValue()).getText() : ((JComboBox) metadataKeyTextEntry.getValue()).getSelectedItem().toString();
             if(value==null)
                 System.out.println("OOOOOOOh");
             fileHelper.setRecord(metadataKeyTextEntry.getKey(), value, hardSet);
+            System.out.println("Set key " + metadataKeyTextEntry.getKey() + " to " + value + " for file " + fileHelper.filePath.getFileName());
         }
     }
 }

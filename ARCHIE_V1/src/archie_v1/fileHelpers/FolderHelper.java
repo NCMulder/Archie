@@ -27,7 +27,10 @@ public class FolderHelper extends FileHelper {
     
     @Override
     public void setRecord(MetadataKey key, String value, boolean hardSet, boolean init){
-        super.metadataMap.put(key, value);
+        if(key.addable)
+            AddAddable(key, value);
+        else 
+            super.metadataMap.put(key, value);
         if(init)
             return;
         for(FileHelper fh : children){

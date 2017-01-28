@@ -154,7 +154,7 @@ public class outputIslandora extends outputAbstract {
     }
 
     public Element getCreator(FileHelper fileHelper) {
-        Element[] names = nameHandler(fileHelper.metadataMap.get(MetadataKey.CreatorName), fileHelper);
+        Element[] names = nameHandler(fileHelper.metadataMap.get(MetadataKey.CreatorGivenName), fileHelper);
 
         Element name = new Element("name", rootNamespace);
         name.setAttribute("type", "personal");
@@ -193,7 +193,7 @@ public class outputIslandora extends outputAbstract {
 
     public Element[] getContributors(FileHelper fileHelper) {
         String[] contributorTOA = fileHelper.metadataMap.get(MetadataKey.ContributorTOA).split(";");
-        String[] contributorNames = fileHelper.metadataMap.get(MetadataKey.ContributorName).split(";");
+        String[] contributorNames = fileHelper.metadataMap.get(MetadataKey.ContributorGivenName).split(";");
         String[] contributorIdentifier = fileHelper.metadataMap.get(MetadataKey.ContributorIdentifier).split(";");
         String[] contributorAffiliation = fileHelper.metadataMap.get(MetadataKey.ContributorAffiliation).split(";");
         Element[] contributors = new Element[contributorNames.length];

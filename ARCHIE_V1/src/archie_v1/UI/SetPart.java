@@ -9,6 +9,7 @@ import archie_v1.fileHelpers.MetadataKey;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.Arrays;
 import java.util.HashMap;
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
@@ -25,15 +26,18 @@ public class SetPart extends JPanel {
     public JComboBox idComboBox;
 
     public ArchieTextField idField, toaField, nameGivenField, nameFamilyField, affiliationField;
-    public ArchieTextField subjectField, relatedDatasetNameField, relatedDatasetLocationField;
+    public ArchieTextField singleField, relatedDatasetNameField, relatedDatasetLocationField;
     private MetadataKey role;
-
-    public enum Addable {
-        Creator, Contributor, Subject, RelatedDataset
-    };
+    private String[] availableStrings = {"", "", "", "", ""};
 
     public SetPart(MetadataKey role) {
         this.role = role;
+        setUI();
+    }
+
+    public SetPart(MetadataKey role, String... availableStrings) {
+        this.role = role;
+        this.availableStrings = availableStrings;
         setUI();
     }
 
@@ -43,8 +47,16 @@ public class SetPart extends JPanel {
         GridBagConstraints gbc = new GridBagConstraints();
 
         switch (role) {
-            case CreatorName:
-            case ContributorName:
+            case CreatorGivenName:
+            case CreatorFamilyName:
+            case CreatorIdentifier:
+            case CreatorTOA:
+            case CreatorAffiliation:
+            case ContributorGivenName:
+            case ContributorFamilyName:
+            case ContributorIdentifier:
+            case ContributorTOA:
+            case ContributorAffiliation:
                 JLabel identifier = new JLabel("Identifier");
                 gbc = new GridBagConstraints(
                         0, 0, //GridX, GridY
@@ -63,7 +75,7 @@ public class SetPart extends JPanel {
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 this.add(idComboBox, gbc);
 
-                idField = new ArchieTextField(20, "E.G. " + MetadataKey.CreatorIdentifier.getDefaultValue());
+                idField = new ArchieTextField(getHintString(MetadataKey.CreatorIdentifier), 20, "E.G. " + MetadataKey.CreatorIdentifier.getDefaultValue());
                 gbc = new GridBagConstraints(
                         3, 0, //GridX, GridY
                         2, 1, //GridWidth, GridHeight
@@ -81,7 +93,7 @@ public class SetPart extends JPanel {
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 this.add(toaLabel, gbc);
 
-                toaField = new ArchieTextField(20, "E.G. " + MetadataKey.CreatorTOA.getDefaultValue());
+                toaField = new ArchieTextField(getHintString(MetadataKey.CreatorTOA), 20, "E.G. " + MetadataKey.CreatorTOA.getDefaultValue());
                 gbc = new GridBagConstraints(
                         2, 1, //GridX, GridY
                         3, 1, //GridWidth, GridHeight
@@ -90,7 +102,7 @@ public class SetPart extends JPanel {
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 this.add(toaField, gbc);
 
-                JLabel nameLabel = (role == MetadataKey.CreatorName) ? new JLabel("Creator Name") : new JLabel("Contributor Name");
+                JLabel nameLabel = (role == MetadataKey.CreatorGivenName) ? new JLabel("Creator Name") : new JLabel("Contributor Name");
                 gbc = new GridBagConstraints(
                         0, 2, //GridX, GridY
                         2, 1, //GridWidth, GridHeight
@@ -99,7 +111,7 @@ public class SetPart extends JPanel {
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 this.add(nameLabel, gbc);
 
-                nameGivenField = new ArchieTextField(0, "E.G. J.M.");
+                nameGivenField = new ArchieTextField(getHintString(MetadataKey.CreatorGivenName), 0, "E.G. " + MetadataKey.CreatorGivenName.getDefaultValue());
                 gbc = new GridBagConstraints(
                         2, 2, //GridX, GridY
                         1, 1, //GridWidth, GridHeight
@@ -108,7 +120,7 @@ public class SetPart extends JPanel {
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 this.add(nameGivenField, gbc);
 
-                nameFamilyField = new ArchieTextField(20, "E.G. van der Scheers");
+                nameFamilyField = new ArchieTextField(getHintString(MetadataKey.CreatorFamilyName), 20, "E.G. " + MetadataKey.CreatorFamilyName.getDefaultValue());
                 gbc = new GridBagConstraints(
                         3, 2, //GridX, GridY
                         2, 1, //GridWidth, GridHeight
@@ -126,7 +138,7 @@ public class SetPart extends JPanel {
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 this.add(affiliationLabel, gbc);
 
-                affiliationField = new ArchieTextField(20, "E.G. " + MetadataKey.CreatorAffiliation.getDefaultValue());
+                affiliationField = new ArchieTextField(getHintString(MetadataKey.CreatorAffiliation), 20, "E.G. " + MetadataKey.CreatorAffiliation.getDefaultValue());
                 gbc = new GridBagConstraints(
                         2, 3, //GridX, GridY
                         3, 1, //GridWidth, GridHeight
@@ -136,27 +148,9 @@ public class SetPart extends JPanel {
                 this.add(affiliationField, gbc);
 
                 break;
-            case Subject:
-                JLabel subjectLabel = new JLabel("Subject");
-                gbc = new GridBagConstraints(
-                        0, 0, //GridX, GridY
-                        2, 1, //GridWidth, GridHeight
-                        1, 1, //WeightX, WeightY
-                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, //Anchor, Fill
-                        new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
-                this.add(subjectLabel, gbc);
-
-                subjectField = new ArchieTextField(20, "E.G. " + MetadataKey.Subject.getDefaultValue());
-                gbc = new GridBagConstraints(
-                        2, 0, //GridX, GridY
-                        3, 1, //GridWidth, GridHeight
-                        1, 1, //WeightX, WeightY
-                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, //Anchor, Fill
-                        new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
-                this.add(subjectField, gbc);
-
-                break;
+            
             case RelatedDatasetName:
+            case RelatedDatasetLocation:
                 JLabel relatedDatasetNameLabel = new JLabel("Dataset name");
                 gbc = new GridBagConstraints(
                         0, 0, //GridX, GridY
@@ -166,7 +160,7 @@ public class SetPart extends JPanel {
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 this.add(relatedDatasetNameLabel, gbc);
 
-                relatedDatasetNameField = new ArchieTextField(20, "E.G. " + MetadataKey.RelatedDatasetName.getDefaultValue());
+                relatedDatasetNameField = new ArchieTextField(getHintString(MetadataKey.RelatedDatasetName), 20, "E.G. " + MetadataKey.RelatedDatasetName.getDefaultValue());
                 gbc = new GridBagConstraints(
                         2, 0, //GridX, GridY
                         3, 1, //GridWidth, GridHeight
@@ -184,7 +178,7 @@ public class SetPart extends JPanel {
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 this.add(relatedDatasetLocationLabel, gbc);
 
-                relatedDatasetLocationField = new ArchieTextField(20, "E.G. " + MetadataKey.RelatedDatasetLocation.getDefaultValue());
+                relatedDatasetLocationField = new ArchieTextField(getHintString(MetadataKey.RelatedDatasetLocation), 20, "E.G. " + MetadataKey.RelatedDatasetLocation.getDefaultValue());
                 gbc = new GridBagConstraints(
                         2, 1, //GridX, GridY
                         3, 1, //GridWidth, GridHeight
@@ -194,6 +188,26 @@ public class SetPart extends JPanel {
                 this.add(relatedDatasetLocationField, gbc);
 
                 break;
+            default:
+                JLabel singleLabel = new JLabel(role.toString());
+                gbc = new GridBagConstraints(
+                        0, 0, //GridX, GridY
+                        2, 1, //GridWidth, GridHeight
+                        1, 1, //WeightX, WeightY
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, //Anchor, Fill
+                        new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
+                this.add(singleLabel, gbc);
+
+                singleField = new ArchieTextField(getHintString(role), 20, "E.G. " + role.getDefaultValue());
+                gbc = new GridBagConstraints(
+                        2, 0, //GridX, GridY
+                        3, 1, //GridWidth, GridHeight
+                        1, 1, //WeightX, WeightY
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, //Anchor, Fill
+                        new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
+                this.add(singleField, gbc);
+
+                break;
         }
     }
 
@@ -201,31 +215,74 @@ public class SetPart extends JPanel {
         HashMap<MetadataKey, String> info = new HashMap();
 
         switch (role) {
-            case CreatorName:
+            case CreatorGivenName:
+            case CreatorFamilyName:
+            case CreatorIdentifier:
+            case CreatorTOA:
+            case CreatorAffiliation:
                 //Todo: differentiate between ID types
                 info.put(MetadataKey.CreatorIdentifier, idComboBox.getSelectedItem().toString() + " " + idField.getText());
                 info.put(MetadataKey.CreatorTOA, toaField.getText());
                 //Todo: differentiate between name parts
-                info.put(MetadataKey.CreatorName, nameGivenField.getText() + " " + nameFamilyField.getText());
+                info.put(MetadataKey.CreatorGivenName, nameGivenField.getText());
+                info.put(MetadataKey.CreatorFamilyName, nameFamilyField.getText());
                 info.put(MetadataKey.CreatorAffiliation, affiliationField.getText());
                 break;
-            case ContributorName:
+            case ContributorGivenName:
+            case ContributorFamilyName:
+            case ContributorIdentifier:
+            case ContributorTOA:
+            case ContributorAffiliation:
                 //Todo: differentiate between ID types
                 info.put(MetadataKey.ContributorIdentifier, idComboBox.getSelectedItem().toString() + " " + idField.getText());
                 info.put(MetadataKey.ContributorTOA, toaField.getText());
                 //Todo: differentiate between name parts
-                info.put(MetadataKey.ContributorName, nameGivenField.getText() + " " + nameFamilyField.getText());
+                info.put(MetadataKey.ContributorGivenName, nameGivenField.getText());
+                info.put(MetadataKey.ContributorFamilyName,  nameFamilyField.getText());
                 info.put(MetadataKey.ContributorAffiliation, affiliationField.getText());
                 break;
-            case Subject:
-                info.put(MetadataKey.Subject, subjectField.getText());
-                break;
             case RelatedDatasetName:
+            case RelatedDatasetLocation:
                 info.put(MetadataKey.RelatedDatasetName, relatedDatasetNameField.getText());
                 info.put(MetadataKey.RelatedDatasetLocation, relatedDatasetLocationField.getText());
+                break;
+            default:
+                info.put(role, singleField.getText());
                 break;
         }
 
         return info;
+    }
+
+    private String getHintString(MetadataKey key) {
+        String hintString = "";
+        switch(role){
+            case CreatorGivenName:
+            case CreatorFamilyName:
+            case CreatorIdentifier:
+            case CreatorTOA:
+            case CreatorAffiliation:
+                hintString = availableStrings[Arrays.asList(MetadataKey.creatorKeys).indexOf(key)];
+                break;
+            case ContributorGivenName:
+            case ContributorFamilyName:
+            case ContributorIdentifier:
+            case ContributorTOA:
+            case ContributorAffiliation:
+                hintString = availableStrings[Arrays.asList(MetadataKey.creatorKeys).indexOf(key)];
+                break;
+            case RelatedDatasetName:
+            case RelatedDatasetLocation:
+                hintString = availableStrings[Arrays.asList(MetadataKey.relatedDatasetKeys).indexOf(key)];
+                break;
+            default:
+                hintString = availableStrings[0];
+                break;
+        }
+        
+        //if(hintString.equals(""))
+            //hintString = key.getDefaultValue();
+        
+        return hintString;
     }
 }

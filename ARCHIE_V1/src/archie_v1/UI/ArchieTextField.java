@@ -40,10 +40,6 @@ public class ArchieTextField extends JTextField implements FocusListener, Docume
         super(length);
         this.ghostText = hinttext;
         actionInit();
-        updateState();
-        if (!this.hasFocus()) {
-                focusLost(null);
-        }
     }
     
     public ArchieTextField(String text){
@@ -64,8 +60,8 @@ public class ArchieTextField extends JTextField implements FocusListener, Docume
     
     public ArchieTextField(String text, int length, String hinttext){
         super(text, length);
-        actionInit();
         this.ghostText = hinttext;
+        actionInit();
     }
     
     private void registerListeners(){
@@ -81,6 +77,10 @@ public class ArchieTextField extends JTextField implements FocusListener, Docume
     private void actionInit(){
         addFocusListener(this);
         registerListeners();
+        updateState();
+        if (!this.hasFocus()) {
+                focusLost(null);
+        }
     }
     
     private void updateState(){

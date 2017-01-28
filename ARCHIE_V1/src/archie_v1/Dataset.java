@@ -2,7 +2,6 @@
 package archie_v1;
 
 import archie_v1.UI.ProgressPanel;
-import archie_v1.fileHelpers.DatasetInitialInformation;
 import archie_v1.fileHelpers.FileHelper;
 import archie_v1.fileHelpers.FolderHelper;
 import archie_v1.fileHelpers.MetadataKey;
@@ -40,21 +39,19 @@ public class Dataset {
     public DefaultMutableTreeNode fileTree;
     public ArrayList<FileHelper> files = new ArrayList();
     public HashMap<Path, Path> readmes = new HashMap();
-    private DatasetInitialInformation dII;
     public boolean includeIslandora;
 
     //Debugging
     private ArrayList<String> probfiles = new ArrayList();
 
-    private ReadmeParser readmeParser = new ReadmeParser();
+    //private ReadmeParser readmeParser = new ReadmeParser();
 
     ProgressPanel pP;
 
-    public Dataset(String name, Path path, boolean fromArchie, boolean includeIslandora, DatasetInitialInformation dII, ProgressPanel pP) {
+    public Dataset(String name, Path path, boolean fromArchie, boolean includeIslandora, ProgressPanel pP) {
         this.name = name;
         this.mainDirectory = path;
         this.includeIslandora = includeIslandora;
-        this.dII = dII;
         this.pP = pP;
 
         if (!fromArchie) {
@@ -105,10 +102,7 @@ public class Dataset {
             createNodes(file.toPath(), dirTree, folderHelper);
         }
         files.add(folderHelper);
-
-//        for (Map.Entry<MetadataKey, String> kvPair : dII.initInfo.entrySet()) {
-//            folderHelper.setRecord(kvPair.getKey(), kvPair.getValue(), false, true);
-//        }
+        
         fileTree = dirTree;
     }
 
@@ -158,14 +152,16 @@ public class Dataset {
             folderH.children.add(folderHelper);
 
             if (readmes.containsKey(file)) {
-                ReadmeParser rms = new ReadmeParser();
                 Path readmePath = readmes.get(file);
-                HashMap<MetadataKey, String> readmeMetadata = rms.getData(readmePath);
-
-                for (Entry<MetadataKey, String> s : readmeMetadata.entrySet()) {
-                    if(folderHelper.metadataMap.containsKey(s.getKey()))
-                    folderHelper.setRecord(s.getKey(), s.getValue(), true);
-                }
+                ReadmeParser rms = new ReadmeParser(folderHelper, readmePath);
+//                HashMap<MetadataKey, String> readmeMetadata = rms.parseData(readmePath);
+//
+//                for (Entry<MetadataKey, String> s : readmeMetadata.entrySet()) {
+//                    if(folderHelper.metadataMap.containsKey(s.getKey())){
+//                        System.out.println("Setting key " + s.getKey() + " to value " + s.getValue() + " from a readme.");
+//                        folderHelper.setRecord(s.getKey(), s.getValue(), true);
+//                    }
+//                }
             }
 
             files.add(folderHelper);
