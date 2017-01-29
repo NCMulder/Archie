@@ -13,8 +13,10 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -40,6 +42,8 @@ public class AddablePanel extends JPanel implements ActionListener {
     HashMap<JButton, Integer> removeButtons;
 
     HashMap<Integer, JPanel> valuePanels;
+    HashMap<MetadataKey, String> valueMap;
+    ArrayList<String[]> valueArray;
 
     private float xweight;
     private FileHelper fileHelper;
@@ -51,6 +55,21 @@ public class AddablePanel extends JPanel implements ActionListener {
         this.fileHelper = fileHelper;
         removeButtons = new HashMap();
         valuePanels = new HashMap();
+        this.valueMap = new HashMap();
+        for (MetadataKey key : Values) {
+            valueMap.put(key, fileHelper.metadataMap.get(key));
+        }
+
+        this.valueArray = new ArrayList();
+        if (fileHelper.metadataMap.get(Values[0]) != null) {
+            for (int i = 0; i < fileHelper.metadataMap.getOrDefault(Values[0], "").split(";", 0).length; i++) {
+                String[] arrayEntry = new String[Values.length];
+                for (int j = 0; j < Values.length; j++) {
+                    arrayEntry[j] = fileHelper.metadataMap.get(Values[j]).split(";")[i];
+                }
+                valueArray.add(arrayEntry);
+            }
+        }
 
         createPanel();
     }
@@ -79,26 +98,27 @@ public class AddablePanel extends JPanel implements ActionListener {
     }
 
     private JComponent Values() {
-        JPanel gridPane = new JPanel(new GridLayout(0,1));
+        JPanel gridPane = new JPanel(new GridLayout(0, 1));
 
-        if (fileHelper.metadataMap.get(Values[0]) != null) {
-            System.out.println("Addable " + Values[0] + " with value " + fileHelper.metadataMap.get(Values[0]) + " is being prepared.");
+        if (!valueArray.isEmpty()) {
+            System.out.println("Addable " + Values[0] + " with value " + valueArray.get(0)[0] + " is being prepared.");
 
             xweight = .8333f / (Values.length);
-            String[] mainKeys = fileHelper.metadataMap.get(Values[0]).split(";");
-            height = mainKeys.length;
+            String[] mainKeys = valueArray.get(0);
+            height = valueArray.size();
 
             for (int i = 0; i < height; i++) {
                 //This six is arbitrary, should be dynamically settable; however, we want all columns equally.
                 JPanel singleValue = new JPanel(new GridLayout(0, 6));
 
                 for (int j = 0; j < Values.length; j++) {
-                    String labelText = fileHelper.metadataMap.get(Values[j]).split(";")[i].trim();
+                    //String labelText = valueMap.get(Values[j]).split(";")[i].trim();
+                    String labelText = valueArray.get(i)[j].trim();
                     JLabel label = new JLabel(labelText);
                     singleValue.add(label);
                     //System.out.println("Labels size: " + (j * xweight) + "; Total size: " + (j * xweight + 0.2f));
                 }
-                
+
                 for (int j = Values.length; j < 5; j++) {
                     JLabel label = new JLabel();
                     singleValue.add(label);
@@ -114,9 +134,9 @@ public class AddablePanel extends JPanel implements ActionListener {
                 removeButtons.put(remove, i);
             }
         }
-        
+
         //same arbitrary six here
-        JPanel addPanel = new JPanel(new GridLayout(0,6));
+        JPanel addPanel = new JPanel(new GridLayout(0, 6));
         for (int i = 0; i < 5; i++) {
             JLabel label = new JLabel();
             addPanel.add(label);
@@ -125,9 +145,9 @@ public class AddablePanel extends JPanel implements ActionListener {
         addItem = new JButton("Add " + singleTitle);
         addItem.addActionListener(this);
         addPanel.add(addItem);
-        
+
         height++;
-        
+
         gridPane.add(addPanel);
 
         JScrollPane scrollPane = new JScrollPane(gridPane);
@@ -147,17 +167,18 @@ public class AddablePanel extends JPanel implements ActionListener {
             resetMainPanel();
         } else if (e.getSource() == addItem) {
             String[] strings = new String[Values.length];
-            
-            
+
             SetPart sp = new SetPart(Values[0]);
             String title = singleTitle + " addition";
 
             Object[] buttons = {"Add", "Cancel"};
             int result = JOptionPane.showOptionDialog(this, sp, title, JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
             if (result == JOptionPane.OK_OPTION) {
-                for (Map.Entry<MetadataKey, String> metadata : sp.getInfo().entrySet()) {
-                    fileHelper.setRecord(metadata.getKey(), metadata.getValue(), true);
-                }
+                valueArray.add(sp.getInfo().values().toArray(new String[sp.getInfo().size()]));
+//                for (Map.Entry<MetadataKey, String> metadata : sp.getInfo().entrySet()) {
+//                    valueMap.put(metadata.getKey(), metadata.getValue());
+//                    //fileHelper.setRecord(metadata.getKey(), metadata.getValue(), true);
+//                }
                 resetMainPanel();
             }
         } else {

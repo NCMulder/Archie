@@ -37,12 +37,15 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
     public String datasetLocation = null;
     
     public HashMap<MetadataKey, JComponent> labelText;
+    public HashMap<MetadataKey, String> addableValues;
+    
     public ArchieTextField datasetLocationField;
     private JButton chooseButton;
     
     public MetadataChangerFields(FileHelper fileHelper){
         this.fileHelper = fileHelper;
         labelText = new HashMap();
+        addableValues = new HashMap();
         
         resetPane();
     }
@@ -50,6 +53,7 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
     public MetadataChangerFields(FileHelper fileHelper, boolean newDataset){
         this.fileHelper = fileHelper;
         labelText = new HashMap();
+        addableValues = new HashMap();
         
         this.newDataset = true;
         this.datasetLocation = "C:\\Users\\niels\\Documents\\Archie\\Testset\\testset";
