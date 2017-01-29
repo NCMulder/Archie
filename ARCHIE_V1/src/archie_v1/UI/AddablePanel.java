@@ -84,7 +84,7 @@ public class AddablePanel extends JPanel implements ActionListener {
         if (fileHelper.metadataMap.get(Values[0]) != null) {
             System.out.println("Addable " + Values[0] + " with value " + fileHelper.metadataMap.get(Values[0]) + " is being prepared.");
 
-            xweight = .8f / (Values.length);
+            xweight = .8333f / (Values.length);
             String[] mainKeys = fileHelper.metadataMap.get(Values[0]).split(";");
             height = mainKeys.length;
 
@@ -93,33 +93,10 @@ public class AddablePanel extends JPanel implements ActionListener {
 
                 for (int j = 0; j < Values.length; j++) {
                     String labelText = "";
-                    try {
-                        labelText = fileHelper.metadataMap.get(Values[j]).split(";")[i].trim();
-                    } catch (NullPointerException | ArrayIndexOutOfBoundsException ex) {
-                        String errorMessage = "No " + Values[j] + " found for " + singleTitle + " " + fileHelper.metadataMap.get(Values[0]).split(";")[i].trim();
-                        errorMessage += ". \nPlease provide the missing component.";
-                        JOptionPane.showConfirmDialog(this, errorMessage, "Missing " + Values[j], 0);
-
-                        String[] availableStrings = new String[5];
-
-                        for (int k = 0; k < Values.length; k++) {
-                            try {
-                                availableStrings[k] = fileHelper.metadataMap.get(Values[k]).split(";")[i].trim();
-                            } catch (Exception e) {
-                                availableStrings[k] = "";
-                            }
-                        }
-
-                        SetPart sp = new SetPart(Values[0], availableStrings);
-                        Object[] buttons = {"Add", "Cancel"};
-                        int result = JOptionPane.showOptionDialog(this, sp, "Missing " + Values[j], JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
-                        if (result == JOptionPane.OK_OPTION) {
-                            for (Map.Entry<MetadataKey, String> metadata : sp.getInfo().entrySet()) {
-                                String previousRecord = (fileHelper.metadataMap.get(metadata.getKey()) != null) ? fileHelper.metadataMap.get(metadata.getKey()) + ";" : "";
-                                fileHelper.setRecord(metadata.getKey(), previousRecord + metadata.getValue(), true);
-                            }
-                        }
-                    }
+                    labelText = fileHelper.metadataMap.get(Values[j]).split(";")[i].trim();
+                    
+                    System.out.println("Label for " + Values[j] + " is set to " + labelText +", x index is " + j);
+                    
                     JLabel label = new JLabel(labelText);
                     gbc = new GridBagConstraints(
                             j, 0, //GridX, GridY
@@ -134,9 +111,9 @@ public class AddablePanel extends JPanel implements ActionListener {
                 JButton remove = new JButton("Remove");
                 remove.addActionListener(this);
                 gbc = new GridBagConstraints(
-                        4, 0, //GridX, GridY
+                        5, 0, //GridX, GridY
                         1, 1, //GridWidth, GridHeight
-                        .2f, 1, //WeightX, WeightY
+                        1 - Values.length * xweight, 1, //WeightX, WeightY
                         GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, //Anchor, Fill
                         new Insets(2, 2, 2, 2), 0, 0); //Insets, IpadX, IpadY
                 singleValue.add(remove, gbc);

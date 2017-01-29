@@ -46,8 +46,10 @@ public class ReadmeParser {
                 String key = keyValue[0].replace("o ", "").trim().toLowerCase();
                 switch (key) {
                     case "item":
+                        //Identifier in ReadMe is wrong, should not be there
                         String itemIdentifier = br.readLine().split(splitter, 2)[1].replaceAll(",$", "");
-                        setForFileHelper(MetadataKey.Identifier, itemIdentifier, true, true);
+                        //setForFileHelper(MetadataKey.Identifier, itemIdentifier, true, true);
+                        
                         String title = br.readLine().split(splitter, 2)[1].replace("\"", "").replaceAll(",$", "");
                         //do something with title?
                         item = true;
@@ -60,6 +62,8 @@ public class ReadmeParser {
                         String authorName = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
                         String authorIdentifier = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
                         String authorAffiliation = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
+                        String[] authorValues = {authorIdentifier, authorTitle, authorInitials, authorName, authorAffiliation};
+                        setForFileHelper(MetadataKey.creatorKeys, authorValues, true, true);
                         item = false;
                         creator = true;
                         contributor = false;
@@ -70,6 +74,9 @@ public class ReadmeParser {
                         String contributorName = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
                         String contributorIdentifier = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
                         String contributorAffiliation = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
+                        String[] contributorValues = {contributorIdentifier, contributorTitle, contributorInitials, contributorName, contributorAffiliation};
+                        
+                        setForFileHelper(MetadataKey.contributorKeys, contributorValues, true, true);
                         item = false;
                         creator = false;
                         contributor = true;
@@ -119,34 +126,43 @@ public class ReadmeParser {
                         setForFileHelper(MetadataKey.DateCreated, keyValue[1].replaceAll(",$", ""), true, true);
                         break;
                     case "rights holder":
-                        setForFileHelper(MetadataKey.Rightsholder, keyValue[1].replaceAll(",$", ""), true, true);
+                        //Should not be in readme
+                        //setForFileHelper(MetadataKey.Rightsholder, keyValue[1].replaceAll(",$", ""), true, true);
                         break;
                     case "publisher":
-                        setForFileHelper(MetadataKey.Publisher, keyValue[1].replaceAll(",$", ""), true, true);
+                        //Should not be in readme
+                        //setForFileHelper(MetadataKey.Publisher, keyValue[1].replaceAll(",$", ""), true, true);
                         break;
                     case "description":
-                        setForFileHelper(MetadataKey.Description, keyValue[1].replaceAll(",$", ""), true, true);
+                        //Should not be in readme
+                        //setForFileHelper(MetadataKey.Description, keyValue[1].replaceAll(",$", ""), true, true);
                         break;
                     case "subject":
-                        setForFileHelper(MetadataKey.Subject, keyValue[1].replaceAll(",$", "").replaceAll(",", ";"), true, true);
+                        //Should not be in readme, possibly propagate up?
+                        //setForFileHelper(MetadataKey.Subject, keyValue[1].replaceAll(",$", "").replaceAll(",", ";"), true, true);
                         break;
                     case "spatial coverage":
                         setForFileHelper(MetadataKey.SpatialCoverage, keyValue[1].substring(0, keyValue[1].indexOf(",\"")).replace("\"", ""), true, true);
                         break;
                     case "temporal coverage":
-                        setForFileHelper(MetadataKey.TemporalCoverage, keyValue[1].substring(0, keyValue[1].indexOf(",\"")), true, true);
+                        //Should not be in readme
+                        //setForFileHelper(MetadataKey.TemporalCoverage, keyValue[1].substring(0, keyValue[1].indexOf(",\"")), true, true);
                         break;
                     case "related datasets":
-                        setForFileHelper(MetadataKey.RelatedDatasetName, keyValue[1].substring(0, keyValue[1].indexOf(",Names")), true, true);
+                        //Should not be in readme
+                        //setForFileHelper(MetadataKey.RelatedDatasetName, keyValue[1].substring(0, keyValue[1].indexOf(",Names")), true, true);
+                        //setForFileHelper(MetadataKey.RelatedDatasetLocation, "empty", true, true);
                         break;
                     case "type":
                         setForFileHelper(MetadataKey.FileContentType, keyValue[1].substring(0, keyValue[1].indexOf(",always")), true, true);
                         break;
                     case "language":
-                        setForFileHelper(MetadataKey.FileContentType, keyValue[1].substring(0, keyValue[1].indexOf(",\"default") + 1), true, true);
+                        //Should not be in readme
+                        //setForFileHelper(MetadataKey.FileContentType, keyValue[1].substring(0, keyValue[1].indexOf(",\"default") + 1), true, true);
                         break;
                     case "rights":
-                        setForFileHelper(MetadataKey.AccessLevel, keyValue[1].substring(0, keyValue[1].indexOf(",\"either") + 1), true, true);
+                        //Should not be in readme
+                        //setForFileHelper(MetadataKey.AccessLevel, keyValue[1].substring(0, keyValue[1].indexOf(",\"either") + 1), true, true);
                         break;
                     case "embarg":
                         //to be implemented
@@ -199,10 +215,23 @@ public class ReadmeParser {
             }
             return;
         }
+        
+        assert value!=null : !value.equals("");
+        
         fileHelper.setRecord(key, value, hardSet, init);
     }
     
     public void setForFileHelper(MetadataKey[] keys, String[] values, boolean hardSet, boolean init){
+        assert values.length == keys.length;
+        
+        //Check wether or not all fields are empty
+        boolean cont = false;
+        for (int i = 0; !cont && i < values.length; i++) {
+            if(values[i]!=null&&!values[i].equals(""))
+                cont = true;
+        }
+        if(!cont)
+            return;
         
         if(Arrays.asList(values).contains(null) || Arrays.asList(values).contains("")){
             SetPart sp = new SetPart(keys[0], values);
@@ -215,8 +244,10 @@ public class ReadmeParser {
             }
             return;
         }
-        for(int i = 0; i<)
         
+        for(int i = 0; i<keys.length; i++){
+            fileHelper.setRecord(keys[i], values[i], hardSet, init);
+        }
     }
 
     public void putInDictionary(Map<MetadataKey, String> dict, MetadataKey key, String value) {
