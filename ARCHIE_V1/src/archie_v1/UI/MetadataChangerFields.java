@@ -12,6 +12,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import javax.swing.BorderFactory;
@@ -38,6 +39,7 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
     
     public HashMap<MetadataKey, JComponent> labelText;
     public HashMap<MetadataKey, String> addableValues;
+    public ArrayList<AddablePanel> addablePanels;
     
     public ArchieTextField datasetLocationField;
     private JButton chooseButton;
@@ -46,6 +48,7 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
         this.fileHelper = fileHelper;
         labelText = new HashMap();
         addableValues = new HashMap();
+        addablePanels = new ArrayList();
         
         resetPane();
     }
@@ -54,6 +57,7 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
         this.fileHelper = fileHelper;
         labelText = new HashMap();
         addableValues = new HashMap();
+        addablePanels = new ArrayList();
         
         this.newDataset = true;
         this.datasetLocation = "C:\\Users\\niels\\Documents\\Archie\\Testset\\testset";
@@ -110,6 +114,7 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
 
     private AddablePanel createAddable(JComponent comp, String single, String plural, MetadataKey[] keyStrings) {
         AddablePanel addablePanel = new AddablePanel(single, plural, keyStrings, fileHelper);
+        addablePanels.add(addablePanel);
         GridBagConstraints gbc = new GridBagConstraints(
                 0, panelY, //GridX, GridY
                 5, addablePanel.height, //GridWidth, GridHeight

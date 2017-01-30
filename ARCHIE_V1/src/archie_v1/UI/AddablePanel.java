@@ -33,7 +33,7 @@ import javax.swing.border.EtchedBorder;
  */
 public class AddablePanel extends JPanel implements ActionListener {
 
-    MetadataKey[] Values;
+    public MetadataKey[] Values;
     String singleTitle, pluralTitle;
     public int height = 0;
     JComponent mainPanel;
@@ -43,7 +43,7 @@ public class AddablePanel extends JPanel implements ActionListener {
 
     HashMap<Integer, JPanel> valuePanels;
     HashMap<MetadataKey, String> valueMap;
-    ArrayList<String[]> valueArray;
+    public ArrayList<String[]> valueArray;
 
     private float xweight;
     private FileHelper fileHelper;

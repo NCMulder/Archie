@@ -9,6 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -154,6 +155,10 @@ public abstract class FileHelper {
     
     public void AddAddable(MetadataKey key, String value){
         String currentValue = metadataMap.get(key);
+        if(currentValue != null && Arrays.asList(currentValue.split(";")).contains(value)){
+            System.out.println("The value \"" + value + "\" already exists.");
+            return;
+        }
         if(currentValue != null && !currentValue.equals(""))
             currentValue+=";" + value;
         else
