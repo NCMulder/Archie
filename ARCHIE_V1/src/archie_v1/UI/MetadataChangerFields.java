@@ -205,7 +205,6 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
             }
         } else {
             System.out.println(e.getSource());
-            JOptionPane.showInputDialog(this, "hello");
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }

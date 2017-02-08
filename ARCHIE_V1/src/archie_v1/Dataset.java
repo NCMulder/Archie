@@ -149,6 +149,11 @@ public class Dataset {
             for (File dirFile : file.toFile().listFiles()) {
                 createNodes(dirFile.toPath(), fileNode, folderHelper);
             }
+            
+            //Here we can do stuff with all children files, if desired.
+            
+            
+            
             folderH.children.add(folderHelper);
 
             if (readmes.containsKey(file)) {

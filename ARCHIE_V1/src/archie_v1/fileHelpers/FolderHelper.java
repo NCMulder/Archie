@@ -6,56 +6,47 @@
 package archie_v1.fileHelpers;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
-import org.apache.commons.io.FilenameUtils;
 
 /**
  *
- * @author niels
+ * @author N.C. Mulder <n.c.mulder at students.uu.nl>
  */
 public class FolderHelper extends FileHelper {
     
-   // public LinkedList<FileHelper> children;
-    
+    public LinkedList<FileHelper> children;
+
+    // public LinkedList<FileHelper> children;
     public FolderHelper(Path filePath, boolean Islandora) {
         super(filePath, Islandora);
+        children = new LinkedList();
     }
-    
-    public FolderHelper(Path filePath, boolean Islandora, boolean root){
+
+    public FolderHelper(Path filePath, boolean Islandora, boolean root) {
         super(filePath, Islandora, root);
+        children = new LinkedList();
     }
-    
+
     @Override
-    public void setRecord(MetadataKey key, String value, boolean hardSet, boolean init){
-        if(key.addable)
-            AddAddable(key, value);
-        else 
-            super.metadataMap.put(key, value);
-        if(init)
+    public void setRecord(MetadataKey key, String value, boolean hardSet, boolean init) {
+        super.metadataMap.put(key, value);
+        if (init) {
             return;
-        for(FileHelper fh : children){
+        }
+        for (FileHelper fh : children) {
             fh.setRecord(key, value, hardSet);
         }
     }
-    
-//    @Override
-//    public void Initialize(){
-//        for (int i = 0; i < MetadataContainer.MetadataKey.values().length; i++) {
-//            if(MetadataContainer.MetadataKey.values()[i].file)
-//                setRecord(MetadataContainer.MetadataKey.values()[i], MetadataContainer.MetadataKey.values()[i].getDefaultValue(), false, true);
-//        }
-////        setRecord(MetadataContainer.MetadataKey.CreatorName, MetadataContainer.MetadataKey.CreatorName.defaultValue, false);
-////        setRecord(MetadataContainer.MetadataKey.CreatorAffiliation, MetadataContainer.MetadataKey.CreatorAffiliation.defaultValue, false);
-////        setRecord(MetadataContainer.MetadataKey.CreatorTOA, MetadataContainer.MetadataKey.CreatorTOA.defaultValue, false);
-////        setRecord(MetadataContainer.MetadataKey.CreatorIdentifier, MetadataContainer.MetadataKey.CreatorIdentifier.defaultValue, false);
-////        setRecord(MetadataContainer.MetadataKey.ContributorName, MetadataContainer.MetadataKey.ContributorName.defaultValue, false);
-////        setRecord(MetadataContainer.MetadataKey.Rightsholder, MetadataContainer.MetadataKey.Rightsholder.defaultValue, false);
-////        setRecord(MetadataContainer.MetadataKey.Subject, MetadataContainer.MetadataKey.Subject.defaultValue, false);
-////        setRecord(MetadataContainer.MetadataKey.Description, MetadataContainer.MetadataKey.Description.defaultValue, false);
-////        setRecord(MetadataContainer.MetadataKey.Publisher, MetadataContainer.MetadataKey.Publisher.defaultValue, false);
-////        setRecord(MetadataContainer.MetadataKey.Language, MetadataContainer.MetadataKey.Language.defaultValue, false);
-////        setRecord(MetadataContainer.MetadataKey.TemporalCoverage, MetadataContainer.MetadataKey.TemporalCoverage.defaultValue, false);
-////        setRecord(MetadataContainer.MetadataKey.SpatialCoverage, MetadataContainer.MetadataKey.SpatialCoverage.defaultValue, false);
-////        setRecord(MetadataContainer.MetadataKey.AccesLevel, MetadataContainer.MetadataKey.AccesLevel.defaultValue, false);
-//    }
+
+    @Override
+    public void SetAddableRecord(MetadataKey[] Values, ArrayList<String[]> valueArray, boolean hardSet) {
+        super.SetAddableRecord(Values, valueArray, hardSet);
+        if(hardSet){
+            for(FileHelper fh : children){
+                fh.SetAddableRecord(Values, valueArray, hardSet);
+            }
+        }
+    }
 }

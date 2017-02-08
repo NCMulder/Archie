@@ -63,7 +63,7 @@ public class ReadmeParser {
                         String authorIdentifier = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
                         String authorAffiliation = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
                         String[] authorValues = {authorIdentifier, authorTitle, authorInitials, authorName, authorAffiliation};
-                        setForFileHelper(MetadataKey.creatorKeys, authorValues, true, true);
+                        setForFileHelper(MetadataKey.creatorKeys, authorValues, true, false);
                         item = false;
                         creator = true;
                         contributor = false;
@@ -76,7 +76,7 @@ public class ReadmeParser {
                         String contributorAffiliation = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
                         String[] contributorValues = {contributorIdentifier, contributorTitle, contributorInitials, contributorName, contributorAffiliation};
                         
-                        setForFileHelper(MetadataKey.contributorKeys, contributorValues, true, true);
+                        setForFileHelper(MetadataKey.contributorKeys, contributorValues, true, false);
                         item = false;
                         creator = false;
                         contributor = true;
@@ -123,7 +123,7 @@ public class ReadmeParser {
 //                        }
 //                        break;
                     case "date created":
-                        setForFileHelper(MetadataKey.DateCreated, keyValue[1].replaceAll(",$", ""), true, true);
+                        setForFileHelper(MetadataKey.DateCreated, keyValue[1].replaceAll(",$", ""), true, false);
                         break;
                     case "rights holder":
                         //Should not be in readme
@@ -142,7 +142,7 @@ public class ReadmeParser {
                         //setForFileHelper(MetadataKey.Subject, keyValue[1].replaceAll(",$", "").replaceAll(",", ";"), true, true);
                         break;
                     case "spatial coverage":
-                        setForFileHelper(MetadataKey.SpatialCoverage, keyValue[1].substring(0, keyValue[1].indexOf(",\"")).replace("\"", ""), true, true);
+                        setForFileHelper(MetadataKey.SpatialCoverage, keyValue[1].substring(0, keyValue[1].indexOf(",\"")).replace("\"", ""), true, false);
                         break;
                     case "temporal coverage":
                         //Should not be in readme
@@ -154,7 +154,7 @@ public class ReadmeParser {
                         //setForFileHelper(MetadataKey.RelatedDatasetLocation, "empty", true, true);
                         break;
                     case "type":
-                        setForFileHelper(MetadataKey.FileContentType, keyValue[1].substring(0, keyValue[1].indexOf(",always")), true, true);
+                        setForFileHelper(MetadataKey.FileContentType, keyValue[1].substring(0, keyValue[1].indexOf(",always")), true, false);
                         break;
                     case "language":
                         //Should not be in readme
