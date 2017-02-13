@@ -3,6 +3,7 @@ package archie_v1.UI;
 
 import archie_v1.Dataset;
 import archie_v1.fileHelpers.FileHelper;
+import archie_v1.fileHelpers.FolderHelper;
 import archie_v1.outputFormats.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -26,22 +27,12 @@ public class MetadataChanger extends JSplitPane implements TreeSelectionListener
     Path mainDirectory;
     JTree UITree;
     Dataset dataset;
-
-    public MetadataChanger(String name, Path path, boolean fromArchie, boolean includeIslandora, ProgressPanel pP) {
-        long now, start = System.nanoTime();
-        //Directory, dataset
-        mainDirectory = path;
+    
+    public MetadataChanger(Dataset dataset){
+        mainDirectory = dataset.mainDirectory;
+        this.dataset = dataset;
         
-        dataset = new Dataset(name, path, fromArchie, includeIslandora, pP);
-        now = System.nanoTime();
-        System.out.println("Creating the dataset: " + (now - start)/1000000 + "ms");
-        start = System.nanoTime();
-        
-        //UI
         createUI();
-        now = System.nanoTime();
-        System.out.println("Creating the UI: " + (now - start)/1000000 + "ms");
-        start = System.nanoTime();
     }
     
     public boolean Save(SaveType st, Path outputPath) throws IOException{
@@ -69,7 +60,6 @@ public class MetadataChanger extends JSplitPane implements TreeSelectionListener
             if(nodeInfo.equals(fh.filePath)){
                 //do interesting stuff here
                 updateChangerPane(fh);
-                //System.out.println(nodeInfo.toString());
                 return;
             }
         }

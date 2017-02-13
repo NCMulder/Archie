@@ -32,18 +32,22 @@ public abstract class FileHelper {
     public Map<String, String> metadata;
     public boolean root = false;
     public LinkedHashMap<MetadataKey, String> metadataMap;
+    private boolean fromArchie = false;
 
-    public FileHelper(Path filePath, boolean Islandora) {
+    public FileHelper(Path filePath) {
         metadataMap = new LinkedHashMap();
+        metadata = new HashMap();
         this.filePath = filePath;
 
         Initialize();
     }
 
-    public FileHelper(Path filePath, boolean Islandora, boolean root) {
+    public FileHelper(Path filePath, boolean root, boolean fromArchie) {
         metadataMap = new LinkedHashMap();
+        metadata = new HashMap();
         this.root = root;
         this.filePath = filePath;
+        this.fromArchie = fromArchie;
 
         Initialize();
     }
@@ -60,11 +64,11 @@ public abstract class FileHelper {
 
         for (int i = 0; i < MetadataKey.values().length; i++) {
             if (MetadataKey.values()[i].file) {
-                setRecord(MetadataKey.values()[i], null, false, true);
+                setRecord(MetadataKey.values()[i], null, true, true);
             }
         }
 
-        if (!(this instanceof FolderHelper)) {
+        if (!(this instanceof FolderHelper) && !fromArchie) {
             metadata = getMetaData();
             //Is this useful? TODO WIP WOUTER
             setRecord(MetadataKey.FileContentType, "." + FilenameUtils.getExtension(filePath.toString()) + " file", false, true);
@@ -128,8 +132,11 @@ public abstract class FileHelper {
     public void setRecord(MetadataKey key, String value, boolean hardSet) {
         setRecord(key, value, hardSet, false);
     }
-    
-    public void SetAddableRecord(MetadataKey[] Values, ArrayList<String[]> valueArray, boolean hardSet){
+
+    public void SetAddableRecord(MetadataKey[] Values, ArrayList<String[]> valueArray, boolean hardSet) {
+        if(!hardSet && metadataMap.get(Values[0]) != null && (!metadataMap.get(Values[0]).equals("")))
+            return;
+        
         //Empty array should result in an empty array
         if (valueArray.size() == 0) {
             for (MetadataKey key : Values) {
@@ -140,12 +147,14 @@ public abstract class FileHelper {
             for (String[] values : valueArray) {
                 for (int i = 0; i < Values.length; i++) {
                     String currentValue = metadataMap.get(Values[i]);
-                    if(currentValue==null)
+                    if (currentValue == null) {
                         currentValue = "";
+                    }
                     String[] currentValues = currentValue.split(";");
-                    if(i==0 && Arrays.asList(currentValues).contains(values[i]))
+                    if (i == 0 && Arrays.asList(currentValues).contains(values[i])) {
                         break;
-                    
+                    }
+
                     if (!currentValue.equals("")) {
                         currentValue += ";";
                     }
@@ -165,6 +174,34 @@ public abstract class FileHelper {
         if (tikaValue != null) {
             setRecord(key, tikaValue, false, true);
             //metadataMap.put(key, tikaValue);
+        }
+    }
+
+    public void saveDataset(BufferedWriter writer, String prefix) {
+        try {
+            writer.write(prefix + filePath + "\n");
+            if(this.getClass()==FolderHelper.class)
+                writer.write(prefix + ((FolderHelper)this).children.size() + "\n");
+            else
+                writer.write(prefix + "-1\n");
+            for (Map.Entry<MetadataKey, String> entry : metadataMap.entrySet()) {
+                if (entry.getValue() == null) {
+                    continue;
+                }
+                writer.write(prefix + entry.getKey().name() + ": " + entry.getValue() + "\n");
+            }
+            writer.write("--\n");
+            if (!(this instanceof FolderHelper)) {
+                for (Map.Entry<String, String> entry : metadata.entrySet()) {
+                    if (entry.getValue() == null) {
+                        continue;
+                    }
+                    writer.write(prefix + entry.getKey() + ": " + entry.getValue() + "\n");
+                }
+            }
+            writer.write("--\n");
+        } catch (IOException ex) {
+            Logger.getLogger(FileHelper.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }

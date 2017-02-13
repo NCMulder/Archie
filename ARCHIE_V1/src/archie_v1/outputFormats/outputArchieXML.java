@@ -62,7 +62,7 @@ public class outputArchieXML extends outputAbstract {
 
     //setFileElements sets several content types for files, such as filetype and modification date.
     private void setFileElements(Path filePath, Element file) {
-        FileHelper fh = ARCHIE.fileSelector(filePath, true);
+        FileHelper fh = ARCHIE.fileSelector(filePath);
         Map<String, String> fileMap = fh.metadata;
         for (String metadata : fileMap.keySet()) {
             //needs a better way of metadataname replacement

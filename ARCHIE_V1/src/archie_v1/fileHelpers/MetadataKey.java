@@ -30,7 +30,7 @@ public enum MetadataKey {
     RelatedDatasetName("Related dataset name", "Philosophy of the Caribean in the Third Century", true, false, true),
     RelatedDatasetLocation("Related dataset location", "DOI: 12683128361", true, false, true),
     Subject("Subject", "Philosophy", true, false, true),
-    Description("Description", "This dataset encompasses all pottery from Grenada, as well as several papers.", true, false, false),
+    Description("Description", "This dataset encompasses all pottery from Grenada.", true, false, false),
     Rightsholder("Rightsholder", "Universiteit Leiden", true, false, false),
     Publisher("Publisher", "Universiteit Leiden", true, false, false),
     DateCreated("Date created", LocalDateTime.now().toLocalDate().toString()),

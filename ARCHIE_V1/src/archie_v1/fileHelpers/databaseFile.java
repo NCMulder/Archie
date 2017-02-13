@@ -6,8 +6,8 @@ import java.nio.file.Path;
 public class databaseFile extends FileHelper {
 
     //File specific setters
-    public databaseFile(Path filePath, boolean Islandora) {
-        super(filePath, Islandora);
+    public databaseFile(Path filePath) {
+        super(filePath);
         setRecordThroughTika(MetadataKey.CreatorGivenName, "creator");
         setRecordThroughTika(MetadataKey.CreatorFamilyName, "creator");
         setRecordThroughTika(MetadataKey.CreatorAffiliation, "extended-properties_Company");

@@ -14,8 +14,8 @@ import java.nio.file.Path;
 public class xlsxFile extends FileHelper {
 
     //Create a better addable adding method. Also helpful for removing, perhabs.
-    public xlsxFile(Path filePath, boolean Islandora) {
-        super(filePath, Islandora);
+    public xlsxFile(Path filePath) {
+        super(filePath);
         String author = metadata.get("creator");
         setRecordThroughTika(MetadataKey.CreatorGivenName, "creator");
         setRecordThroughTika(MetadataKey.CreatorFamilyName, "creator");

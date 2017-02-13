@@ -1,11 +1,9 @@
 //License
 package archie_v1.UI;
 
-import archie_v1.fileHelpers.MetadataKey;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -18,7 +16,6 @@ import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -26,9 +23,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
-import javax.swing.SwingConstants;
 import javax.swing.UIManager;
-import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class MainFrame extends JFrame implements ActionListener {
@@ -41,6 +36,8 @@ public class MainFrame extends JFrame implements ActionListener {
     JMenuItem toIslandora, toDANS, toArchieXML, editPrefs;
     public JMenu export;
     private JMenuItem tempMenuItem;
+    public JMenuItem saveItem;
+    private JMenuItem openMenu;
 
     public MainFrame(ArchieUIManager parent) {
         // base init
@@ -96,12 +93,11 @@ public class MainFrame extends JFrame implements ActionListener {
         newMenu.add(fromXML);
         dataSet.add(newMenu);
 
-        JMenuItem openMenu = new JMenuItem("Open");
+        openMenu = new JMenuItem("Open");
         openMenu.addActionListener(this);
-        openMenu.setEnabled(false);
         dataSet.add(openMenu);
 
-        JMenuItem saveItem = new JMenuItem("Save");
+        saveItem = new JMenuItem("Save");
         saveItem.addActionListener(this);
         saveItem.setEnabled(false);
         dataSet.add(saveItem);
@@ -206,6 +202,22 @@ public class MainFrame extends JFrame implements ActionListener {
                 } catch (IOException ex) {
                     Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
                 }
+            }
+        } else if(e.getSource() == saveItem){
+            boolean succes = ((MetadataChanger)mainPanel).dataset.saveDataset();
+            if (succes) 
+                JOptionPane.showMessageDialog(this, "The dataset has been succesfully saved.");
+            else 
+                JOptionPane.showMessageDialog(this, "An error occured.\nThe dataset has not been saved.\nPlease try again. If this error persists, please contact us through the help menu.");
+        } else if (e.getSource() == openMenu){
+            JFileChooser fc = new JFileChooser();
+            FileNameExtensionFilter archieFilter = new FileNameExtensionFilter("archie files(*.archie)", "archie");
+            fc.addChoosableFileFilter(archieFilter);
+            fc.setFileFilter(archieFilter);
+            int rv = fc.showOpenDialog(this);
+            if(rv == JFileChooser.APPROVE_OPTION){
+                NewDataset nds = new NewDataset(this, fc.getSelectedFile());
+                //ChangeMainPanel(nds);
             }
         } else {
             System.out.println(e);

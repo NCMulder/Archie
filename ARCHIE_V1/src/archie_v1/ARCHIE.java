@@ -3,13 +3,9 @@ package archie_v1;
 
 import archie_v1.UI.ArchieUIManager;
 import archie_v1.fileHelpers.*;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -19,6 +15,8 @@ public class ARCHIE {
     static ArchieUIManager ui;
 
     public static void main(String[] args) {
+        if(args.length>=2)
+            System.out.println(args[1]);
         //User preferences
         
         Preferences prefs = Preferences.userNodeForPackage(MetadataKey.class);
@@ -40,18 +38,18 @@ public class ARCHIE {
      * @param includeIslandora Selects whether or not the file should be included in an Islandora output.
      * @return
      */
-    static public FileHelper fileSelector(Path filePath, boolean includeIslandora){
+    static public FileHelper fileSelector(Path filePath){
         String fileExtension = FilenameUtils.getExtension(filePath.toString());
         switch(fileExtension){
             case "jpg":
             case "JPG":
             case "jpeg": 
-            case "JPEG": return new pictureFile(filePath, includeIslandora);
-            case "accdb": return new databaseFile(filePath, includeIslandora);
+            case "JPEG": return new pictureFile(filePath);
+            case "accdb": return new databaseFile(filePath);
             case "doc":
             case "docx":
             case "xls":
-            case "xlsx": return new xlsxFile(filePath, includeIslandora);
+            case "xlsx": return new xlsxFile(filePath);
             case "dbf":
             case "pdf":
             case "mxd":
@@ -61,7 +59,7 @@ public class ARCHIE {
             case "shp":
             case "shx":
             case "png":
-            default: return new basicFile(filePath, includeIslandora);
+            default: return new basicFile(filePath, false, false);
         }
     }
 }

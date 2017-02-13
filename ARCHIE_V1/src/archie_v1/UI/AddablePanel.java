@@ -104,7 +104,7 @@ public class AddablePanel extends JPanel implements ActionListener {
 
             for (int i = 0; i < height; i++) {
                 //This six is arbitrary, should be dynamically settable; however, we want all columns equally.
-                JPanel singleValue = new JPanel(new GridLayout(0, 6));
+                JPanel singleValue = new JPanel(new GridLayout(0, Values.length + 1));
 
                 for (int j = 0; j < Values.length; j++) {
                     String labelText = valueArray.get(i)[j].trim();
@@ -164,7 +164,12 @@ public class AddablePanel extends JPanel implements ActionListener {
             int result = JOptionPane.showOptionDialog(this, sp, title, JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
             
             if (result == JOptionPane.OK_OPTION) {
-                valueArray.add(sp.getInfo().values().toArray(new String[sp.getInfo().size()]));
+                HashMap<MetadataKey, String> map = sp.getInfo();
+                String[] values = new String[Values.length];
+                for(int i = 0; i < Values.length; i++)
+                    values[i] = map.get(Values[i]);
+                valueArray.add(values);
+                //valueArray.add(sp.getInfo().values().toArray(new String[sp.getInfo().size()]));
                 resetMainPanel();
             }
         } else {
