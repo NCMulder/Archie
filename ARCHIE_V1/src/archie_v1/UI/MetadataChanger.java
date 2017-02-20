@@ -45,7 +45,7 @@ public class MetadataChanger extends JSplitPane implements TreeSelectionListener
             JOptionPane.showMessageDialog(this, "The chosen save mode has not been implemented yet.");
             return false;
         }
-        output.Save(outputPath.toString(), dataset.files);
+        output.Save(outputPath.toString(), dataset.files, this);
         
         return true;
     }
@@ -59,6 +59,7 @@ public class MetadataChanger extends JSplitPane implements TreeSelectionListener
         for(FileHelper fh : dataset.files){
             if(nodeInfo.equals(fh.filePath)){
                 //do interesting stuff here
+                
                 updateChangerPane(fh);
                 return;
             }
@@ -89,12 +90,16 @@ public class MetadataChanger extends JSplitPane implements TreeSelectionListener
         JScrollPane fileTreeView = new JScrollPane(UITree);
         this.setLeftComponent(fileTreeView);
 
-        //Todo: change right component to thingy
-        WelcomeScreen ws = new WelcomeScreen();
-        this.setRightComponent(ws);
+        for(FileHelper fh : dataset.files){
+            if(dataset.fileTree.getRoot().toString().equals(fh.filePath.toString())){
+                this.setRightComponent(new MetadataChangerPane(fh, this));
+                return;
+            }
+        }
     }
     
     private void updateChangerPane(FileHelper fileHelper){
+        ((MetadataChangerPane)this.getRightComponent()).saveToFileHelper(FolderHelper.class.isInstance(fileHelper));
         this.setRightComponent(new MetadataChangerPane(fileHelper, this));
     }
 }

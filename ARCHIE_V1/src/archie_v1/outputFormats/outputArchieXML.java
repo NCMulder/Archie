@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
+import javax.swing.JComponent;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.apache.commons.io.FilenameUtils;
 import org.jdom2.Document;
@@ -79,7 +80,7 @@ public class outputArchieXML extends outputAbstract {
 
     //Redo this for the new fileMap
     @Override
-    public void Save(String destination, ArrayList<FileHelper> files) throws IOException {
+    public void Save(String destination, ArrayList<FileHelper> files, JComponent parent) throws IOException {
         XMLOutputter outputter = new XMLOutputter();
         Document archieXML = CreateDocument(fileTree);
             PrintWriter writer = new PrintWriter(FilenameUtils.removeExtension(destination) + ".xml");

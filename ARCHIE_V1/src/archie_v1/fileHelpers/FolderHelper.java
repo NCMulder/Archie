@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.FilenameUtils;
 
 /**
  *
@@ -28,18 +29,14 @@ public class FolderHelper extends FileHelper {
 
     public FolderHelper(Path filePath) {
         super(filePath);
-        children = new LinkedList();
     }
 
-    public FolderHelper(Path filePath, boolean root, boolean fromArchie) {
-        super(filePath, root, fromArchie);
-        children = new LinkedList();
+    public FolderHelper(Path filePath, boolean root) {
+        super(filePath, root);
     }
 
     public FolderHelper(BufferedReader br, Path path) {
-        super(path);
-
-        children = new LinkedList();
+        super(path, true);
         try {
             String line;
             while (!(line = br.readLine()).equals("--")) {
@@ -47,36 +44,53 @@ public class FolderHelper extends FileHelper {
                 if (keyValue.length > 1) {
                     MetadataKey key = MetadataKey.valueOf(line.split(": ")[0]);
                     String value = line.split(": ")[1];
-                    setRecord(key, value, false, true);
+                    setRecord(key, value, true);
                 }
             }
         } catch (IOException ex) {
             Logger.getLogger(FolderHelper.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
+    
     @Override
-    public void setRecord(MetadataKey key, String value, boolean hardSet, boolean init) {
-        if (init) {
-            metadataMap.put(key, value);
+    public void Initialize() {
+        children = new LinkedList();
+        
+        if (root) {
+            for (int i = 0; i < MetadataKey.values().length; i++) {
+                if (MetadataKey.values()[i].dataset) {
+                    setRecord(MetadataKey.values()[i], null, false, true);
+                }
+            }
             return;
         }
-        if (!hardSet && metadataMap.containsKey(key) && (!"".equals(metadataMap.get(key)))) {
-            return;
-        }
-        if (metadataMap.containsKey(key)) {
-            metadataMap.put(key, value);
-            for (FileHelper fh : children) {
-                fh.setRecord(key, value, hardSet);
+
+        for (int i = 0; i < MetadataKey.values().length; i++) {
+            if (MetadataKey.values()[i].file) {
+                setRecord(MetadataKey.values()[i], null, false, true);
             }
         }
     }
 
     @Override
-    public void SetAddableRecord(MetadataKey[] Values, ArrayList<String[]> valueArray, boolean hardSet) {
-        super.SetAddableRecord(Values, valueArray, hardSet);
+    protected void setRecord(MetadataKey key, String value, boolean softSet, boolean init) {
+        super.setRecord(key, value, softSet, init);
+        
         for (FileHelper fh : children) {
-            fh.SetAddableRecord(Values, valueArray, hardSet);
+            fh.setRecord(key, value, softSet, init);
+        }
+    }
+    
+    @Override
+    public void setRecord(MetadataKey key, String value, boolean softSet){
+        setRecord(key, value, softSet, false);
+    }
+
+    @Override
+    public void SetAddableRecord(MetadataKey[] Values, ArrayList<String[]> valueArray, boolean softSet) {
+        super.SetAddableRecord(Values, valueArray, softSet);
+        for (FileHelper fh : children) {
+            fh.SetAddableRecord(Values, valueArray, softSet);
         }
     }
 

@@ -59,7 +59,7 @@ public class ARCHIE {
             case "shp":
             case "shx":
             case "png":
-            default: return new basicFile(filePath, false, false);
+            default: return new basicFile(filePath);
         }
     }
 }

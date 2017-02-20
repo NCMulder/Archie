@@ -38,7 +38,7 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener {
         saveButton.addActionListener(this);
         bottomPanel.add(saveButton);
         if (fileHelper instanceof FolderHelper) {
-            saveChildrenButton = new JButton("Save (overwrite)");
+            saveChildrenButton = new JButton("Save (no overwrite)");
             saveChildrenButton.addActionListener(this);
             bottomPanel.add(saveChildrenButton);
         }
@@ -50,7 +50,7 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == saveButton) {
-            saveToFileHelper(!(fileHelper instanceof FolderHelper));
+            saveToFileHelper(false);
         } else if (e.getSource() == resetButton) {
             setTopPane();
         } else if (e.getSource() == saveChildrenButton) {
@@ -66,19 +66,19 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener {
         this.setTopComponent(topPane);
     }
 
-    private void saveToFileHelper(boolean hardSet) {
+    public void saveToFileHelper(boolean softSet) {
         for (Map.Entry<MetadataKey, JComponent> metadataKeyTextEntry : topPane.labelText.entrySet()) {
             if(!metadataKeyTextEntry.getKey().file)
                 continue;
             String value = (metadataKeyTextEntry.getKey().unrestricted) ? ((ArchieTextField) metadataKeyTextEntry.getValue()).getText() : ((JComboBox) metadataKeyTextEntry.getValue()).getSelectedItem().toString();
-            fileHelper.setRecord(metadataKeyTextEntry.getKey(), value, hardSet);
-            System.out.println("Set key " + metadataKeyTextEntry.getKey() + " to " + value + " for file " + fileHelper.filePath.getFileName());
+            fileHelper.setRecord(metadataKeyTextEntry.getKey(), value, softSet);
+            //System.out.println("Set key " + metadataKeyTextEntry.getKey() + " to " + value + " for file " + fileHelper.filePath.getFileName());
         }
 
         for (AddablePanel addablePanel : topPane.addablePanels) {
             if(!addablePanel.Values[0].file)
                 continue;
-            fileHelper.SetAddableRecord(addablePanel.Values, addablePanel.valueArray, hardSet);
+            fileHelper.SetAddableRecord(addablePanel.Values, addablePanel.valueArray, softSet);
 //            for (String[] values : addablePanel.valueArray) {
 //                for (int i = 0; i < addablePanel.Values.length; i++) {
 //                    System.out.println("Saving addable key with key " + addablePanel.Values[i] + " and value " + values[i]);

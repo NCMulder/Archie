@@ -1,6 +1,7 @@
 //License
 package archie_v1;
 
+import archie_v1.UI.NewDataset;
 import archie_v1.UI.ProgressPanel;
 import archie_v1.fileHelpers.FileHelper;
 import archie_v1.fileHelpers.FolderHelper;
@@ -22,6 +23,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.SwingWorker;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.apache.commons.io.FilenameUtils;
 import org.jdom2.Document;
@@ -35,6 +37,9 @@ import org.jdom2.Element;
  *
  * @author N.C. Mulder <n.c.mulder at students.uu.nl>
  */
+
+
+
 public class Dataset {
 
     public String name;
@@ -42,29 +47,54 @@ public class Dataset {
     public DefaultMutableTreeNode fileTree;
     public ArrayList<FileHelper> files = new ArrayList();
     public HashMap<Path, Path> readmes = new HashMap();
+    private NewDataset.DatasetInitializer sw;
 
     private FolderHelper datasetHelper;
 
     //Debugging
     private ArrayList<String> probfiles = new ArrayList();
+    
+    
+    
+    private class DatasetInitializer {
 
-    ProgressPanel pP;
-
-    public Dataset(String name, Path path, boolean fromArchie, ProgressPanel pP, FolderHelper datasetHelper, BufferedReader br, int childCount) {
+    }
+    
+    public Dataset(String name, Path path, FolderHelper datasetHelper, NewDataset.DatasetInitializer sw) {
         long now, start = System.nanoTime();
-        
+
+        this.sw = sw;
         this.name = name;
         this.mainDirectory = path;
-        this.pP = pP;
         this.datasetHelper = datasetHelper;
 
-        if (!fromArchie) {
-            dirToTree(path);
-        } else {
-            openDataset(br, childCount);
-        }
+        dirToTree(path);
 
-        //Temporary debugging.
+        debugFiles();
+
+        now = System.nanoTime();
+        System.out.println("Creating the dataset: " + (now - start) / 1000000 + "ms");
+
+        sw.setNotBusy();
+    }
+
+    public Dataset(String name, Path path, FolderHelper datasetHelper, BufferedReader br, int childCount, NewDataset.DatasetInitializer sw) {
+        long now, start = System.nanoTime();
+
+        this.sw = sw;
+        this.name = name;
+        this.mainDirectory = path;
+        this.datasetHelper = datasetHelper;
+
+        openDataset(br, childCount);
+
+        now = System.nanoTime();
+        System.out.println("Creating the dataset: " + (now - start) / 1000000 + "ms");
+
+        sw.setNotBusy();
+    }
+
+    private void debugFiles() {
         if (!probfiles.isEmpty()) {
             String errorMessage = "There was a problem parsing the following files:\n\n";
             for (String s : probfiles) {
@@ -82,11 +112,8 @@ public class Dataset {
             }
             errorMessage += "\nPlease report this error, enclosing all problematic file names.\nA log file has been saved to the ARCHIE directory.";
 
-            JOptionPane.showMessageDialog(pP, errorMessage);
+            JOptionPane.showMessageDialog(sw.parent, errorMessage);
         }
-        
-        now = System.nanoTime();
-        System.out.println("Creating the dataset: " + (now - start)/1000000 + "ms");
     }
 
     /**
@@ -121,6 +148,7 @@ public class Dataset {
 
     public void createNodes(BufferedReader br, String prefix, DefaultMutableTreeNode parent, FolderHelper folderHelper) {
         try {
+            sw.updateProgress();
             Path path = Paths.get(br.readLine().replaceFirst(prefix, ""));
             DefaultMutableTreeNode fileNode = new DefaultMutableTreeNode(path);
 
@@ -129,13 +157,13 @@ public class Dataset {
             int childCount = Integer.parseInt(nextLine);
             boolean isDir = childCount > 0;
 
-            System.out.println("Creating a filehelper for file " + path + ", parent is " + folderHelper.filePath);
+            //System.out.println("Creating a filehelper for file " + path + ", parent is " + folderHelper.filePath);
             FileHelper fileHelper;
 
             if (isDir) {
-                fileHelper = new FolderHelper(path, false, true);
+                fileHelper = new FolderHelper(path, false);
             } else {
-                fileHelper = new basicFile(path, false, true);
+                fileHelper = new basicFile(path);
             }
 
             while (!(nextLine = br.readLine()).equals("--")) {
@@ -144,7 +172,7 @@ public class Dataset {
                 if (keyValue.length > 1) {
                     MetadataKey key = MetadataKey.valueOf(keyValue[0]);
                     String value = keyValue[1];
-                    fileHelper.setRecord(key, value, true, true);
+                    fileHelper.setRecord(key, value, false);
                 }
             }
             while (!(nextLine = br.readLine()).equals("--")) {
@@ -172,19 +200,10 @@ public class Dataset {
         }
     }
 
-    //Available for planned xml-to-dataset conversion. WIP.
-    public DefaultMutableTreeNode docToTree(Document doc) {
-        DefaultMutableTreeNode resultTree = new DefaultMutableTreeNode(doc.getRootElement());
-        for (Element elem : doc.getRootElement().getChildren()) {
-            createNodes(elem, resultTree);
-        }
-        return resultTree;
-    }
-
     private void createNodes(Path file, DefaultMutableTreeNode tree, FolderHelper folderH) {
-        if (pP != null) {
-            pP.pingProgBar();
-        }
+        sw.updateProgress();
+        //    System.out.println("node");
+
         if ("readme".equals(FilenameUtils.removeExtension(file.getFileName().toString()))) {
             readmes.put(file.getParent(), file);
             return;
@@ -232,24 +251,6 @@ public class Dataset {
             files.add(fileHelper);
 
             //WIP
-        }
-    }
-
-    private void createNodes(Element elem, DefaultMutableTreeNode tree) {
-        DefaultMutableTreeNode fileNode = new DefaultMutableTreeNode(elem);
-        tree.add(fileNode);
-        File f = new File(elem.getAttributeValue("path"));
-        if (f.isDirectory()) {
-            for (Element element : elem.getChildren()) {
-                createNodes(element, fileNode);
-            }
-        }
-    }
-
-    private class TreeBuilder extends Thread {
-
-        public TreeBuilder(Path path) {
-            dirToTree(path);
         }
     }
 

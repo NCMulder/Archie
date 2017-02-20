@@ -1,6 +1,9 @@
 //License
 package archie_v1.outputFormats;
 
+import java.awt.Cursor;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -11,50 +14,105 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import javax.swing.JComponent;
+import javax.swing.ProgressMonitor;
+import javax.swing.SwingWorker;
 import org.apache.commons.io.FilenameUtils;
 import org.jdom2.Document;
 import org.jdom2.output.XMLOutputter;
 
-public class Zipper {
+public class Zipper implements PropertyChangeListener {
 
     ArrayList<String> names = new ArrayList();
+    ProgressMonitor pm;
+    Task task;
+    int size;
+    JComponent parent;
 
-    public void SaveAsZip(String destination, HashMap<Path, Document> documentMap) throws IOException {
-        ZipOutputStream out = new ZipOutputStream(new FileOutputStream(FilenameUtils.removeExtension(destination) + ".zip"));
-        XMLOutputter xmlOutputter = new XMLOutputter();
-
-        for (Map.Entry<Path, Document> documentEntry : documentMap.entrySet()) {
-            Path filePath = documentEntry.getKey();
-            if (filePath.toFile().isDirectory()) {
-                continue;
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals("progress")) {
+            int progress = (int) evt.getNewValue();
+            pm.setProgress(progress);
+            pm.setNote("File " + progress + " of " + size);
+            if(task.isDone() || task.isCancelled()){
+                pm.close();
+                parent.setCursor(null);
             }
-            Document document = documentEntry.getValue();
+        }
+    }
 
-            String[] fileNames = checkDuplicateNames(filePath);
+    class Task extends SwingWorker<Void, Void> {
 
-            //Writing the xml file.
-            ZipEntry zEntry = new ZipEntry(fileNames[0] + ".xml");
-            out.putNextEntry(zEntry);
-            byte[] data = xmlOutputter.outputString(document).getBytes();
-            out.write(data, 0, data.length);
-            out.closeEntry();
+        String destination;
+        HashMap<Path, Document> documentMap;
 
-            //Writing the associated file.
-            FileInputStream fIS = new FileInputStream(filePath.toString());
-            //For now, xml files get an extra .xml in their file name.
-            ZipEntry fileZipEntry = new ZipEntry(fileNames[0] + (".xml".equals(fileNames[1]) ? ".xml" : "") + fileNames[1]);
-            out.putNextEntry(fileZipEntry);
-            byte[] readBuffer = new byte[2048];
-            int length;
-            while ((length = fIS.read(readBuffer)) > 0) {
-                out.write(readBuffer, 0, length);
-            }
-            out.closeEntry();
+        public Task(String destination, HashMap<Path, Document> documentMap) {
+            this.destination = destination;
+            this.documentMap = documentMap;
         }
 
-        out.close();
+        @Override
+        protected Void doInBackground() throws Exception {
+            ZipOutputStream out = new ZipOutputStream(new FileOutputStream(FilenameUtils.removeExtension(destination) + ".zip"));
+            XMLOutputter xmlOutputter = new XMLOutputter();
+
+            setProgress(0);
+            
+            int progress = 0;
+            
+            for (Map.Entry<Path, Document> documentEntry : documentMap.entrySet()) {
+                Path filePath = documentEntry.getKey();
+                setProgress(progress++);
+                if (filePath.toFile().isDirectory()) {
+                    continue;
+                }
+                Document document = documentEntry.getValue();
+
+                String[] fileNames = checkDuplicateNames(filePath);
+
+                //Writing the xml file.
+                ZipEntry zEntry = new ZipEntry(fileNames[0] + ".xml");
+                out.putNextEntry(zEntry);
+                byte[] data = xmlOutputter.outputString(document).getBytes();
+                out.write(data, 0, data.length);
+                out.closeEntry();
+
+                //Writing the associated file.
+                FileInputStream fIS = new FileInputStream(filePath.toString());
+                //For now, xml files get an extra .xml in their file name.
+                ZipEntry fileZipEntry = new ZipEntry(fileNames[0] + (".xml".equals(fileNames[1]) ? ".xml" : "") + fileNames[1]);
+                out.putNextEntry(fileZipEntry);
+                byte[] readBuffer = new byte[2048];
+                int length;
+                while ((length = fIS.read(readBuffer)) > 0) {
+                    out.write(readBuffer, 0, length);
+                }
+                out.closeEntry();
+            }
+
+            out.close();
+            return null;
+        }
+
     }
-    
+
+    public void SaveAsZip(String destination, HashMap<Path, Document> documentMap, JComponent parent) throws IOException {
+        this.size = documentMap.entrySet().size();
+        this.parent = parent;
+        
+        pm = new ProgressMonitor(parent, "Saving files...", "", 0, size);
+        pm.setMillisToDecideToPopup(0);
+        pm.setMillisToPopup(0);
+        
+        parent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        
+        task = new Task(destination, documentMap);
+        task.addPropertyChangeListener(this);
+        task.execute();
+        
+    }
+
     //redo this with name as key and amount as value in dict? todo
     private String[] checkDuplicateNames(Path path) {
         int version = 0;

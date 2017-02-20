@@ -4,11 +4,14 @@ package archie_v1.UI;
 import archie_v1.Dataset;
 import archie_v1.fileHelpers.FolderHelper;
 import archie_v1.fileHelpers.MetadataKey;
+import java.awt.Cursor;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,6 +27,8 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.ProgressMonitor;
+import javax.swing.SwingWorker;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 
@@ -31,7 +36,7 @@ import org.apache.commons.io.filefilter.TrueFileFilter;
  *
  * @author niels
  */
-public class NewDataset extends JPanel implements ActionListener {
+public class NewDataset extends JPanel implements ActionListener, PropertyChangeListener {
 
     private JButton generate, cancel;
     private MainFrame parent;
@@ -40,57 +45,177 @@ public class NewDataset extends JPanel implements ActionListener {
     private String datasetName;
     private Path datasetPath;
     private Dataset dataset;
+    private int datasetSize;
+    ProgressMonitor pm = new ProgressMonitor(this, "Creating dataset", "", 0, 100);
+    SwingWorker task;
+    public boolean busy = true;
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals("progress")) {
+            int progress = (int) evt.getNewValue();
+            pm.setProgress(progress);
+            pm.setNote("File " + progress + " of " + datasetSize);
+            if (task.isDone() || task.isCancelled()) {
+                System.out.println("Job's done!");
+                pm.close();
+                parent.setCursor(null);
+            }
+        }
+    }
+
+    public abstract class DatasetInitializer extends SwingWorker<Void, Void> {
+
+        public JPanel parent;
+
+        public void setNotBusy() {
+            ((NewDataset) parent).busy = false;
+        }
+
+        public DatasetInitializer(JPanel parent) {
+            this.parent = parent;
+        }
+
+        public abstract void updateProgress();
+    }
+
+    private class DatasetCreator extends DatasetInitializer {
+
+        ProgressPanel pp;
+        int fileCount;
+        int progress = 0;
+
+        public DatasetCreator(ProgressPanel pp, int fileCount, JPanel parent) {
+            super(parent);
+            this.pp = pp;
+            this.fileCount = fileCount;
+            pm.setMaximum(fileCount);
+            setProgress(0);
+        }
+
+        @Override
+        protected Void doInBackground() throws Exception {
+            dataset = new Dataset(datasetName, datasetPath, datasetHelper, this);
+
+            System.out.println("after ds " + progress);
+
+            return null;
+        }
+
+        public void updateProgress() {
+            int prog = getProgress();
+            setProgress(progress++);
+            this.firePropertyChange("progress", prog, progress);
+        }
+    }
+
+    private class DatasetOpener extends DatasetInitializer {
+
+        BufferedReader br;
+        int datasetChildCount;
+        int progress = 0;
+
+        public DatasetOpener(BufferedReader br, int datasetChildCount, JPanel parent) {
+            super(parent);
+            this.br = br;
+            this.datasetChildCount = datasetChildCount;
+            pm.setMaximum(datasetChildCount);
+            setProgress(0);
+        }
+
+        @Override
+        protected Void doInBackground() throws Exception {
+            dataset = new Dataset(datasetName, datasetPath, datasetHelper, br, datasetChildCount, this);
+
+            System.out.println("after ds " + progress);
+
+            return null;
+        }
+
+        public void updateProgress() {
+            setProgress(progress++);
+        }
+    }
 
     public NewDataset(MainFrame parent) {
         this.parent = parent;
-        datasetHelper = new FolderHelper(Paths.get("C:\\Users\\niels\\Documents\\Archie\\Testset\\testset"), true, false);
+        pm.setMillisToDecideToPopup(0);
+        pm.setMillisToPopup(0);
+        datasetHelper = new FolderHelper(Paths.get("C:\\Users\\niels\\Documents\\Archie\\Testset\\testset"), true);
         createUI();
     }
 
     public NewDataset(MainFrame parent, File selectedFile) {
         this.parent = parent;
-        
+        pm.setMillisToDecideToPopup(0);
+        pm.setMillisToPopup(0);
+
         try {
             BufferedReader br = new BufferedReader(new FileReader(selectedFile));
             datasetName = br.readLine();
             br.readLine();
             datasetPath = Paths.get(br.readLine());
-            int datasetChildCount = Integer.parseInt(br.readLine());
-            
+            datasetSize = Integer.parseInt(br.readLine());
+
             datasetHelper = new FolderHelper(br, datasetPath);
-            
-            dataset = new Dataset(datasetName, datasetPath, true, null, datasetHelper, br, datasetChildCount);
+
+            task = new DatasetOpener(br, datasetSize, this);
+            task.addPropertyChangeListener(this);
+
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            task.execute();
+            System.out.println(task.getState());
+            System.out.println(task.isDone());
+
+            while (!task.isDone()/* && !task.isCancelled()*/) {
+                //busy wait
+                System.out.println("test");
+            }
+
+            //dataset = new Dataset(datasetName, datasetPath, true, null, datasetHelper, br, datasetChildCount);
         } catch (IOException ex) {
             Logger.getLogger(FolderHelper.class.getName()).log(Level.SEVERE, null, ex);
         }
         createMetadataChanger(true);
     }
-    
-    public boolean initializeNewDataset(){
+
+    public boolean initializeNewDataset() {
         for (Map.Entry<MetadataKey, JComponent> metadataKeyTextEntry : fields.labelText.entrySet()) {
             String value = (metadataKeyTextEntry.getKey().unrestricted) ? ((ArchieTextField) metadataKeyTextEntry.getValue()).getText() : ((JComboBox) metadataKeyTextEntry.getValue()).getSelectedItem().toString();
-            datasetHelper.setRecord(metadataKeyTextEntry.getKey(), value, true);
+            datasetHelper.setRecord(metadataKeyTextEntry.getKey(), value, false);
         }
         for (AddablePanel addablePanel : fields.addablePanels) {
             datasetHelper.SetAddableRecord(addablePanel.Values, addablePanel.valueArray, true);
         }
         datasetName = datasetHelper.metadataMap.get(MetadataKey.DatasetTitle);
-        
+
         if (datasetName == null || "".equals(datasetName)) {
             JOptionPane.showMessageDialog(this, "The name of a dataset can not be empty.", "Dataset name", JOptionPane.PLAIN_MESSAGE);
             return false;
         }
-        
+
         //Start generating the metadata and UI.
         datasetPath = Paths.get(fields.datasetLocationField.getText());
-        int fileCount = FileUtils.listFilesAndDirs(datasetPath.toFile(), TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size();
-        
+        datasetSize = FileUtils.listFilesAndDirs(datasetPath.toFile(), TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size();
+
         //Setting the mainpanel to a progresspanel
-        parent.working = parent.WorkingOnItPanel(fileCount);
-        parent.ChangeMainPanel(parent.working);
-        parent.revalidate();
+//        parent.working = parent.WorkingOnItPanel(datasetSize);
+//        parent.ChangeMainPanel(parent.working);
+//        parent.revalidate();
+        task = new DatasetCreator(null, datasetSize, this);
+        task.addPropertyChangeListener(this);
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        task.execute();
         
-        dataset = new Dataset(datasetName, datasetPath, false, (ProgressPanel) parent.working, datasetHelper, null, 0);
+        System.out.println(task.getState());
+        System.out.println(task.isDone());
+
+        while (!task.isDone()/* && !task.isCancelled()*/) {
+            //busy wait
+            //System.out.println("test");
+        }
+
+        //dataset = new Dataset(datasetName, datasetPath, false, (ProgressPanel) parent.working, datasetHelper, null, 0);
         return true;
     }
 
@@ -145,17 +270,21 @@ public class NewDataset extends JPanel implements ActionListener {
 
     public void createMetadataChanger(boolean open) {
         boolean succes = open;
-        if(!open)
+        if (!open) {
             succes = initializeNewDataset();
-        
-        if(!succes)
+        }
+
+        if (!succes) {
             return;
+        }
+        
+        setCursor(null);
 
         //Setting the mainpanel to a metadatachanger
-        parent.metadatachanger = new MetadataChanger(dataset);
-        parent.ChangeMainPanel(parent.metadatachanger);
-        parent.export.setEnabled(true);
-        parent.saveItem.setEnabled(true);
+//        parent.metadatachanger = new MetadataChanger(dataset);
+//        parent.ChangeMainPanel(parent.metadatachanger);
+//        parent.export.setEnabled(true);
+//        parent.saveItem.setEnabled(true);
 
         //CHECK THIS
         parent.validate();

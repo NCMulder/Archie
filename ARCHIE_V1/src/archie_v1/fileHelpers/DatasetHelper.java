@@ -13,8 +13,8 @@ import java.nio.file.Path;
  */
 public class DatasetHelper extends FileHelper{
     
-    public DatasetHelper(Path filePath, boolean Islandora, boolean fromArchie) {
-        super(filePath, Islandora, fromArchie);
+    public DatasetHelper(Path filePath) {
+        super(filePath);
     }
     
 }

@@ -16,14 +16,15 @@ public class xlsxFile extends FileHelper {
     //Create a better addable adding method. Also helpful for removing, perhabs.
     public xlsxFile(Path filePath) {
         super(filePath);
-        String author = metadata.get("creator");
-        setRecordThroughTika(MetadataKey.CreatorGivenName, "creator");
-        setRecordThroughTika(MetadataKey.CreatorFamilyName, "creator");
-        String contributor = metadata.get("Last-Author");
-        if(null!=author && null!=contributor && !author.equals(contributor)){
-            setRecordThroughTika(MetadataKey.ContributorGivenName, "Last-Author");
-            setRecordThroughTika(MetadataKey.ContributorFamilyName, "Last-Author");
-        }
+        //This information is incomplete (no identifier, TOA, affiliation, name seperation etc.)
+//        String author = metadata.get("creator");
+//        setRecordThroughTika(MetadataKey.CreatorGivenName, "creator");
+//        setRecordThroughTika(MetadataKey.CreatorFamilyName, "creator");
+//        String contributor = metadata.get("Last-Author");
+//        if(null!=author && null!=contributor && !author.equals(contributor)){
+//            setRecordThroughTika(MetadataKey.ContributorGivenName, "Last-Author");
+//            setRecordThroughTika(MetadataKey.ContributorFamilyName, "Last-Author");
+//        }
     }
 
 }

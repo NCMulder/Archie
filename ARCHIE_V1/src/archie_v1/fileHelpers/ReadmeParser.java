@@ -49,7 +49,7 @@ public class ReadmeParser {
                         //Identifier in ReadMe is wrong, should not be there
                         String itemIdentifier = br.readLine().split(splitter, 2)[1].replaceAll(",$", "");
                         //setForFileHelper(MetadataKey.Identifier, itemIdentifier, true, true);
-                        
+
                         String title = br.readLine().split(splitter, 2)[1].replace("\"", "").replaceAll(",$", "");
                         //do something with title?
                         item = true;
@@ -63,7 +63,7 @@ public class ReadmeParser {
                         String authorIdentifier = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
                         String authorAffiliation = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
                         String[] authorValues = {authorIdentifier, authorTitle, authorInitials, authorName, authorAffiliation};
-                        setForFileHelper(MetadataKey.creatorKeys, authorValues, true, false);
+                        setForFileHelper(MetadataKey.creatorKeys, authorValues, false);
                         item = false;
                         creator = true;
                         contributor = false;
@@ -75,8 +75,8 @@ public class ReadmeParser {
                         String contributorIdentifier = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
                         String contributorAffiliation = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
                         String[] contributorValues = {contributorIdentifier, contributorTitle, contributorInitials, contributorName, contributorAffiliation};
-                        
-                        setForFileHelper(MetadataKey.contributorKeys, contributorValues, true, false);
+
+                        setForFileHelper(MetadataKey.contributorKeys, contributorValues, false);
                         item = false;
                         creator = false;
                         contributor = true;
@@ -123,7 +123,7 @@ public class ReadmeParser {
 //                        }
 //                        break;
                     case "date created":
-                        setForFileHelper(MetadataKey.DateCreated, keyValue[1].replaceAll(",$", ""), true, false);
+                        setForFileHelper(MetadataKey.DateCreated, keyValue[1].replaceAll(",$", ""), false);
                         break;
                     case "rights holder":
                         //Should not be in readme
@@ -142,7 +142,7 @@ public class ReadmeParser {
                         //setForFileHelper(MetadataKey.Subject, keyValue[1].replaceAll(",$", "").replaceAll(",", ";"), true, true);
                         break;
                     case "spatial coverage":
-                        setForFileHelper(MetadataKey.SpatialCoverage, keyValue[1].substring(0, keyValue[1].indexOf(",\"")).replace("\"", ""), true, false);
+                        setForFileHelper(MetadataKey.SpatialCoverage, keyValue[1].substring(0, keyValue[1].indexOf(",\"")).replace("\"", ""), false);
                         break;
                     case "temporal coverage":
                         //Should not be in readme
@@ -154,7 +154,7 @@ public class ReadmeParser {
                         //setForFileHelper(MetadataKey.RelatedDatasetLocation, "empty", true, true);
                         break;
                     case "type":
-                        setForFileHelper(MetadataKey.FileContentType, keyValue[1].substring(0, keyValue[1].indexOf(",always")), true, false);
+                        setForFileHelper(MetadataKey.FileContentType, keyValue[1].substring(0, keyValue[1].indexOf(",always")), false);
                         break;
                     case "language":
                         //Should not be in readme
@@ -199,61 +199,64 @@ public class ReadmeParser {
         //return dict;
     }
 
-    public void setForFileHelper(MetadataKey key, String value, boolean hardSet, boolean init) {
-        if (value == null || value.equals("")) {
-            if(key.addable){
-                //escape when not first addable?
-            }
+    public void setForFileHelper(MetadataKey key, String value, boolean softSet) {
+        assert !key.addable;
+        
+        String defValue = value;
+        
+        if (defValue == null || defValue.equals("")) {
             SetPart sp = new SetPart(key);
             Object[] buttons = {"Add", "Cancel"};
             int result = JOptionPane.showOptionDialog(null, sp, "Missing " + key + " in readme.", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
-            if (result == JOptionPane.OK_OPTION) {
+            if (result == JOptionPane.OK_OPTION && !sp.getInfo().containsValue("") && !sp.getInfo().containsValue(null)) {
                 for (Map.Entry<MetadataKey, String> metadata : sp.getInfo().entrySet()) {
-                    if(metadata.getKey()==key)
-                        value = metadata.getValue();
+                    if (metadata.getKey() == key) {
+                        defValue = metadata.getValue();
+                    }
                 }
             }
             return;
         }
-        
-        assert value!=null : !value.equals("");
-        
-        fileHelper.setRecord(key, value, hardSet, init);
+
+        assert defValue != null : !defValue.equals("");
+
+        fileHelper.setRecord(key, defValue, softSet);
     }
-    
-    public void setForFileHelper(MetadataKey[] keys, String[] values, boolean hardSet, boolean init){
+
+    public void setForFileHelper(MetadataKey[] keys, String[] values, boolean softSet) {
         assert values.length == keys.length;
         
+        MetadataKey[] defKeys = keys;
+        String[] defValues = values;
+
         //Check wether or not all fields are empty
         boolean cont = false;
-        for (int i = 0; !cont && i < values.length; i++) {
-            if(values[i]!=null&&!values[i].equals(""))
+        for (int i = 0; !cont && i < defValues.length; i++) {
+            if (defValues[i] != null && !defValues[i].equals("")) {
                 cont = true;
+            }
         }
-        if(!cont)
+        if (!cont) {
             return;
-        
-        if(Arrays.asList(values).contains(null) || Arrays.asList(values).contains("")){
+        }
+
+        if (Arrays.asList(defValues).contains(null) || Arrays.asList(defValues).contains("")) {
             SetPart sp = new SetPart(keys[0], values);
             Object[] buttons = {"Add", "Cancel"};
             int result = JOptionPane.showOptionDialog(null, sp, "Missing parts in readme.", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
-            if (result == JOptionPane.OK_OPTION) {
-                for (Map.Entry<MetadataKey, String> metadata : sp.getInfo().entrySet()) {
-                    fileHelper.setRecord(metadata.getKey(), metadata.getValue(), hardSet, init);
-                }
+            if (result == JOptionPane.OK_OPTION && !sp.getInfo().containsValue(null) && !sp.getInfo().containsValue("")) {
+                HashMap<MetadataKey, String> hm = sp.getInfo();
+                defKeys = hm.keySet().toArray(new MetadataKey[hm.keySet().size()]);
+                defValues = hm.values().toArray(new String[hm.values().size()]);
+            } else {
+                return;
             }
-            return;
         }
         
-        for(int i = 0; i<keys.length; i++){
-            fileHelper.setRecord(keys[i], values[i], hardSet, init);
-        }
-    }
+        assert !Arrays.asList(defValues).contains(null);
+        assert !Arrays.asList(defValues).contains("");
+        assert !Arrays.asList(defKeys).contains(null);
 
-    public void putInDictionary(Map<MetadataKey, String> dict, MetadataKey key, String value) {
-        if (value == null || "".equals(value)) {
-            return;
-        }
-        dict.put(key, value);
+        fileHelper.AddAddableRecord(defKeys, defValues, softSet);
     }
 }

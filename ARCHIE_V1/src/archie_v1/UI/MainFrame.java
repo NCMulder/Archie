@@ -10,6 +10,7 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -152,6 +153,7 @@ public class MainFrame extends JFrame implements ActionListener {
             NewDataset nds = new NewDataset(this);
             ChangeMainPanel(nds);
         } else if (e.getSource() == tempMenuItem) {
+            NewDataset nds = new NewDataset(this, Paths.get("C:\\Users\\niels\\Documents\\Archie\\Archie\\ARCHIE_V1\\saves\\Testset_01.archie").toFile());
             //Temp menu item exists for testing purposes only.
 //            SetPart sp = new SetPart(SetPart.Role.Contributor);
 //            Object[] buttons = {"Add", "Cancel"};
@@ -174,9 +176,6 @@ public class MainFrame extends JFrame implements ActionListener {
                     int rv = fc.showSaveDialog(this);
                     if (rv == JFileChooser.APPROVE_OPTION) {
                         succes = mdc.Save(MetadataChanger.SaveType.Islandora, fc.getSelectedFile().toPath());
-                    }
-                    if (succes) {
-                        JOptionPane.showMessageDialog(this, "The file has been succesfully saved.");
                     }
                 } catch (IOException ex) {
                     Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);

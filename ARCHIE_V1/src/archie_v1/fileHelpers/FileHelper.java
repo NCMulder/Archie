@@ -32,7 +32,6 @@ public abstract class FileHelper {
     public Map<String, String> metadata;
     public boolean root = false;
     public LinkedHashMap<MetadataKey, String> metadataMap;
-    private boolean fromArchie = false;
 
     public FileHelper(Path filePath) {
         metadataMap = new LinkedHashMap();
@@ -42,38 +41,26 @@ public abstract class FileHelper {
         Initialize();
     }
 
-    public FileHelper(Path filePath, boolean root, boolean fromArchie) {
+    public FileHelper(Path filePath, boolean root) {
         metadataMap = new LinkedHashMap();
         metadata = new HashMap();
         this.root = root;
         this.filePath = filePath;
-        this.fromArchie = fromArchie;
 
         Initialize();
     }
 
     public void Initialize() {
-        if (root) {
-            for (int i = 0; i < MetadataKey.values().length; i++) {
-                if (MetadataKey.values()[i].dataset) {
-                    setRecord(MetadataKey.values()[i], null, false, true);
-                }
-            }
-            return;
-        }
-
         for (int i = 0; i < MetadataKey.values().length; i++) {
             if (MetadataKey.values()[i].file) {
-                setRecord(MetadataKey.values()[i], null, true, true);
+                setRecord(MetadataKey.values()[i], null, false, true);
             }
         }
 
-        if (!(this instanceof FolderHelper) && !fromArchie) {
-            metadata = getMetaData();
-            //Is this useful? TODO WIP WOUTER
-            setRecord(MetadataKey.FileContentType, "." + FilenameUtils.getExtension(filePath.toString()) + " file", false, true);
-            setRecordThroughTika(MetadataKey.DateCreated, "date");
-        }
+        metadata = getMetaData();
+        //Is this useful? TODO WIP WOUTER
+        setRecord(MetadataKey.FileContentType, "." + FilenameUtils.getExtension(filePath.toString()) + " file", false);
+        setRecordThroughTika(MetadataKey.DateCreated, "date");
     }
 
     //Helper functions for all filehandlers.
@@ -120,23 +107,48 @@ public abstract class FileHelper {
         return basedata;
     }
 
-    public void setRecord(MetadataKey key, String value, boolean hardSet, boolean init) {
-        if (!hardSet && metadataMap.containsKey(key) && (!"".equals(metadataMap.get(key)))) {
-            return;
-        }
-        if (init || metadataMap.containsKey(key)) {
+//    public void setRecord(MetadataKey key, String value, boolean hardSet, boolean init) {
+//        if (!hardSet && metadataMap.containsKey(key) && (!"".equals(metadataMap.get(key)))) {
+//            return;
+//        }
+//        
+//        if(!init && (value == null || value.equals("")))
+//            return;
+//        
+//        if (init || metadataMap.containsKey(key)) {
+//            metadataMap.put(key, value);
+//        }
+//    }
+//
+//    public void setRecord(MetadataKey key, String value, boolean hardSet) {
+//        setRecord(key, value, hardSet, false);
+//    }
+    protected void setRecord(MetadataKey key, String value, boolean softset, boolean init) {
+        if (init) {
             metadataMap.put(key, value);
-        }
-    }
-
-    public void setRecord(MetadataKey key, String value, boolean hardSet) {
-        setRecord(key, value, hardSet, false);
-    }
-
-    public void SetAddableRecord(MetadataKey[] Values, ArrayList<String[]> valueArray, boolean hardSet) {
-        if(!hardSet && metadataMap.get(Values[0]) != null && (!metadataMap.get(Values[0]).equals("")))
             return;
-        
+        }
+
+        if (!metadataMap.containsKey(key)) {
+            return;
+        }
+
+        if (softset && metadataMap.get(key) != null) {
+            return;
+        }
+
+        metadataMap.put(key, value);
+    }
+
+    public void setRecord(MetadataKey key, String value, boolean softset) {
+        setRecord(key, value, softset, false);
+    }
+
+    public void SetAddableRecord(MetadataKey[] Values, ArrayList<String[]> valueArray, boolean softSet) {
+        if (softSet && metadataMap.get(Values[0]) != null) {
+            return;
+        }
+
         //Empty array should result in an empty array
         if (valueArray.size() == 0) {
             for (MetadataKey key : Values) {
@@ -144,35 +156,39 @@ public abstract class FileHelper {
             }
         } else {
             //Non-empty array should be copied verbatim
-            for (String[] values : valueArray) {
-                for (int i = 0; i < Values.length; i++) {
-                    String currentValue = metadataMap.get(Values[i]);
-                    if (currentValue == null) {
-                        currentValue = "";
-                    }
-                    String[] currentValues = currentValue.split(";");
-                    if (i == 0 && Arrays.asList(currentValues).contains(values[i])) {
-                        break;
-                    }
-
-                    if (!currentValue.equals("")) {
-                        currentValue += ";";
-                    }
-                    currentValue += values[i];
-                    metadataMap.put(Values[i], currentValue);
+            for (int i = 0; i < Values.length; i++) {
+                String value = "";
+                for (String[] values : valueArray) {
+                    value += values[i] + ";";
                 }
+                metadataMap.put(Values[i], value);
             }
         }
     }
 
-    public void SetAddableRecord(MetadataKey[] Values, ArrayList<String[]> valueArray) {
-        SetAddableRecord(Values, valueArray, false);
+    public void AddAddableRecord(MetadataKey[] Keys, String[] Values, boolean softSet) {
+        if (softSet && metadataMap.get(Keys[0]) != null) {
+            return;
+        }
+
+        for (int i = 0; i < Keys.length; i++) {
+            String currentValue = metadataMap.get(Keys[i]);
+            if (currentValue == null) {
+                currentValue = "";
+            }
+            if (!currentValue.equals("")) {
+                currentValue += ";";
+            }
+            currentValue += Values[i];
+            metadataMap.put(Keys[i], currentValue);
+        }
     }
 
     public void setRecordThroughTika(MetadataKey key, String tikaString) {
+        assert !key.addable;
         String tikaValue = metadata.get(tikaString);
         if (tikaValue != null) {
-            setRecord(key, tikaValue, false, true);
+            setRecord(key, tikaValue, false);
             //metadataMap.put(key, tikaValue);
         }
     }
@@ -180,10 +196,11 @@ public abstract class FileHelper {
     public void saveDataset(BufferedWriter writer, String prefix) {
         try {
             writer.write(prefix + filePath + "\n");
-            if(this.getClass()==FolderHelper.class)
-                writer.write(prefix + ((FolderHelper)this).children.size() + "\n");
-            else
+            if (this.getClass() == FolderHelper.class) {
+                writer.write(prefix + ((FolderHelper) this).children.size() + "\n");
+            } else {
                 writer.write(prefix + "-1\n");
+            }
             for (Map.Entry<MetadataKey, String> entry : metadataMap.entrySet()) {
                 if (entry.getValue() == null) {
                     continue;
