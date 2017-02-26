@@ -1,33 +1,34 @@
 //License
 package archie_v1;
 
-import archie_v1.UI.NewDataset;
-import archie_v1.UI.ProgressPanel;
 import archie_v1.fileHelpers.FileHelper;
 import archie_v1.fileHelpers.FolderHelper;
 import archie_v1.fileHelpers.MetadataKey;
 import archie_v1.fileHelpers.ReadmeParser;
 import archie_v1.fileHelpers.basicFile;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
+import javax.swing.ProgressMonitor;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.apache.commons.io.FilenameUtils;
-import org.jdom2.Document;
-import org.jdom2.Element;
 
 /**
  * The Dataset class encapsulates a single dataset, defined by a name and
@@ -37,61 +38,68 @@ import org.jdom2.Element;
  *
  * @author N.C. Mulder <n.c.mulder at students.uu.nl>
  */
-
-
-
-public class Dataset {
+public class Dataset implements PropertyChangeListener{
 
     public String name;
     public Path mainDirectory;
     public DefaultMutableTreeNode fileTree;
     public ArrayList<FileHelper> files = new ArrayList();
     public HashMap<Path, Path> readmes = new HashMap();
-    private NewDataset.DatasetInitializer sw;
+    Lock filesArrayLock = new ReentrantLock();
+    Lock readmesMapLock = new ReentrantLock();
+
+    private ProgressMonitor pm;
+    int progress = 0;
+    int childCount;
 
     private FolderHelper datasetHelper;
 
     //Debugging
     private ArrayList<String> probfiles = new ArrayList();
-    
-    
-    
-    private class DatasetInitializer {
+    Lock probfilesArrayLock = new ReentrantLock();
 
-    }
-    
-    public Dataset(String name, Path path, FolderHelper datasetHelper, NewDataset.DatasetInitializer sw) {
-        long now, start = System.nanoTime();
-
-        this.sw = sw;
+    public Dataset(String name, Path path, FolderHelper datasetHelper, int childCount) {
         this.name = name;
         this.mainDirectory = path;
         this.datasetHelper = datasetHelper;
+        this.childCount = childCount;
+        pm = new ProgressMonitor(ARCHIE.ui.mf, "Processing files...", "", 0, childCount);
+        pm.setMillisToDecideToPopup(0);
+        pm.setMillisToPopup(0);
 
         dirToTree(path);
+        //dirToTree();
+
+        pm.close();
 
         debugFiles();
-
-        now = System.nanoTime();
-        System.out.println("Creating the dataset: " + (now - start) / 1000000 + "ms");
-
-        sw.setNotBusy();
     }
 
-    public Dataset(String name, Path path, FolderHelper datasetHelper, BufferedReader br, int childCount, NewDataset.DatasetInitializer sw) {
-        long now, start = System.nanoTime();
+    public Dataset(File selectedFile) {
+        pm = new ProgressMonitor(ARCHIE.ui.mf, "Processing files...", "", 0, childCount);
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(selectedFile));
+            this.name = br.readLine();
+            br.readLine();
+            this.mainDirectory = Paths.get(br.readLine());
+            this.childCount = Integer.parseInt(br.readLine());
+            this.datasetHelper = new FolderHelper(br, mainDirectory);
 
-        this.sw = sw;
-        this.name = name;
-        this.mainDirectory = path;
-        this.datasetHelper = datasetHelper;
+            openDataset(br, childCount);
+        } catch (IOException ex) {
+            Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        progress = childCount;
+        pm.close();
+    }
 
-        openDataset(br, childCount);
-
-        now = System.nanoTime();
-        System.out.println("Creating the dataset: " + (now - start) / 1000000 + "ms");
-
-        sw.setNotBusy();
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(evt.getPropertyName().equals("progress")){
+            //System.out.println("Firing event " + evt.getPropertyName());
+            pm.setProgress(progress);
+            pm.setNote("Processing file " + progress + " of " + childCount);
+        }
     }
 
     private void debugFiles() {
@@ -112,21 +120,227 @@ public class Dataset {
             }
             errorMessage += "\nPlease report this error, enclosing all problematic file names.\nA log file has been saved to the ARCHIE directory.";
 
-            JOptionPane.showMessageDialog(sw.parent, errorMessage);
+            //TODO
+            //JOptionPane.showMessageDialog(sw.parent, errorMessage);
         }
     }
 
-    /**
-     *
-     * @param path
-     * @return
-     */
+    public void dirToTree() {
+        DefaultMutableTreeNode dirTree = new DefaultMutableTreeNode(mainDirectory);
+
+        DatasetCreator[] ts = new DatasetCreator[mainDirectory.toFile().listFiles().length];
+        for (int i = 0; i < mainDirectory.toFile().listFiles().length; i++) {
+            Path p = mainDirectory.toFile().listFiles()[i].toPath();
+            DatasetCreator creator = new DatasetCreator(p, dirTree, this);
+            ts[i] = creator;
+            creator.execute();
+        }
+
+        for (DatasetCreator dc : ts) {
+            try {
+                FileHelper fh = dc.get();
+                if(fh == null)
+                    continue;
+                files.add(fh);
+                datasetHelper.addToChildren(fh);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ExecutionException ex) {
+                Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        files.add(datasetHelper);
+
+        fileTree = dirTree;
+    }
+
+    private class DatasetCreator extends SwingWorker<FileHelper, Void> {
+
+        private Path filePath;
+        private DefaultMutableTreeNode treeNode;
+        private PropertyChangeListener listener;
+
+        public DatasetCreator(Path filePath, DefaultMutableTreeNode treeNode, PropertyChangeListener listener) {
+            this.filePath = filePath;
+            this.treeNode = treeNode;
+            this.listener = listener;
+            this.addPropertyChangeListener(listener);
+            setProgress(0);
+        }
+
+        @Override
+        protected FileHelper doInBackground() throws Exception {
+            this.setProgress(++progress);
+            System.out.println("Processing file " + progress + " of " + childCount);
+            if ("readme".equals(FilenameUtils.removeExtension(filePath.getFileName().toString()))) {
+                readmesMapLock.lock();
+                readmes.put(filePath.getParent(), filePath);
+                readmesMapLock.unlock();
+                return null;
+            } else if ("Thumbs.db".equals(filePath.getFileName().toString())) {
+                return null;
+            } else if (filePath.getFileName().toString().contains("datanow_meta")) {
+                return null;
+            } else if (filePath.getFileName().toString().equals(".dataNowFolderUploads_")) {
+                return null;
+            } //Possibly also filter out all filePaths starting with ".".
+
+            String[] errFiles = {".zip", ".cache", ".svn-base",};
+            String fileType = filePath.getFileName().toString().replace(FilenameUtils.removeExtension(filePath.getFileName().toString()), "");
+            if (Arrays.asList(errFiles).contains(fileType)) {
+                return null;
+            }
+
+            if (filePath.toFile().isDirectory()) {
+                if (filePath.toFile().listFiles() == null) {
+                    System.out.println("nullexeperror for file " + filePath.getFileName());
+                    probfilesArrayLock.lock();
+                    probfiles.add(filePath.toString());
+                    probfilesArrayLock.unlock();
+                    return null;
+                }
+
+                FolderHelper folderHelper = new FolderHelper(filePath);
+                DefaultMutableTreeNode folderNode = new DefaultMutableTreeNode(filePath);
+                DatasetCreator[] sws = new DatasetCreator[filePath.toFile().listFiles().length];
+                for (int i = 0; i < filePath.toFile().listFiles().length; i++) {
+                    File childFile = filePath.toFile().listFiles()[i];
+                    DatasetCreator sw = new DatasetCreator(childFile.toPath(), folderNode, listener);
+                    sws[i] = sw;
+                    sw.execute();
+                }
+
+                for (DatasetCreator sw : sws) {
+                    FileHelper fh = sw.get();
+                    if (fh == null) {
+                        continue;
+                    }
+                    
+                    DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(fh.filePath);
+                    folderNode.add(childNode);
+                    
+                    filesArrayLock.lock();
+                    files.add(fh);
+                    filesArrayLock.unlock();
+                    
+                    folderHelper.addToChildren(fh);
+                }
+                
+                if (readmes.containsKey(filePath)) {
+                    Path readmePath = readmes.get(filePath);
+                    ReadmeParser rms = new ReadmeParser(folderHelper, readmePath);
+                }
+
+                treeNode.add(folderNode);
+                return folderHelper;
+            } else {
+                FileHelper fh = ARCHIE.fileSelector(filePath);
+                return fh;
+            }
+        }
+    }
+
+    private class Runnable1 implements Runnable {
+
+        Path file;
+        DefaultMutableTreeNode tree;
+        FolderHelper folderH;
+
+        public Runnable1(Path file, DefaultMutableTreeNode tree, FolderHelper folderH) {
+            this.file = file;
+            this.tree = tree;
+            this.folderH = folderH;
+        }
+
+        @Override
+        public void run() {
+            createNodes(file, tree, folderH);
+        }
+
+        private void createNodes(Path file, DefaultMutableTreeNode tree, FolderHelper folderH) {
+            progress++;
+            System.out.println("Processing file " + progress + " of " + childCount);
+            if ("readme".equals(FilenameUtils.removeExtension(file.getFileName().toString()))) {
+                readmesMapLock.lock();
+                readmes.put(file.getParent(), file);
+                readmesMapLock.unlock();
+                return;
+            } else if ("Thumbs.db".equals(file.getFileName().toString())) {
+                return;
+            } else if (file.getFileName().toString().contains("datanow_meta")) {
+                return;
+            } else if (file.getFileName().toString().equals(".dataNowFolderUploads_")) {
+                return;
+            } //Possibly also filter out all files starting with ".".
+
+            //Removing problematic filetypes:
+            String[] errFiles = {".zip", ".cache", ".svn-base",};
+            String fileType = file.getFileName().toString().replace(FilenameUtils.removeExtension(file.getFileName().toString()), "");
+            if (Arrays.asList(errFiles).contains(fileType)) {
+                return;
+            }
+
+            DefaultMutableTreeNode fileNode = new DefaultMutableTreeNode(file);
+            tree.add(fileNode);
+            if (file.toFile().isDirectory()) {
+                if (file.toFile().listFiles() == null) {
+                    System.out.println("nullexeperror for file " + file.getFileName());
+                    probfilesArrayLock.lock();
+                    probfiles.add(file.toString());
+                    probfilesArrayLock.unlock();
+                    return;
+                }
+
+                FolderHelper folderHelper = new FolderHelper(file);
+                for (File dirFile : file.toFile().listFiles()) {
+                    createNodes(dirFile.toPath(), fileNode, folderHelper);
+                }
+
+                folderH.addToChildren(folderHelper);
+
+                if (readmes.containsKey(file)) {
+                    Path readmePath = readmes.get(file);
+                    ReadmeParser rms = new ReadmeParser(folderHelper, readmePath);
+                }
+
+                filesArrayLock.lock();
+                files.add(folderHelper);
+                filesArrayLock.unlock();
+            } else {
+                //possibly do this concurrently, most time lost doing this.
+                FileHelper fileHelper = ARCHIE.fileSelector(file);
+                folderH.addToChildren(fileHelper);
+
+                filesArrayLock.lock();
+                files.add(fileHelper);
+                filesArrayLock.unlock();
+            }
+        }
+    }
+
     public void dirToTree(Path path) {
         DefaultMutableTreeNode dirTree = new DefaultMutableTreeNode(mainDirectory);
-        //FolderHelper folderHelper = new FolderHelper(path, includeIslandora, true);
-        for (File file : mainDirectory.toFile().listFiles()) {
-            createNodes(file.toPath(), dirTree, datasetHelper);
+
+        Thread[] ts = new Thread[mainDirectory.toFile().listFiles().length];
+        for (int i = 0; i < mainDirectory.toFile().listFiles().length; i++) {
+            Path p = mainDirectory.toFile().listFiles()[i].toPath();
+            Runnable1 r = new Runnable1(p, dirTree, datasetHelper);
+            Thread t = new Thread(r);
+            ts[i] = t;
+            t.start();
         }
+
+        for (Thread t : ts) {
+            try {
+                t.join();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+        System.out.println("all threads joined!");
+
         files.add(datasetHelper);
 
         fileTree = dirTree;
@@ -147,8 +361,8 @@ public class Dataset {
     }
 
     public void createNodes(BufferedReader br, String prefix, DefaultMutableTreeNode parent, FolderHelper folderHelper) {
+        pm.setProgress(++progress);
         try {
-            sw.updateProgress();
             Path path = Paths.get(br.readLine().replaceFirst(prefix, ""));
             DefaultMutableTreeNode fileNode = new DefaultMutableTreeNode(path);
 
@@ -157,7 +371,7 @@ public class Dataset {
             int childCount = Integer.parseInt(nextLine);
             boolean isDir = childCount > 0;
 
-            //System.out.println("Creating a filehelper for file " + path + ", parent is " + folderHelper.filePath);
+            System.out.println("Creating a filehelper for file " + path + ", parent is " + folderHelper.filePath);
             FileHelper fileHelper;
 
             if (isDir) {
@@ -192,65 +406,11 @@ public class Dataset {
                 }
 
             }
-            folderHelper.children.add(fileHelper);
+            folderHelper.addToChildren(fileHelper);
             files.add(fileHelper);
 
         } catch (IOException ex) {
             Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    private void createNodes(Path file, DefaultMutableTreeNode tree, FolderHelper folderH) {
-        sw.updateProgress();
-        //    System.out.println("node");
-
-        if ("readme".equals(FilenameUtils.removeExtension(file.getFileName().toString()))) {
-            readmes.put(file.getParent(), file);
-            return;
-        } else if ("Thumbs.db".equals(file.getFileName().toString())) {
-            return;
-        } else if (file.getFileName().toString().contains("datanow_meta")) {
-            return;
-        } else if (file.getFileName().toString().equals(".dataNowFolderUploads_")) {
-            return;
-        } //Possibly also filter out all files starting with ".".
-
-        //Removing problematic filetypes:
-        String[] errFiles = {".zip", ".cache", ".svn-base",};
-        String fileType = file.getFileName().toString().replace(FilenameUtils.removeExtension(file.getFileName().toString()), "");
-        if (Arrays.asList(errFiles).contains(fileType)) {
-            return;
-        }
-
-        DefaultMutableTreeNode fileNode = new DefaultMutableTreeNode(file);
-        tree.add(fileNode);
-        if (file.toFile().isDirectory()) {
-            if (file.toFile().listFiles() == null) {
-                System.out.println("nullexeperror for file " + file.getFileName());
-                probfiles.add(file.toString());
-                return;
-            }
-
-            FolderHelper folderHelper = new FolderHelper(file);
-            for (File dirFile : file.toFile().listFiles()) {
-                createNodes(dirFile.toPath(), fileNode, folderHelper);
-            }
-
-            folderH.children.add(folderHelper);
-
-            if (readmes.containsKey(file)) {
-                Path readmePath = readmes.get(file);
-                ReadmeParser rms = new ReadmeParser(folderHelper, readmePath);
-            }
-
-            files.add(folderHelper);
-        } else {
-            //possibly do this concurrently, most time lost doing this.
-            FileHelper fileHelper = ARCHIE.fileSelector(file);
-            folderH.children.add(fileHelper);
-            files.add(fileHelper);
-
-            //WIP
         }
     }
 

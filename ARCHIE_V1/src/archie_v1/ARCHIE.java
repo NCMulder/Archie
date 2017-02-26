@@ -12,7 +12,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import org.apache.commons.io.FilenameUtils;
 
 public class ARCHIE {
-    static ArchieUIManager ui;
+    static public ArchieUIManager ui;
 
     public static void main(String[] args) {
         if(args.length>=2)

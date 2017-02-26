@@ -7,17 +7,14 @@ package archie_v1.fileHelpers;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.commons.io.FilenameUtils;
 
 /**
  *
@@ -25,7 +22,8 @@ import org.apache.commons.io.FilenameUtils;
  */
 public class FolderHelper extends FileHelper {
 
-    public LinkedList<FileHelper> children;
+    protected LinkedList<FileHelper> children;
+    private Lock childrenListLock = new ReentrantLock();
 
     public FolderHelper(Path filePath) {
         super(filePath);
@@ -50,6 +48,12 @@ public class FolderHelper extends FileHelper {
         } catch (IOException ex) {
             Logger.getLogger(FolderHelper.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    public void addToChildren(FileHelper fh){
+        childrenListLock.lock();
+        children.add(fh);
+        childrenListLock.unlock();
     }
     
     @Override
