@@ -10,7 +10,7 @@ public class pictureFile extends FileHelper {
         super(filePath);
         setRecordThroughTika(MetadataKey.DateCreated, "dcterms:created");
         //setRecordThroughTika(MetadataKey.Subject, "User Comment");
-        setRecordThroughTika(MetadataKey.FileSize, "File Size");
+        //setRecordThroughTika(MetadataKey.FileSize, "File Size");
         setRecordThroughTika(MetadataKey.Description, "title");
     }
 }

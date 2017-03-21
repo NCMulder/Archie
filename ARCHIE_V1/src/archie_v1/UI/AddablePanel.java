@@ -166,8 +166,12 @@ public class AddablePanel extends JPanel implements ActionListener {
             if (result == JOptionPane.OK_OPTION) {
                 HashMap<MetadataKey, String> map = sp.getInfo();
                 String[] values = new String[Values.length];
-                for(int i = 0; i < Values.length; i++)
-                    values[i] = map.get(Values[i]);
+                for(int i = 0; i < Values.length; i++){
+                    String value = map.get(Values[i]);
+                    if(value == null || value.equals(""))
+                        value = " ";
+                    values[i] = value;
+                }
                 valueArray.add(values);
                 //valueArray.add(sp.getInfo().values().toArray(new String[sp.getInfo().size()]));
                 resetMainPanel();

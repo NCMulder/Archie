@@ -14,7 +14,9 @@ public class WelcomeScreen extends JPanel {
         JLabel welcomeLabel = new JLabel("Welcome to Archie", SwingConstants.CENTER);
         Font ft = new Font(welcomeLabel.getFont().getFontName(), 36, 36);
         welcomeLabel.setFont(ft);
-        JLabel instructionLabel = new JLabel("<html><center>To generate metadata for a new dataset, go to Dataset>New.<br>To open an existing project, go to Dataset>Open.<br><br><br><br><font size=\"3\">Developed bij Nexus1492, an ERC Synergy Project.", SwingConstants.CENTER);
+        JLabel instructionLabel = new JLabel("<html><center>To generate metadata for a new dataset, go to Dataset>New.<br>"
+                + "To open an existing project, go to Dataset>Open.<br><br><br><br>"
+                + "<font size=\"3\">Developed by Nexus1492, an ERC Synergy Project.", SwingConstants.CENTER);
         Font ft2 = new Font(instructionLabel.getFont().getFontName(), 16, 16);
         instructionLabel.setFont(ft2);
 

@@ -64,6 +64,8 @@ public abstract class FileHelper {
         setRecordThroughTika(MetadataKey.Software, "Creator tool");
         setRecordThroughTika(MetadataKey.Software, "Application-Name");
         setRecordThroughTika(MetadataKey.FileContentType, "Content-Type");
+        File file = new File(filePath.toString());
+        setRecord(MetadataKey.FileSize, String.valueOf(file.length()) + " bytes", false);
     }
 
     //Helper functions for all filehandlers.
