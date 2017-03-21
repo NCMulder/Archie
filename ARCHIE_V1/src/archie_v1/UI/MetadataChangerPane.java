@@ -71,6 +71,8 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener {
             if(!metadataKeyTextEntry.getKey().file)
                 continue;
             String value = (metadataKeyTextEntry.getKey().unrestricted) ? ((ArchieTextField) metadataKeyTextEntry.getValue()).getText() : ((JComboBox) metadataKeyTextEntry.getValue()).getSelectedItem().toString();
+            if(value=="")
+                continue;
             fileHelper.setRecord(metadataKeyTextEntry.getKey(), value, softSet);
             //System.out.println("Set key " + metadataKeyTextEntry.getKey() + " to " + value + " for file " + fileHelper.filePath.getFileName());
         }

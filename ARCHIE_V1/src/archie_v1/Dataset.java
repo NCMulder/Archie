@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -38,7 +40,7 @@ import org.apache.commons.io.FilenameUtils;
  *
  * @author N.C. Mulder <n.c.mulder at students.uu.nl>
  */
-public class Dataset implements PropertyChangeListener{
+public class Dataset implements PropertyChangeListener {
 
     public String name;
     public Path mainDirectory;
@@ -57,6 +59,8 @@ public class Dataset implements PropertyChangeListener{
     //Debugging
     private ArrayList<String> probfiles = new ArrayList();
     Lock probfilesArrayLock = new ReentrantLock();
+    private ExecutorService executorpool;
+    private ProgressMonitorTracker pmt;
 
     public Dataset(String name, Path path, FolderHelper datasetHelper, int childCount) {
         this.name = name;
@@ -67,12 +71,47 @@ public class Dataset implements PropertyChangeListener{
         pm.setMillisToDecideToPopup(0);
         pm.setMillisToPopup(0);
 
+        pmt = new ProgressMonitorTracker(pm);
+        pmt.run();
+        
         dirToTree(path);
         //dirToTree();
 
+        pmt.setProgress(childCount);
         pm.close();
 
         debugFiles();
+    }
+
+    private class ProgressMonitorTracker implements Runnable, PropertyChangeListener {
+        ProgressMonitor pm;
+
+        public ProgressMonitorTracker(ProgressMonitor pm) {
+            this.pm = new ProgressMonitor(ARCHIE.ui.mf, "Processing files...", "", 0, childCount);
+            this.pm.setMillisToDecideToPopup(0);
+            this.pm.setMillisToPopup(0);
+            //this.pm = pm;
+        }
+
+        @Override
+        public void run() {
+            pm.setProgress(0);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if(evt.equals("progress")){
+                int progress = Integer.parseInt(evt.getNewValue().toString());
+                pm.setProgress(progress);
+                pm.setNote("Progress: " + progress + " of " + pm.getMaximum());
+            }
+        }
+        
+        public void setProgress(int i){
+            progress = i;
+            pm.setProgress(progress);
+            pm.setNote("Progress: " + progress + " of " + pm.getMaximum());
+        }
     }
 
     public Dataset(File selectedFile) {
@@ -95,7 +134,7 @@ public class Dataset implements PropertyChangeListener{
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals("progress")){
+        if (evt.getPropertyName().equals("progress")) {
             //System.out.println("Firing event " + evt.getPropertyName());
             pm.setProgress(progress);
             pm.setNote("Processing file " + progress + " of " + childCount);
@@ -126,6 +165,7 @@ public class Dataset implements PropertyChangeListener{
     }
 
     public void dirToTree() {
+        executorpool = Executors.newFixedThreadPool(40);
         DefaultMutableTreeNode dirTree = new DefaultMutableTreeNode(mainDirectory);
 
         DatasetCreator[] ts = new DatasetCreator[mainDirectory.toFile().listFiles().length];
@@ -139,8 +179,9 @@ public class Dataset implements PropertyChangeListener{
         for (DatasetCreator dc : ts) {
             try {
                 FileHelper fh = dc.get();
-                if(fh == null)
+                if (fh == null) {
                     continue;
+                }
                 files.add(fh);
                 datasetHelper.addToChildren(fh);
             } catch (InterruptedException ex) {
@@ -156,6 +197,7 @@ public class Dataset implements PropertyChangeListener{
     }
 
     private class DatasetCreator extends SwingWorker<FileHelper, Void> {
+        
 
         private Path filePath;
         private DefaultMutableTreeNode treeNode;
@@ -207,26 +249,28 @@ public class Dataset implements PropertyChangeListener{
                 for (int i = 0; i < filePath.toFile().listFiles().length; i++) {
                     File childFile = filePath.toFile().listFiles()[i];
                     DatasetCreator sw = new DatasetCreator(childFile.toPath(), folderNode, listener);
-                    sws[i] = sw;
+                    //System.out.println("SwingWorker created");
+                    //sws[i] = sw;
                     sw.execute();
                 }
 
                 for (DatasetCreator sw : sws) {
                     FileHelper fh = sw.get();
+                    //System.out.println("Swingworker got");
                     if (fh == null) {
                         continue;
                     }
-                    
+
                     DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(fh.filePath);
                     folderNode.add(childNode);
-                    
+
                     filesArrayLock.lock();
                     files.add(fh);
                     filesArrayLock.unlock();
-                    
+
                     folderHelper.addToChildren(fh);
                 }
-                
+
                 if (readmes.containsKey(filePath)) {
                     Path readmePath = readmes.get(filePath);
                     ReadmeParser rms = new ReadmeParser(folderHelper, readmePath);
@@ -259,8 +303,9 @@ public class Dataset implements PropertyChangeListener{
         }
 
         private void createNodes(Path file, DefaultMutableTreeNode tree, FolderHelper folderH) {
-            progress++;
-            System.out.println("Processing file " + progress + " of " + childCount);
+            pmt.setProgress(++progress);
+            //progress++;
+            System.out.println("Processing file " + progress + " of " + childCount + " [" + file.getFileName() + "]");
             if ("readme".equals(FilenameUtils.removeExtension(file.getFileName().toString()))) {
                 readmesMapLock.lock();
                 readmes.put(file.getParent(), file);
@@ -321,6 +366,8 @@ public class Dataset implements PropertyChangeListener{
 
     public void dirToTree(Path path) {
         DefaultMutableTreeNode dirTree = new DefaultMutableTreeNode(mainDirectory);
+        //pmt = new ProgressMonitorTracker(pm);
+        //pmt.run();
 
         Thread[] ts = new Thread[mainDirectory.toFile().listFiles().length];
         for (int i = 0; i < mainDirectory.toFile().listFiles().length; i++) {

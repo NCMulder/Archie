@@ -9,6 +9,7 @@ import archie_v1.fileHelpers.FileHelper;
 import archie_v1.fileHelpers.MetadataKey;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -24,6 +25,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.border.Border;
+import javax.swing.border.EtchedBorder;
 
 /**
  *
@@ -43,6 +46,9 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
     
     public ArchieTextField datasetLocationField;
     private JButton chooseButton;
+    private int totalHeight;
+    private int categoryY;
+    private int panelHeight;
     
     public MetadataChangerFields(FileHelper fileHelper){
         this.fileHelper = fileHelper;
@@ -74,39 +80,75 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
         panel.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 10));
 
         panelY = 0;
-
-        for (MetadataKey key : fileHelper.metadataMap.keySet()) {
-            createValueFields(key, panel);
+        totalHeight = 0;
+        
+        for(MetadataKey.KeyCategory keyCat : MetadataKey.KeyCategory.values()){
+            JPanel categoryPanel = new JPanel(new GridBagLayout());
+            categoryY = 0;
+            panelHeight = 0;
+            Border paneBorder = BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), keyCat.name());
+            categoryPanel.setBorder(paneBorder);
+            for(MetadataKey key : fileHelper.metadataMap.keySet()){
+                if(key.keyCategory.equals(keyCat)){
+                    createValueFields(key, categoryPanel);
+                }
+            }
+            
+            if(categoryPanel.getComponentCount()==0)
+                continue;
+            
+            GridBagConstraints gbc = new GridBagConstraints(
+                    0, panelY++, //GridX, GridY
+                    5, 1, //GridWidth, GridHeight
+                    1, 1, //WeightX, WeightY
+                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, //Anchor, Fill
+                    new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
+            panel.add(categoryPanel, gbc);
+            totalHeight += panelHeight;
         }
         
         if(newDataset){
+            JPanel finalPanel = new JPanel(new GridBagLayout());
+            Border paneBorder = BorderFactory.createTitledBorder(
+                BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Dataset location");
+            finalPanel.setBorder(paneBorder);
+            
             JLabel label = new JLabel("Dataset location");
             GridBagConstraints gbc = new GridBagConstraints(
-                    0, panelY, //GridX, GridY
+                    0, 0, //GridX, GridY
                     2, 1, //GridWidth, GridHeight
                     .4, 1, //WeightX, WeightY
                     GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, //Anchor, Fill
                     new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
-            panel.add(label, gbc);
+            finalPanel.add(label, gbc);
             
             datasetLocationField = new ArchieTextField(datasetLocation);
             gbc = new GridBagConstraints(
-                    2, panelY, //GridX, GridY
+                    2, 0, //GridX, GridY
                     2, 1, //GridWidth, GridHeight
                     .3, 1, //WeightX, WeightY
                     GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, //Anchor, Fill
                     new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
-            panel.add(datasetLocationField, gbc);
+            finalPanel.add(datasetLocationField, gbc);
             
             chooseButton = new JButton("Choose");
             chooseButton.addActionListener(this);
             gbc = new GridBagConstraints(
-                    4, panelY, //GridX, GridY
+                    4, 0, //GridX, GridY
                     1, 1, //GridWidth, GridHeight
                     .3, 1, //WeightX, WeightY
                     GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, //Anchor, Fill
                     new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
-            panel.add(chooseButton, gbc);
+            finalPanel.add(chooseButton, gbc);
+            
+            gbc = new GridBagConstraints(
+                    0, panelY, //GridX, GridY
+                    1, 1, //GridWidth, GridHeight
+                    1, 1, //WeightX, WeightY
+                    GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, //Anchor, Fill
+                    new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
+            panel.add(finalPanel, gbc);
         }
 
         return panel;
@@ -116,13 +158,13 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
         AddablePanel addablePanel = new AddablePanel(single, plural, keyStrings, fileHelper);
         addablePanels.add(addablePanel);
         GridBagConstraints gbc = new GridBagConstraints(
-                0, panelY, //GridX, GridY
-                5, addablePanel.height, //GridWidth, GridHeight
+                0, categoryY++, //GridX, GridY
+                5, 1, //GridWidth, GridHeight
                 1, 1, //WeightX, WeightY
                 GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, //Anchor, Fill
                 new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
         comp.add(addablePanel, gbc);
-        panelY += addablePanel.height;
+        panelHeight += addablePanel.height;
 
         return addablePanel;
     }
@@ -131,10 +173,10 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
     private JPanel createValueFields(MetadataKey key, JComponent parent) {
         switch (key) {
             case CreatorGivenName:
-                AddablePanel creatorPanel = createAddable(parent, "Creator", "Creators", MetadataKey.creatorKeys);
+                AddablePanel creatorPanel = createAddable(parent, "Creator", "Creators *", MetadataKey.creatorKeys);
                 return creatorPanel;
             case ContributorGivenName:
-                AddablePanel contributorPanel = createAddable(parent, "Contributor", "Contributors", MetadataKey.contributorKeys);
+                AddablePanel contributorPanel = createAddable(parent, "Contributor", "Contributors *", MetadataKey.contributorKeys);
                 return contributorPanel;
             case CreatorIdentifier:
             case CreatorTOA:
@@ -156,10 +198,10 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
             default:
                 JLabel label = new JLabel(key.toString());
                 GridBagConstraints gbc = new GridBagConstraints(
-                        0, panelY, //GridX, GridY
+                        0, categoryY, //GridX, GridY
                         2, 1, //GridWidth, GridHeight
                         .4, 1, //WeightX, WeightY
-                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, //Anchor, Fill
+                        GridBagConstraints.WEST, GridBagConstraints.NONE, //Anchor, Fill
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 parent.add(label, gbc);
                 
@@ -182,12 +224,14 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
                     }
                 }
                 gbc = new GridBagConstraints(
-                        2, panelY++, //GridX, GridY
+                        2, categoryY++, //GridX, GridY
                         3, 1, //GridWidth, GridHeight
                         .6, 1, //WeightX, WeightY
-                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, //Anchor, Fill
+                        GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, //Anchor, Fill
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 parent.add(value, gbc);
+                
+                panelHeight++;
 
                 labelText.put(key, value);
                 return null;

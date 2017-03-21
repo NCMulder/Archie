@@ -80,6 +80,9 @@ public class FolderHelper extends FileHelper {
     protected void setRecord(MetadataKey key, String value, boolean softSet, boolean init) {
         super.setRecord(key, value, softSet, init);
         
+        if(init)
+            return;
+        
         for (FileHelper fh : children) {
             fh.setRecord(key, value, softSet, init);
         }

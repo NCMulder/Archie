@@ -59,8 +59,11 @@ public abstract class FileHelper {
 
         metadata = getMetaData();
         //Is this useful? TODO WIP WOUTER
-        setRecord(MetadataKey.FileContentType, "." + FilenameUtils.getExtension(filePath.toString()) + " file", false);
+        //setRecord(MetadataKey.FileContentType, "." + FilenameUtils.getExtension(filePath.toString()) + " file", false);
         setRecordThroughTika(MetadataKey.DateCreated, "date");
+        setRecordThroughTika(MetadataKey.Software, "Creator tool");
+        setRecordThroughTika(MetadataKey.Software, "Application-Name");
+        setRecordThroughTika(MetadataKey.FileContentType, "Content-Type");
     }
 
     //Helper functions for all filehandlers.
@@ -124,6 +127,9 @@ public abstract class FileHelper {
 //        setRecord(key, value, hardSet, false);
 //    }
     protected void setRecord(MetadataKey key, String value, boolean softset, boolean init) {
+        if(value == "")
+            System.out.println("Value should never be \"\"");
+        
         if (init) {
             metadataMap.put(key, value);
             return;
@@ -135,6 +141,10 @@ public abstract class FileHelper {
 
         if (softset && metadataMap.get(key) != null) {
             return;
+        }
+        
+        if(key==MetadataKey.Software && !init){
+            System.out.println("Changing software to " + value);
         }
 
         metadataMap.put(key, value);

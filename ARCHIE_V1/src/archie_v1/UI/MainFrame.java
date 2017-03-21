@@ -39,6 +39,7 @@ public class MainFrame extends JFrame implements ActionListener {
     private JMenuItem tempMenuItem;
     public JMenuItem saveItem;
     private JMenuItem openMenu;
+    private JMenuItem about;
 
     public MainFrame(ArchieUIManager parent) {
         // base init
@@ -126,10 +127,14 @@ public class MainFrame extends JFrame implements ActionListener {
         preferencesMenu.add(editPrefs);
 
         menuBar.add(preferencesMenu);
-
-        tempMenuItem = new JMenuItem("testing");
-        tempMenuItem.addActionListener(this);
-        menuBar.add(tempMenuItem);
+        
+        about = new JMenuItem("About");
+        about.setPreferredSize(new Dimension(100, 40));
+        about.setFont(new Font(dataSet.getFont().getFontName(), dataSet.getFont().getStyle(), 16));
+        about.setIconTextGap(8);
+        about.addActionListener(this);
+        
+        menuBar.add(about);
 
         this.setJMenuBar(menuBar);
         //todo: more menu imps, event listeners
@@ -218,6 +223,10 @@ public class MainFrame extends JFrame implements ActionListener {
                 NewDataset nds = new NewDataset(this, fc.getSelectedFile());
                 //ChangeMainPanel(nds);
             }
+        } else if (e.getSource() == about){
+            System.out.println("GOTOABOUT");
+            AboutScreen abs = new AboutScreen();
+            ChangeMainPanel(abs);
         } else {
             System.out.println(e);
             System.out.println(e.getSource());
