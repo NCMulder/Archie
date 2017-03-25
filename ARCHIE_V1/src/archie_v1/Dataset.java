@@ -1,6 +1,7 @@
 //License
 package archie_v1;
 
+import archie_v1.UI.NewDataset;
 import archie_v1.fileHelpers.FileHelper;
 import archie_v1.fileHelpers.FolderHelper;
 import archie_v1.fileHelpers.MetadataKey;
@@ -14,10 +15,13 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -26,11 +30,17 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.RegexFileFilter;
 
 /**
  * The Dataset class encapsulates a single dataset, defined by a name and
@@ -59,7 +69,6 @@ public class Dataset implements PropertyChangeListener {
     //Debugging
     private ArrayList<String> probfiles = new ArrayList();
     Lock probfilesArrayLock = new ReentrantLock();
-    private ExecutorService executorpool;
     private ProgressMonitorTracker pmt;
 
     public Dataset(String name, Path path, FolderHelper datasetHelper, int childCount) {
@@ -73,7 +82,7 @@ public class Dataset implements PropertyChangeListener {
 
         pmt = new ProgressMonitorTracker(pm);
         pmt.run();
-        
+
         dirToTree(path);
         //dirToTree();
 
@@ -83,7 +92,73 @@ public class Dataset implements PropertyChangeListener {
         debugFiles();
     }
 
+    public ArrayList<String> Scan() {
+        ArrayList<String> newFiles = new ArrayList();
+        ArrayList<Path> currentPaths = new ArrayList();
+        Collection<File> currentFiles = FileUtils.listFilesAndDirs(mainDirectory.toFile(), new RegexFileFilter("^(.*?)"), DirectoryFileFilter.INSTANCE);
+        System.out.println("Files found: " + currentFiles.size());
+        for (File file : currentFiles) {
+            currentPaths.add(file.toPath());
+        }
+        
+        System.out.println("Paths found: " + currentPaths.size());
+
+        for (Path path : currentPaths) {
+            if (!isFileSafe(path, true)) {
+                continue;
+            }
+
+            boolean brk = false;
+            for (FileHelper fileH : files) {
+                if (fileH.filePath.equals(path)) {
+                    brk = true;
+                    break;
+                }
+            }
+            if (brk) {
+                continue;
+            }
+
+            newFiles.add(path.toString());
+        }
+        
+        AddFiles(newFiles);        
+        
+        return newFiles;
+    }
+
+    private void AddFiles(ArrayList<String> newFiles) {
+        for(String fileString : newFiles){
+            Path filePath = Paths.get(fileString);
+            FileHelper fileHelper;
+            if(filePath.toFile().isDirectory())
+                fileHelper = new FolderHelper(filePath);
+            else
+                fileHelper = ARCHIE.fileSelector(filePath);
+            files.add(fileHelper);
+            Path parent = filePath.getParent();
+            
+            for(FileHelper fh : files){
+                if(fh.filePath.equals(parent)){
+                    ((FolderHelper)fh).addToChildren(fileHelper);
+                    break;
+                }
+            }
+            
+            DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(filePath);
+            Enumeration<DefaultMutableTreeNode> e = fileTree.breadthFirstEnumeration();
+            while(e.hasMoreElements()){
+                DefaultMutableTreeNode parentNode = e.nextElement();
+                if(parentNode.getUserObject().equals(parent)){
+                    parentNode.add(childNode);
+                    break;
+                }
+            }
+        }
+    }
+
     private class ProgressMonitorTracker implements Runnable, PropertyChangeListener {
+
         ProgressMonitor pm;
 
         public ProgressMonitorTracker(ProgressMonitor pm) {
@@ -100,14 +175,14 @@ public class Dataset implements PropertyChangeListener {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if(evt.equals("progress")){
+            if (evt.equals("progress")) {
                 int progress = Integer.parseInt(evt.getNewValue().toString());
                 pm.setProgress(progress);
                 pm.setNote("Progress: " + progress + " of " + pm.getMaximum());
             }
         }
-        
-        public void setProgress(int i){
+
+        public void setProgress(int i) {
             progress = i;
             pm.setProgress(progress);
             pm.setNote("Progress: " + progress + " of " + pm.getMaximum());
@@ -121,6 +196,30 @@ public class Dataset implements PropertyChangeListener {
             this.name = br.readLine();
             br.readLine();
             this.mainDirectory = Paths.get(br.readLine());
+
+            if (Files.notExists(mainDirectory)) {
+                Object[] options = {"Choose directory", "Ignore", "Cancel"};
+                int result = JOptionPane.showOptionDialog(
+                        ARCHIE.ui.mf, "The provided directory could not be found.", "Invalid directory",
+                        JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE,
+                        null, options, null);
+                switch (result) {
+                    case 0:
+                        JFileChooser fc = new JFileChooser();
+                        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                        int rv = fc.showOpenDialog(ARCHIE.ui.mf);
+                        if (rv == JFileChooser.APPROVE_OPTION) {
+                            this.mainDirectory = fc.getSelectedFile().toPath();
+                        } else {
+                            return;
+                        }
+                    case 1:
+                        break;
+                    case 2:
+                    default:
+                        return;
+                }
+            }
             this.childCount = Integer.parseInt(br.readLine());
             this.datasetHelper = new FolderHelper(br, mainDirectory);
 
@@ -196,8 +295,30 @@ public class Dataset implements PropertyChangeListener {
         fileTree = dirTree;
     }
 
+    private boolean isFileSafe(Path filePath, boolean testForReadmes) {
+        if(testForReadmes){
+            if(filePath.getFileName().toString().equals("readme.csv"))
+                return false;
+        }
+        if ("Thumbs.db".equals(filePath.getFileName().toString())) {
+            return false;
+        } else if (filePath.getFileName().toString().contains("datanow_meta")) {
+            return false;
+        } else if (filePath.getFileName().toString().equals(".dataNowFolderUploads_")) {
+            return false;
+        } else if (filePath.getFileName().toString().startsWith(".")){
+            return false;
+        }//Possibly also filter out all filePaths starting with ".".
+
+        String[] errFiles = {".zip", ".cache", ".svn-base",};
+        String fileType = filePath.getFileName().toString().replace(FilenameUtils.removeExtension(filePath.getFileName().toString()), "");
+        if (Arrays.asList(errFiles).contains(fileType)) {
+            return false;
+        }
+        return true;
+    }
+
     private class DatasetCreator extends SwingWorker<FileHelper, Void> {
-        
 
         private Path filePath;
         private DefaultMutableTreeNode treeNode;
@@ -220,17 +341,7 @@ public class Dataset implements PropertyChangeListener {
                 readmes.put(filePath.getParent(), filePath);
                 readmesMapLock.unlock();
                 return null;
-            } else if ("Thumbs.db".equals(filePath.getFileName().toString())) {
-                return null;
-            } else if (filePath.getFileName().toString().contains("datanow_meta")) {
-                return null;
-            } else if (filePath.getFileName().toString().equals(".dataNowFolderUploads_")) {
-                return null;
-            } //Possibly also filter out all filePaths starting with ".".
-
-            String[] errFiles = {".zip", ".cache", ".svn-base",};
-            String fileType = filePath.getFileName().toString().replace(FilenameUtils.removeExtension(filePath.getFileName().toString()), "");
-            if (Arrays.asList(errFiles).contains(fileType)) {
+            } else if (!isFileSafe(filePath, false)) {
                 return null;
             }
 
@@ -410,7 +521,7 @@ public class Dataset implements PropertyChangeListener {
     public void createNodes(BufferedReader br, String prefix, DefaultMutableTreeNode parent, FolderHelper folderHelper) {
         pm.setProgress(++progress);
         try {
-            Path path = Paths.get(br.readLine().replaceFirst(prefix, ""));
+            Path path = Paths.get(((Path) parent.getUserObject()).toString(), br.readLine().replaceFirst(prefix, ""));
             DefaultMutableTreeNode fileNode = new DefaultMutableTreeNode(path);
 
             parent.add(fileNode);

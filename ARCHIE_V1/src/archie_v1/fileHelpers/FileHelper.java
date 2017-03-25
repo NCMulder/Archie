@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -65,7 +66,9 @@ public abstract class FileHelper {
         setRecordThroughTika(MetadataKey.Software, "Application-Name");
         setRecordThroughTika(MetadataKey.FileContentType, "Content-Type");
         File file = new File(filePath.toString());
-        setRecord(MetadataKey.FileSize, String.valueOf(file.length()) + " bytes", false);
+        
+        //Rounding is not nice; possible better solution: http://stackoverflow.com/questions/3758606/how-to-convert-byte-size-into-human-readable-format-in-java
+        setRecord(MetadataKey.FileSize, FileUtils.byteCountToDisplaySize(file.length()), false);
     }
 
     //Helper functions for all filehandlers.
@@ -111,23 +114,7 @@ public abstract class FileHelper {
 
         return basedata;
     }
-
-//    public void setRecord(MetadataKey key, String value, boolean hardSet, boolean init) {
-//        if (!hardSet && metadataMap.containsKey(key) && (!"".equals(metadataMap.get(key)))) {
-//            return;
-//        }
-//        
-//        if(!init && (value == null || value.equals("")))
-//            return;
-//        
-//        if (init || metadataMap.containsKey(key)) {
-//            metadataMap.put(key, value);
-//        }
-//    }
-//
-//    public void setRecord(MetadataKey key, String value, boolean hardSet) {
-//        setRecord(key, value, hardSet, false);
-//    }
+    
     protected void setRecord(MetadataKey key, String value, boolean softset, boolean init) {
         if(value == "")
             System.out.println("Value should never be \"\"");
@@ -145,9 +132,7 @@ public abstract class FileHelper {
             return;
         }
         
-        if(key==MetadataKey.Software && !init){
-            System.out.println("Changing software to " + value);
-        }
+        //System.out.println("Changing key " + key.displayValue + " to " + value + " for file " + filePath.getFileName() + ", softset:" + softset);
 
         metadataMap.put(key, value);
     }
@@ -207,7 +192,7 @@ public abstract class FileHelper {
 
     public void saveDataset(BufferedWriter writer, String prefix) {
         try {
-            writer.write(prefix + filePath + "\n");
+            writer.write(prefix + ((root)? filePath : filePath.getFileName()) + "\n");
             if (this.getClass() == FolderHelper.class) {
                 writer.write(prefix + ((FolderHelper) this).children.size() + "\n");
             } else {

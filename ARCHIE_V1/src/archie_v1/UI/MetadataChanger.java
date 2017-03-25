@@ -2,6 +2,7 @@
 package archie_v1.UI;
 
 import archie_v1.Dataset;
+import archie_v1.fileHelpers.DatasetHelper;
 import archie_v1.fileHelpers.FileHelper;
 import archie_v1.fileHelpers.FolderHelper;
 import archie_v1.outputFormats.*;
@@ -19,22 +20,22 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
 
 public class MetadataChanger extends JSplitPane implements TreeSelectionListener, ActionListener {
-    
+
     public enum SaveType {
         ArchieXML, Islandora, Dans
     }
-    
+
     Path mainDirectory;
     JTree UITree;
     Dataset dataset;
-    
+
     public MetadataChanger(Dataset dataset) {
         mainDirectory = dataset.mainDirectory;
         this.dataset = dataset;
-        
+
         createUI();
     }
-    
+
     public boolean Save(SaveType st, Path outputPath) throws IOException {
         outputAbstract output;
         if (st == SaveType.Islandora) {
@@ -46,10 +47,10 @@ public class MetadataChanger extends JSplitPane implements TreeSelectionListener
             return false;
         }
         output.Save(outputPath.toString(), dataset.files, this);
-        
+
         return true;
     }
-    
+
     @Override
     public void valueChanged(TreeSelectionEvent e) {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) UITree.getLastSelectedPathComponent();
@@ -57,29 +58,26 @@ public class MetadataChanger extends JSplitPane implements TreeSelectionListener
             return;
         }
         Path nodeInfo = (Path) node.getUserObject();
-        
+
         for (FileHelper fh : dataset.files) {
             if (nodeInfo.equals(fh.filePath)) {
                 //do interesting stuff here
-                
+
                 updateChangerPane(fh);
                 return;
             }
         }
-        
+
         WelcomeScreen ws = new WelcomeScreen();
         this.setRightComponent(ws);
     }
-    
+
     @Override
     public void actionPerformed(ActionEvent e) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
-    private void createUI() {
-        this.orientation = JSplitPane.HORIZONTAL_SPLIT;
-        this.setResizeWeight(0.2);
-        
+
+    public void resetLeftPane() {
         UITree = new JTree(dataset.fileTree) {
             @Override
             public String convertValueToText(Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
@@ -90,24 +88,36 @@ public class MetadataChanger extends JSplitPane implements TreeSelectionListener
         };
         UITree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         UITree.addTreeSelectionListener(this);
-        
+
         JScrollPane fileTreeView = new JScrollPane(UITree);
         this.setLeftComponent(fileTreeView);
-        
+    }
+
+    private void createUI() {
+        this.orientation = JSplitPane.HORIZONTAL_SPLIT;
+        this.setResizeWeight(0.2);
+
+        resetLeftPane();
+
         for (FileHelper fh : dataset.files) {
             if (dataset.fileTree.getRoot().toString().equals(fh.filePath.toString())) {
                 this.setRightComponent(new MetadataChangerPane(fh, this));
                 return;
             }
         }
-        
+
         WelcomeScreen ws = new WelcomeScreen();
         this.setRightComponent(ws);
     }
-    
+
     private void updateChangerPane(FileHelper fileHelper) {
         if (MetadataChangerPane.class.isInstance(getRightComponent())) {
-            ((MetadataChangerPane) this.getRightComponent()).saveToFileHelper(FolderHelper.class.isInstance(fileHelper));
+            boolean isFolderHelper = FolderHelper.class.isInstance(((MetadataChangerPane) this.getRightComponent()).fileHelper);
+            boolean isRoot = false;
+            if(isFolderHelper)
+                isRoot = ((FolderHelper)((MetadataChangerPane) this.getRightComponent()).fileHelper).root;
+            if(!isRoot)
+                ((MetadataChangerPane) this.getRightComponent()).saveToFileHelper(isFolderHelper);
         }
         this.setRightComponent(new MetadataChangerPane(fileHelper, this));
     }

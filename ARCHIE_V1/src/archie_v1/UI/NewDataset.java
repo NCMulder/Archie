@@ -141,7 +141,7 @@ public class NewDataset extends JPanel implements ActionListener, PropertyChange
         this.parent = parent;
         pm.setMillisToDecideToPopup(0);
         pm.setMillisToPopup(0);
-        datasetHelper = new FolderHelper(Paths.get("C:\\Users\\niels\\Documents\\Archie\\Testset\\testset"), true);
+        datasetHelper = new FolderHelper(Paths.get("C:\\Users\\niels\\Documents\\Archie\\Testset\\testset_test"), true);
         createUI();
     }
 

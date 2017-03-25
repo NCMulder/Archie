@@ -1,6 +1,7 @@
 //License
 package archie_v1.outputFormats;
 
+import archie_v1.fileHelpers.DatasetHelper;
 import archie_v1.fileHelpers.FileHelper;
 import archie_v1.fileHelpers.MetadataKey;
 import java.io.IOException;
@@ -69,57 +70,22 @@ public class outputIslandora extends outputAbstract {
         return modsXML;
     }
 
-    //Getting MODS-elements using the metadata in the filehelpers.
-    //check this method for improvements TODO
-    public Element[] nameHandler(String name, FileHelper fileHelper) {
-        String fullName = name;
-        String familyName = "unknown", givenName = "unknown";
-        String[] splitNames, nameParticles;
-        if (fullName.contains(", ")) {
-            splitNames = fullName.split(", ");
-            if (splitNames[1].contains(" ")) {
-                nameParticles = splitNames[1].split(" ");
-                givenName = nameParticles[0];
-                familyName = "";
-                for (int i = 1; i < nameParticles.length; i++) {
-                    familyName += nameParticles[i] + " ";
-                }
-            } else {
-                givenName = splitNames[1];
-            }
-            familyName += splitNames[0];
-        } else if (fullName.contains(" ")) {
-            splitNames = fullName.split(" ");
-            familyName = splitNames[splitNames.length - 1];
-            givenName = "";
-            for (int i = 0; i < splitNames.length - 1; i++) {
-                givenName += splitNames[i] + " ";
-            }
-            givenName = givenName.substring(0, givenName.length() - 1);
-        } else if (!"".equals(fullName)) {
-            familyName = fullName;
-        }
+    public LinkedList<Element> getDatasetElements(DatasetHelper datasetHelper) {
+        LinkedList<Element> elementList = new LinkedList();
 
-        Element namePartGiven = new Element("namePart", rootNamespace);
-        namePartGiven.setAttribute("type", "given");
-        namePartGiven.setText(givenName);
+        elementList.add(getRightsHolder(datasetHelper));
+        elementList.add(getRelatedDataSet(datasetHelper));
+        elementList.add(getSubject(datasetHelper, true));
+        elementList.add(getAbstract(datasetHelper));
+        elementList.add(getLanguage(datasetHelper));
+        elementList.add(getAccessLevel(datasetHelper));
 
-        Element namePartFamily = new Element("namePart", rootNamespace);
-        namePartFamily.setAttribute("type", "family");
-        namePartFamily.setText(familyName);
-
-        Element[] names = new Element[2];
-        names[0] = namePartFamily;
-        names[1] = namePartGiven;
-
-        return names;
+        return elementList;
     }
 
     public LinkedList<Element> getMODSElements(FileHelper fileHelper) {
         LinkedList<Element> elementList = new LinkedList();
 
-        //elementList.add(getTitle(fileHelper));
-        //elementList.add(getIdentifier(fileHelper));
         Element[] creators = getCreator(fileHelper);
         if (creators != null) {
             elementList.addAll(Arrays.asList(creators));
@@ -128,29 +94,12 @@ public class outputIslandora extends outputAbstract {
         if (contributors != null) {
             elementList.addAll(Arrays.asList(contributors));
         }
-        //elementList.add(getRightsHolder(fileHelper));
-        //elementList.add(getRelatedItem(fileHelper));
-        //elementList.add(getRelatedDataSet(fileHelper));
-        elementList.add(getSubject(fileHelper, false));
-        //elementList.add(getAbstract(fileHelper));
         elementList.add(getOriginInfo(fileHelper));
         elementList.add(getTypeOfResource());
-        //elementList.add(getLanguage(fileHelper));
-        //elementList.add(getAccessLevel(fileHelper));
-        //elementList.add(getFileSize(fileHelper));
+        elementList.add(getSubject(fileHelper, false));
+        elementList.add(getFileSize(fileHelper));
 
         return elementList;
-    }
-
-    //dataset elements?
-    public Element getTitle(FileHelper fileHelper) {
-        //Can be extracted directly from the filepath.
-        Element titleInfo = new Element("titleInfo", rootNamespace);
-        Element title = new Element("title", rootNamespace);
-        title.setText(fileHelper.metadataMap.get(MetadataKey.FileUnits));
-        titleInfo.addContent(title);
-
-        return titleInfo;
     }
 
     public Element getIdentifier(FileHelper fileHelper) {
@@ -271,13 +220,6 @@ public class outputIslandora extends outputAbstract {
     //TODO
     public Element getRightsHolder(FileHelper fileHelper) {
         //What MODS element is used for this?
-        //almost always manually set
-        return null;
-    }
-
-    //TODO
-    public Element getRelatedItem(FileHelper fileHelper) {
-        //almost always manually set
         return null;
     }
 
@@ -303,17 +245,23 @@ public class outputIslandora extends outputAbstract {
 
     public Element getSubject(FileHelper fileHelper, boolean forDataset) {
         boolean subjectTest = fileHelper.metadataMap.get(MetadataKey.Subject) != null && !fileHelper.metadataMap.get(MetadataKey.Subject).equals("");
-        boolean spatialCoverageTest = fileHelper.metadataMap.get(MetadataKey.SpatialCoverage) != null && !fileHelper.metadataMap.get(MetadataKey.SpatialCoverage).equals("");
+        boolean coordinatesTest = fileHelper.metadataMap.get(MetadataKey.Coordinates) != null && !fileHelper.metadataMap.get(MetadataKey.Coordinates).equals("");
         boolean temporalCoverageTest = fileHelper.metadataMap.get(MetadataKey.TemporalCoverage) != null && !fileHelper.metadataMap.get(MetadataKey.TemporalCoverage).equals("");
+        boolean spatialCoverageTest = fileHelper.metadata.get(MetadataKey.SpatialCoverage) != null && fileHelper.metadata.get(MetadataKey.SpatialCoverage).equals("");
 
-        if (forDataset && !subjectTest && !spatialCoverageTest && !temporalCoverageTest) {
-            return null;
-        }
-        if (!forDataset && !spatialCoverageTest) {
+        if (!forDataset && !coordinatesTest) {
             return null;
         }
 
         Element subject = new Element("subject", rootNamespace);
+
+        if (forDataset) {
+            Element titleInfo = new Element("titleInfo", rootNamespace);
+            Element title = new Element("title", rootNamespace);
+            title.setText(fileHelper.metadataMap.get(MetadataKey.DatasetTitle));
+            titleInfo.addContent(title);
+            subject.addContent(titleInfo);
+        }
 
         if (forDataset && subjectTest) {
             Element topic = new Element("topic", rootNamespace);
@@ -338,8 +286,8 @@ public class outputIslandora extends outputAbstract {
             }
         }
 
-        if (spatialCoverageTest) {
-            String[] coords = fileHelper.metadataMap.get(MetadataKey.SpatialCoverage).split(";");
+        if (coordinatesTest) {
+            String[] coords = fileHelper.metadataMap.get(MetadataKey.Coordinates).split(";");
             Element cartographics = new Element("cartographics", rootNamespace);
             for (String coord : coords) {
                 Element coordinates = new Element("coordinates", rootNamespace);
@@ -347,6 +295,12 @@ public class outputIslandora extends outputAbstract {
                 cartographics.addContent(coordinates);
             }
             subject.addContent(cartographics);
+        }
+        
+        if(spatialCoverageTest){
+            Element geo = new Element("geographic", rootNamespace);
+            geo.setText(fileHelper.metadataMap.get(MetadataKey.SpatialCoverage));
+            subject.addContent(geo);
         }
 
         return subject;
@@ -463,10 +417,11 @@ public class outputIslandora extends outputAbstract {
     }
 
     public Element getFileSize(FileHelper fileHelper) {
-        System.out.println(fileHelper.filePath.toFile().length());
-        Element fileSize = new Element("FileSize");
-        fileSize.setText("boe");
-        return fileSize;
+        Element physDesc = new Element("physicalDescription", rootNamespace);
+        Element note = new Element("note", rootNamespace);
+        note.setText(fileHelper.metadataMap.get(MetadataKey.FileSize));
+        physDesc.addContent(note);
+        return physDesc;
     }
 
     public Element getPhysicalForm(FileHelper fileHelper) {

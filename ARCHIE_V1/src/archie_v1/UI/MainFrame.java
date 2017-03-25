@@ -4,6 +4,7 @@ package archie_v1.UI;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -11,12 +12,14 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -40,6 +43,7 @@ public class MainFrame extends JFrame implements ActionListener {
     public JMenuItem saveItem;
     private JMenuItem openMenu;
     private JMenuItem about;
+    private JMenuItem scan;
 
     public MainFrame(ArchieUIManager parent) {
         // base init
@@ -114,6 +118,18 @@ public class MainFrame extends JFrame implements ActionListener {
         export.add(toIslandora);
         export.add(toDANS);
         dataSet.add(export);
+        
+        about = new JMenuItem("About");
+        //about.setPreferredSize(new Dimension(100, 40));
+        //about.setFont(new Font(dataSet.getFont().getFontName(), dataSet.getFont().getStyle(), 16));
+        //about.setIconTextGap(8);
+        about.addActionListener(this);
+        
+        dataSet.add(about);
+        
+        scan = new JMenuItem("Scan");
+        scan.addActionListener(this);
+        dataSet.add(scan);
 
         menuBar.add(dataSet);
 
@@ -127,14 +143,6 @@ public class MainFrame extends JFrame implements ActionListener {
         preferencesMenu.add(editPrefs);
 
         menuBar.add(preferencesMenu);
-        
-        about = new JMenuItem("About");
-        about.setPreferredSize(new Dimension(100, 40));
-        about.setFont(new Font(dataSet.getFont().getFontName(), dataSet.getFont().getStyle(), 16));
-        about.setIconTextGap(8);
-        about.addActionListener(this);
-        
-        menuBar.add(about);
 
         this.setJMenuBar(menuBar);
         //todo: more menu imps, event listeners
@@ -227,6 +235,27 @@ public class MainFrame extends JFrame implements ActionListener {
             System.out.println("GOTOABOUT");
             AboutScreen abs = new AboutScreen();
             ChangeMainPanel(abs);
+        } else if (e.getSource() == scan){
+            ArrayList<String> newFiles = ((MetadataChanger)mainPanel).dataset.Scan();
+            if(newFiles.isEmpty()){
+                JOptionPane.showMessageDialog(this, "No new files found.");
+            } else {
+                JPanel filesPanel = new JPanel(new GridLayout(0,1));
+                filesPanel.add(new JLabel("New files found:"));
+                for(int i = 0; i < newFiles.size(); i++){
+                    filesPanel.add(new JLabel(newFiles.get(i)));
+                    if(i>5){
+                        JLabel andMore = new JLabel("... and " + (newFiles.size() - 5) + " more.");
+                        Font andMoreFont = new Font(andMore.getFont().getFontName(), Font.ITALIC, andMore.getFont().getSize());
+                        andMore.setFont(andMoreFont);
+                        filesPanel.add(andMore);
+                        break;
+                    }
+                }
+                JOptionPane.showMessageDialog(this, filesPanel);
+            }
+            
+            ((MetadataChanger)mainPanel).resetLeftPane();
         } else {
             System.out.println(e);
             System.out.println(e.getSource());

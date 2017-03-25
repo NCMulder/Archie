@@ -95,7 +95,7 @@ public class AboutScreen extends JPanel {
                 new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY);
         this.add(designLabel, gbc);
         
-        JLabel knLabel = new JLabel("Wouter Kool", JLabel.CENTER);
+        JLabel knLabel = new JLabel("Drs. W. Kool", JLabel.CENTER);
         knLabel.setFont(ft2);
         gbc = new GridBagConstraints(
                 1, 3, //GridX, GridY

@@ -96,8 +96,6 @@ public class AddablePanel extends JPanel implements ActionListener {
         JPanel gridPane = new JPanel(new GridLayout(0, 1));
 
         if (!valueArray.isEmpty()) {
-            System.out.println("Addable " + Values[0] + " with value " + valueArray.get(0)[0] + " is being prepared.");
-
             xweight = .8333f / (Values.length);
             String[] mainKeys = valueArray.get(0);
             height = valueArray.size();

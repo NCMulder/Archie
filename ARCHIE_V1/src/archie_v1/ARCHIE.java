@@ -6,7 +6,6 @@ import archie_v1.fileHelpers.*;
 import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.apache.commons.io.FilenameUtils;
@@ -15,20 +14,12 @@ public class ARCHIE {
     static public ArchieUIManager ui;
 
     public static void main(String[] args) {
-        if(args.length>=2)
-            System.out.println(args[1]);
-        //User preferences
-        
-        Preferences prefs = Preferences.userNodeForPackage(MetadataKey.class);
-        prefs.put("Publisher", "hahatesttitel");
-        
-        
-        
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
             Logger.getLogger(ARCHIE.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
         ui = new ArchieUIManager();
     }
     
