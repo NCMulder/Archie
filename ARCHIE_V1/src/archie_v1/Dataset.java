@@ -196,6 +196,7 @@ public class Dataset implements PropertyChangeListener {
         try {
             BufferedReader br = new BufferedReader(new FileReader(selectedFile));
             br.readLine();
+            br.readLine();
             this.mainDirectory = Paths.get(br.readLine());
 
             if (Files.notExists(mainDirectory)) {
@@ -221,6 +222,7 @@ public class Dataset implements PropertyChangeListener {
                         return;
                 }
             }
+            
             this.childCount = Integer.parseInt(br.readLine());
             this.datasetHelper = new FolderHelper(br, mainDirectory);
 

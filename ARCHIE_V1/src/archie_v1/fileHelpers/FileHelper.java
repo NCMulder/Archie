@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,6 +74,15 @@ public abstract class FileHelper {
         setRecordThroughTika(MetadataKey.Software, "xmp:CreatorTool");
         setRecordThroughTika(MetadataKey.Software, "xmpMM:History:SoftwareAgent");
         setRecordThroughTika(MetadataKey.FileContentType, "Content-Type");
+        
+        try {
+            String format = Files.probeContentType(filePath);
+            setRecord(MetadataKey.FileFormat, format, true);
+        } catch (IOException ex) {
+            
+        }
+        
+        
         File file = new File(filePath.toString());
 
         //Rounding is not nice; possible better solution: http://stackoverflow.com/questions/3758606/how-to-convert-byte-size-into-human-readable-format-in-java
@@ -197,7 +207,7 @@ public abstract class FileHelper {
         assert !key.addable;
         String tikaValue = metadata.get(tikaString);
         if (tikaValue != null) {
-            setRecord(key, tikaValue, false);
+            setRecord(key, tikaValue, true);
             //metadataMap.put(key, tikaValue);
         }
     }

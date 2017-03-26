@@ -82,19 +82,25 @@ public class outputIslandora extends outputAbstract {
 
         Element[] creators = getCreator(fileHelper);
         if (creators != null) {
-            System.out.println("Some creators added for file " + fileHelper.filePath.getFileName());
             elementList.addAll(Arrays.asList(creators));
         }
         Element[] contributors = getContributors(fileHelper);
         if (contributors != null) {
-            System.out.println("Some contributors added for file " + fileHelper.filePath.getFileName());
             elementList.addAll(Arrays.asList(contributors));
         }
         elementList.add(getOriginInfo(fileHelper));
         elementList.add(getTypeOfResource());
         elementList.add(getSubject(fileHelper, false));
-        elementList.add(getFileSize(fileHelper));
-
+        elementList.add(getAbstract(fileHelper));
+        elementList.add(getPhysicialDescription(fileHelper));
+        elementList.add(getPurpose(fileHelper));
+        elementList.add(getCollection(fileHelper));
+        elementList.add(getUnits(fileHelper));
+        elementList.add(getAppreciation(fileHelper));
+        elementList.add(getSource(fileHelper));
+        elementList.add(getCitation(fileHelper));
+        elementList.add(getNotes(fileHelper));
+        elementList.add(getPhysicalDescription(fileHelper));
         return elementList;
     }
 
@@ -283,17 +289,17 @@ public class outputIslandora extends outputAbstract {
         }
 
         if (coordinatesTest) {
-            String[] coords = fileHelper.metadataMap.get(MetadataKey.Coordinates).split(";");
+            String[] coords = fileHelper.metadataMap.get(MetadataKey.Coordinates).split(",");
             Element cartographics = new Element("cartographics", rootNamespace);
             for (String coord : coords) {
                 Element coordinates = new Element("coordinates", rootNamespace);
-                coordinates.setText(coord.replace(" ", ""));
+                coordinates.setText(coord.trim());
                 cartographics.addContent(coordinates);
             }
             subject.addContent(cartographics);
         }
-        
-        if(spatialCoverageTest){
+
+        if (spatialCoverageTest) {
             Element geo = new Element("geographic", rootNamespace);
             geo.setText(fileHelper.metadataMap.get(MetadataKey.SpatialCoverage));
             subject.addContent(geo);
@@ -363,60 +369,78 @@ public class outputIslandora extends outputAbstract {
     }
 
     //file elements?
-    public Element getCollector(FileHelper fileHelper) {
-        return null;
-    }
-
-    public Element getDescription(FileHelper fileHelper) {
-        return null;
+    public Element getNote(FileHelper fileHelper, MetadataKey metadataKey, String noteType) {
+        String value = fileHelper.metadataMap.get(metadataKey);
+        if (value == null) {
+            return null;
+        }
+        Element note = new Element("Note", rootNamespace);
+        if (noteType != null) {
+            note.setAttribute("type", noteType);
+        }
+        note.setText(value);
+        return note;
     }
 
     public Element getPurpose(FileHelper fileHelper) {
-        return null;
+        return getNote(fileHelper, MetadataKey.FilePurpose, null);
     }
 
     public Element getCollection(FileHelper fileHelper) {
-        return null;
+        return getNote(fileHelper, MetadataKey.FileCollection, "accrual method");
     }
 
     public Element getUnits(FileHelper fileHelper) {
-        return null;
+        return getNote(fileHelper, MetadataKey.FileUnits, "source dimensions");
     }
 
     public Element getAppreciation(FileHelper fileHelper) {
-        return null;
+        return getNote(fileHelper, MetadataKey.FileAppreciation, null);
     }
 
     public Element getSource(FileHelper fileHelper) {
-        return null;
+        return getNote(fileHelper, MetadataKey.FileSource, "source note");
     }
 
     public Element getCitation(FileHelper fileHelper) {
-        return null;
+        return getNote(fileHelper, MetadataKey.FileCitation, "citation/reference");
     }
 
     public Element getNotes(FileHelper fileHelper) {
-        return null;
-    }
-
-    public Element getCoordinates(FileHelper fileHelper) {
-        return null;
-    }
-
-    public Element getContentType(FileHelper fileHelper) {
-        return null;
+        return getNote(fileHelper, MetadataKey.FileNotes, null);
     }
 
     //more "optional" elements
-    public Element getForm(FileHelper fileHelper) {
-        return null;
-    }
 
-    public Element getFileSize(FileHelper fileHelper) {
+    public Element getPhysicialDescription(FileHelper fileHelper) {
+        String fileContentType = fileHelper.metadataMap.get(MetadataKey.FileContentType);
+        String fileFormat = fileHelper.metadataMap.get(MetadataKey.FileFormat);
+        String fileSize = fileHelper.metadataMap.get(MetadataKey.FileSize);
+
+        if (fileSize == null && fileFormat == null && fileContentType == null) {
+            return null;
+        }
+
         Element physDesc = new Element("physicalDescription", rootNamespace);
-        Element note = new Element("note", rootNamespace);
-        note.setText(fileHelper.metadataMap.get(MetadataKey.FileSize));
-        physDesc.addContent(note);
+
+        if (fileContentType != null) {
+            Element internetMT = new Element("internetMediaType", rootNamespace);
+            internetMT.setText(fileContentType);
+            physDesc.addContent(internetMT);
+        }
+        
+        if(fileFormat!=null){
+            Element format = new Element("form", rootNamespace);
+            format.setText(fileFormat);
+            physDesc.addContent(format);
+        }
+        
+        if(fileSize!=null){
+            Element extent = new Element("extent", rootNamespace);
+            extent.setText(fileSize);
+            physDesc.addContent(extent);
+        }
+        
         return physDesc;
     }
 
