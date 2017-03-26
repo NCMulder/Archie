@@ -27,6 +27,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  *
@@ -49,6 +50,8 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
     private int totalHeight;
     private int categoryY;
     private int panelHeight;
+    private JButton chooseCodeBook;
+    private ArchieTextField codeField;
     
     public MetadataChangerFields(FileHelper fileHelper){
         this.fileHelper = fileHelper;
@@ -195,6 +198,43 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
                 return relatedDatasetPanel;
             case RelatedDatasetLocation:
                 return null;
+            case RelatedCodeBookLocation:
+                JLabel codeLabel = new JLabel(key.toString());
+                GridBagConstraints cGBC = new GridBagConstraints(
+                        0, categoryY, //GridX, GridY
+                        2, 1, //GridWidth, GridHeight
+                        .4, 1, //WeightX, WeightY
+                        GridBagConstraints.WEST, GridBagConstraints.NONE, //Anchor, Fill
+                        new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
+                parent.add(codeLabel, cGBC);
+                
+                String codeLocation = fileHelper.metadataMap.get(key);
+                String fieldValue = (codeLocation==null)? "E.G. " + key.getDefaultValue() : codeLocation;
+                codeField= new ArchieTextField(20, fieldValue);
+                
+                cGBC = new GridBagConstraints(
+                        2, categoryY, //GridX, GridY
+                        2, 1, //GridWidth, GridHeight
+                        .4, 1, //WeightX, WeightY
+                        GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, //Anchor, Fill
+                        new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
+                parent.add(codeField, cGBC);
+                
+                chooseCodeBook = new JButton("Choose");
+                chooseCodeBook.addActionListener(this);
+                
+                cGBC = new GridBagConstraints(
+                        4, categoryY++, //GridX, GridY
+                        1, 1, //GridWidth, GridHeight
+                        .2, 1, //WeightX, WeightY
+                        GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, //Anchor, Fill
+                        new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
+                parent.add(chooseCodeBook, cGBC);
+                
+                panelHeight++;
+
+                labelText.put(key, codeField);
+                return null;
             default:
                 JLabel label = new JLabel(key.toString());
                 GridBagConstraints gbc = new GridBagConstraints(
@@ -246,6 +286,14 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
             int status = fileChooser.showOpenDialog(this);
             if (status == JFileChooser.APPROVE_OPTION) {
                 datasetLocationField.setText(fileChooser.getSelectedFile().toString());
+            }
+        } else if(e.getSource() == chooseCodeBook){
+            JFileChooser fileChooser = new JFileChooser(datasetLocation);
+            FileNameExtensionFilter zipFilter = new FileNameExtensionFilter("Access files (*.accdb), Excel files (*.xls/*.xlsx), ", "accdb", "xls", "xlsx");
+            fileChooser.addChoosableFileFilter(zipFilter);
+            int status = fileChooser.showOpenDialog(this);
+            if (status == JFileChooser.APPROVE_OPTION) {
+                codeField.setText(fileChooser.getSelectedFile().toString());
             }
         } else {
             System.out.println(e.getSource());

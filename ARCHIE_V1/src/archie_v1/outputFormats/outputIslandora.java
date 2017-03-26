@@ -1,8 +1,8 @@
 //License
 package archie_v1.outputFormats;
 
-import archie_v1.fileHelpers.DatasetHelper;
 import archie_v1.fileHelpers.FileHelper;
+import archie_v1.fileHelpers.FolderHelper;
 import archie_v1.fileHelpers.MetadataKey;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -45,14 +45,8 @@ public class outputIslandora extends outputAbstract {
                 root.addContent(element);
             }
         }
-//        //not sure if necessary
-//        HashMap piMap = new HashMap(2);
-//        piMap.put("type", "text/xsd");
-//        piMap.put("href", "http://www.loc.gov/standards/mods/v3/mods-3-6.xsd");
-//        ProcessingInstruction pi = new ProcessingInstruction("xml-stylesheet", piMap);
 
         Document fileXML = new Document(root);
-//        fileXML.addContent(0, pi);
 
         return fileXML;
     }
@@ -70,7 +64,7 @@ public class outputIslandora extends outputAbstract {
         return modsXML;
     }
 
-    public LinkedList<Element> getDatasetElements(DatasetHelper datasetHelper) {
+    public LinkedList<Element> getDatasetElements(FolderHelper datasetHelper) {
         LinkedList<Element> elementList = new LinkedList();
 
         elementList.add(getRightsHolder(datasetHelper));
@@ -88,10 +82,12 @@ public class outputIslandora extends outputAbstract {
 
         Element[] creators = getCreator(fileHelper);
         if (creators != null) {
+            System.out.println("Some creators added for file " + fileHelper.filePath.getFileName());
             elementList.addAll(Arrays.asList(creators));
         }
         Element[] contributors = getContributors(fileHelper);
         if (contributors != null) {
+            System.out.println("Some contributors added for file " + fileHelper.filePath.getFileName());
             elementList.addAll(Arrays.asList(contributors));
         }
         elementList.add(getOriginInfo(fileHelper));

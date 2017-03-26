@@ -2,7 +2,6 @@
 package archie_v1.UI;
 
 import archie_v1.Dataset;
-import archie_v1.fileHelpers.DatasetHelper;
 import archie_v1.fileHelpers.FileHelper;
 import archie_v1.fileHelpers.FolderHelper;
 import archie_v1.outputFormats.*;
@@ -22,7 +21,7 @@ import javax.swing.tree.TreeSelectionModel;
 public class MetadataChanger extends JSplitPane implements TreeSelectionListener, ActionListener {
 
     public enum SaveType {
-        ArchieXML, Islandora, Dans
+        Islandora, Dans
     }
 
     Path mainDirectory;
@@ -40,8 +39,8 @@ public class MetadataChanger extends JSplitPane implements TreeSelectionListener
         outputAbstract output;
         if (st == SaveType.Islandora) {
             output = new outputIslandora();
-        } else if (st == SaveType.ArchieXML) {
-            output = new outputArchieXML(dataset.fileTree);
+        } else if (st == SaveType.Dans) {
+            output = new outputDANS(dataset);
         } else {
             JOptionPane.showMessageDialog(this, "The chosen save mode has not been implemented yet.");
             return false;

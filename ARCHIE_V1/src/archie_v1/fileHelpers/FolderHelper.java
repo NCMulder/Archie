@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  */
 public class FolderHelper extends FileHelper {
 
-    protected LinkedList<FileHelper> children;
+    public LinkedList<FileHelper> children;
     private Lock childrenListLock = new ReentrantLock();
 
     public FolderHelper(Path filePath) {
@@ -54,6 +54,18 @@ public class FolderHelper extends FileHelper {
         childrenListLock.lock();
         children.add(fh);
         childrenListLock.unlock();
+    }
+    
+    @Override
+    public void Save(){
+        for(int i = 0; i < MetadataKey.values().length; i++){
+            MetadataKey key = MetadataKey.values()[i];
+            String value = metadataMap.get(key);
+            if(value!=null)
+                setRecord(key, value, true);
+        }
+        for(FileHelper fh : children)
+            fh.Save();
     }
     
     @Override

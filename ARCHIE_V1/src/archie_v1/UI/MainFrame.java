@@ -1,6 +1,7 @@
 //License
 package archie_v1.UI;
 
+import archie_v1.fileHelpers.MetadataKey;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -37,7 +38,7 @@ public class MainFrame extends JFrame implements ActionListener {
     public JComponent prevPanel;
     public JPanel welcome, working, preferences;
     public JSplitPane metadatachanger;
-    JMenuItem toIslandora, toDANS, toArchieXML, editPrefs;
+    JMenuItem toIslandora, toDANS, editPrefs;
     public JMenu export;
     private JMenuItem tempMenuItem;
     public JMenuItem saveItem;
@@ -92,11 +93,7 @@ public class MainFrame extends JFrame implements ActionListener {
         JMenuItem fromDir = new JMenuItem("From directory");
         fromDir.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, ActionEvent.CTRL_MASK));
         fromDir.addActionListener(this);
-        JMenuItem fromXML = new JMenuItem("From .xml");
-        fromXML.addActionListener(this);
-        fromXML.setEnabled(false);
         newMenu.add(fromDir);
-        newMenu.add(fromXML);
         dataSet.add(newMenu);
 
         openMenu = new JMenuItem("Open");
@@ -112,37 +109,22 @@ public class MainFrame extends JFrame implements ActionListener {
         export.setEnabled(false);
         toIslandora = new JMenuItem("Islandora .zip");
         toIslandora.addActionListener(this);
-        toDANS = new JMenuItem("DANS repo");
+        toDANS = new JMenuItem("DANS .zip");
         toDANS.addActionListener(this);
-        toDANS.setEnabled(false);
         export.add(toIslandora);
         export.add(toDANS);
         dataSet.add(export);
-        
+
         about = new JMenuItem("About");
-        //about.setPreferredSize(new Dimension(100, 40));
-        //about.setFont(new Font(dataSet.getFont().getFontName(), dataSet.getFont().getStyle(), 16));
-        //about.setIconTextGap(8);
         about.addActionListener(this);
-        
+
         dataSet.add(about);
-        
+
         scan = new JMenuItem("Scan");
         scan.addActionListener(this);
         dataSet.add(scan);
 
         menuBar.add(dataSet);
-
-        JMenu preferencesMenu = new JMenu("Preferences");
-        preferencesMenu.setPreferredSize(new Dimension(100, 40));
-        preferencesMenu.setFont(new Font(dataSet.getFont().getFontName(), dataSet.getFont().getStyle(), 16));
-        preferencesMenu.setIconTextGap(8);
-
-        editPrefs = new JMenuItem("Edit preferences");
-        editPrefs.addActionListener(this);
-        preferencesMenu.add(editPrefs);
-
-        menuBar.add(preferencesMenu);
 
         this.setJMenuBar(menuBar);
         //todo: more menu imps, event listeners
@@ -181,7 +163,7 @@ public class MainFrame extends JFrame implements ActionListener {
                 try {
                     MetadataChanger mdc = (MetadataChanger) mainPanel;
                     JFileChooser fc = new JFileChooser(mdc.dataset.mainDirectory.getParent().toString());
-                    fc.setSelectedFile(new File(mdc.dataset.name + ".zip"));
+                    fc.setSelectedFile(new File(mdc.dataset.datasetHelper.metadataMap.get(MetadataKey.DatasetTitle) + "_ISLANDORA.zip"));
                     FileNameExtensionFilter zipFilter = new FileNameExtensionFilter("zip files (*.zip)", "zip");
                     fc.addChoosableFileFilter(zipFilter);
                     fc.setFileFilter(zipFilter);
@@ -194,57 +176,54 @@ public class MainFrame extends JFrame implements ActionListener {
                     Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
-        } else if (e.getSource() == toArchieXML) {
-            if (mainPanel instanceof MetadataChanger) {
-                try {
-                    MetadataChanger mdc = (MetadataChanger) mainPanel;
-                    JFileChooser fc = new JFileChooser(mdc.dataset.mainDirectory.getParent().toString());
-                    fc.setSelectedFile(new File(mdc.dataset.name + "_AXML.xml"));
-                    FileNameExtensionFilter zipFilter = new FileNameExtensionFilter("xml files (*.xml)", "xml");
-                    fc.addChoosableFileFilter(zipFilter);
-                    fc.setFileFilter(zipFilter);
-                    boolean succes = false;
-                    int rv = fc.showSaveDialog(this);
-                    if (rv == JFileChooser.APPROVE_OPTION) {
-                        succes = mdc.Save(MetadataChanger.SaveType.ArchieXML, fc.getSelectedFile().toPath());
-                    }
-                    if (succes) {
-                        JOptionPane.showMessageDialog(this, "The file has been succesfully saved.");
-                    }
-                } catch (IOException ex) {
-                    Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+        } else if (e.getSource() == toDANS) {
+            try {
+                MetadataChanger mdc = (MetadataChanger) mainPanel;
+                JFileChooser fc = new JFileChooser(mdc.dataset.mainDirectory.getParent().toString());
+                fc.setSelectedFile(new File(mdc.dataset.datasetHelper.metadataMap.get(MetadataKey.DatasetTitle) + "_DANS.zip"));
+                FileNameExtensionFilter zipFilter = new FileNameExtensionFilter("zip files (*.zip)", "zip");
+                fc.addChoosableFileFilter(zipFilter);
+                fc.setFileFilter(zipFilter);
+                boolean succes = false;
+                int rv = fc.showSaveDialog(this);
+                if (rv == JFileChooser.APPROVE_OPTION) {
+                    succes = mdc.Save(MetadataChanger.SaveType.Dans, fc.getSelectedFile().toPath());
                 }
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "The file could not be saved. Close all programs using files present in dataset and try again.");
+                Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
             }
-        } else if(e.getSource() == saveItem){
-            boolean succes = ((MetadataChanger)mainPanel).dataset.saveDataset();
-            if (succes) 
+        } else if (e.getSource() == saveItem) {
+            boolean succes = ((MetadataChanger) mainPanel).dataset.saveDataset();
+            if (succes) {
                 JOptionPane.showMessageDialog(this, "The dataset has been succesfully saved.");
-            else 
+            } else {
                 JOptionPane.showMessageDialog(this, "An error occured.\nThe dataset has not been saved.\nPlease try again. If this error persists, please contact us through the help menu.");
-        } else if (e.getSource() == openMenu){
+            }
+        } else if (e.getSource() == openMenu) {
             JFileChooser fc = new JFileChooser();
             FileNameExtensionFilter archieFilter = new FileNameExtensionFilter("archie files(*.archie)", "archie");
             fc.addChoosableFileFilter(archieFilter);
             fc.setFileFilter(archieFilter);
             int rv = fc.showOpenDialog(this);
-            if(rv == JFileChooser.APPROVE_OPTION){
+            if (rv == JFileChooser.APPROVE_OPTION) {
                 NewDataset nds = new NewDataset(this, fc.getSelectedFile());
                 //ChangeMainPanel(nds);
             }
-        } else if (e.getSource() == about){
+        } else if (e.getSource() == about) {
             System.out.println("GOTOABOUT");
             AboutScreen abs = new AboutScreen();
             ChangeMainPanel(abs);
-        } else if (e.getSource() == scan){
-            ArrayList<String> newFiles = ((MetadataChanger)mainPanel).dataset.Scan();
-            if(newFiles.isEmpty()){
+        } else if (e.getSource() == scan) {
+            ArrayList<String> newFiles = ((MetadataChanger) mainPanel).dataset.Scan();
+            if (newFiles.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "No new files found.");
             } else {
-                JPanel filesPanel = new JPanel(new GridLayout(0,1));
+                JPanel filesPanel = new JPanel(new GridLayout(0, 1));
                 filesPanel.add(new JLabel("New files found:"));
-                for(int i = 0; i < newFiles.size(); i++){
+                for (int i = 0; i < newFiles.size(); i++) {
                     filesPanel.add(new JLabel(newFiles.get(i)));
-                    if(i>5){
+                    if (i > 5) {
                         JLabel andMore = new JLabel("... and " + (newFiles.size() - 5) + " more.");
                         Font andMoreFont = new Font(andMore.getFont().getFontName(), Font.ITALIC, andMore.getFont().getSize());
                         andMore.setFont(andMoreFont);
@@ -254,8 +233,8 @@ public class MainFrame extends JFrame implements ActionListener {
                 }
                 JOptionPane.showMessageDialog(this, filesPanel);
             }
-            
-            ((MetadataChanger)mainPanel).resetLeftPane();
+
+            ((MetadataChanger) mainPanel).resetLeftPane();
         } else {
             System.out.println(e);
             System.out.println(e.getSource());

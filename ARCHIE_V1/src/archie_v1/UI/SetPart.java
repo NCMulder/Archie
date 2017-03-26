@@ -280,11 +280,6 @@ public class SetPart extends JPanel {
                 break;
         }
         
-        System.out.println("Hint string for key " + key + " is " + hintString + ".");
-        
-        //if(hintString.equals(""))
-            //hintString = key.getDefaultValue();
-        
         return hintString;
     }
 }

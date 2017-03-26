@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.swing.JComponent;
+import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingWorker;
 import org.apache.commons.io.FilenameUtils;
@@ -38,6 +39,7 @@ public class Zipper implements PropertyChangeListener {
             if(task.isDone() || task.isCancelled()){
                 pm.close();
                 parent.setCursor(null);
+                JOptionPane.showMessageDialog(parent, "The Islandora-export has been succesfully saved.");
             }
         }
     }

@@ -62,13 +62,25 @@ public abstract class FileHelper {
         //Is this useful? TODO WIP WOUTER
         //setRecord(MetadataKey.FileContentType, "." + FilenameUtils.getExtension(filePath.toString()) + " file", false);
         setRecordThroughTika(MetadataKey.DateCreated, "date");
+        setRecordThroughTika(MetadataKey.DateCreated, "dcterms:created");
+        setRecordThroughTika(MetadataKey.DateCreated, "meta:creation-date");
+        setRecordThroughTika(MetadataKey.DateCreated, "created");
+        setRecordThroughTika(MetadataKey.DateCreated, "Creation-Date");
+        setRecordThroughTika(MetadataKey.DateCreated, "Create date");
         setRecordThroughTika(MetadataKey.Software, "Creator tool");
         setRecordThroughTika(MetadataKey.Software, "Application-Name");
+        setRecordThroughTika(MetadataKey.Software, "pdf:docinfo:producer");
+        setRecordThroughTika(MetadataKey.Software, "xmp:CreatorTool");
+        setRecordThroughTika(MetadataKey.Software, "xmpMM:History:SoftwareAgent");
         setRecordThroughTika(MetadataKey.FileContentType, "Content-Type");
         File file = new File(filePath.toString());
-        
+
         //Rounding is not nice; possible better solution: http://stackoverflow.com/questions/3758606/how-to-convert-byte-size-into-human-readable-format-in-java
         setRecord(MetadataKey.FileSize, FileUtils.byteCountToDisplaySize(file.length()), false);
+    }
+
+    public void Save() {
+        return;
     }
 
     //Helper functions for all filehandlers.
@@ -114,11 +126,12 @@ public abstract class FileHelper {
 
         return basedata;
     }
-    
+
     protected void setRecord(MetadataKey key, String value, boolean softset, boolean init) {
-        if(value == "")
-            System.out.println("Value should never be \"\"");
-        
+        if (value == "") {
+            System.out.println("Value should never be \"\" , filepath: " + this.filePath);
+        }
+
         if (init) {
             metadataMap.put(key, value);
             return;
@@ -131,9 +144,8 @@ public abstract class FileHelper {
         if (softset && metadataMap.get(key) != null) {
             return;
         }
-        
-        //System.out.println("Changing key " + key.displayValue + " to " + value + " for file " + filePath.getFileName() + ", softset:" + softset);
 
+        //System.out.println("Changing key " + key.displayValue + " to " + value + " for file " + filePath.getFileName() + ", softset:" + softset);
         metadataMap.put(key, value);
     }
 
@@ -192,7 +204,7 @@ public abstract class FileHelper {
 
     public void saveDataset(BufferedWriter writer, String prefix) {
         try {
-            writer.write(prefix + ((root)? filePath : filePath.getFileName()) + "\n");
+            writer.write(prefix + ((root) ? filePath : filePath.getFileName()) + "\n");
             if (this.getClass() == FolderHelper.class) {
                 writer.write(prefix + ((FolderHelper) this).children.size() + "\n");
             } else {

@@ -189,7 +189,7 @@ public class NewDataset extends JPanel implements ActionListener, PropertyChange
 //            //System.out.println("test");
 //        }
 
-        dataset = new Dataset(datasetName, datasetPath, datasetHelper, datasetSize);
+        dataset = new Dataset(datasetPath, datasetHelper, datasetSize);
         return true;
     }
 

@@ -52,7 +52,6 @@ import org.apache.commons.io.filefilter.RegexFileFilter;
  */
 public class Dataset implements PropertyChangeListener {
 
-    public String name;
     public Path mainDirectory;
     public DefaultMutableTreeNode fileTree;
     public ArrayList<FileHelper> files = new ArrayList();
@@ -64,15 +63,14 @@ public class Dataset implements PropertyChangeListener {
     int progress = 0;
     int childCount;
 
-    private FolderHelper datasetHelper;
+    public FolderHelper datasetHelper;
 
     //Debugging
     private ArrayList<String> probfiles = new ArrayList();
     Lock probfilesArrayLock = new ReentrantLock();
     private ProgressMonitorTracker pmt;
 
-    public Dataset(String name, Path path, FolderHelper datasetHelper, int childCount) {
-        this.name = name;
+    public Dataset(Path path, FolderHelper datasetHelper, int childCount) {
         this.mainDirectory = path;
         this.datasetHelper = datasetHelper;
         this.childCount = childCount;
@@ -85,6 +83,10 @@ public class Dataset implements PropertyChangeListener {
 
         dirToTree(path);
         //dirToTree();
+        
+        for(FileHelper fh : datasetHelper.children){
+            fh.Save();
+        }
 
         pmt.setProgress(childCount);
         pm.close();
@@ -193,7 +195,6 @@ public class Dataset implements PropertyChangeListener {
         pm = new ProgressMonitor(ARCHIE.ui.mf, "Processing files...", "", 0, childCount);
         try {
             BufferedReader br = new BufferedReader(new FileReader(selectedFile));
-            this.name = br.readLine();
             br.readLine();
             this.mainDirectory = Paths.get(br.readLine());
 
@@ -250,7 +251,7 @@ public class Dataset implements PropertyChangeListener {
             try {
                 File archielog = new File("Archie(o)Lo(o)g.txt");
                 BufferedWriter writer = new BufferedWriter(new FileWriter(archielog));
-                writer.write("Log file for dataset " + name + "\n\n");
+                writer.write("Log file for dataset " + datasetHelper.metadataMap.get(MetadataKey.DatasetTitle) + "\n\n");
                 writer.write(errorMessage);
                 writer.close();
             } catch (IOException ex) {
@@ -264,7 +265,6 @@ public class Dataset implements PropertyChangeListener {
     }
 
     public void dirToTree() {
-        executorpool = Executors.newFixedThreadPool(40);
         DefaultMutableTreeNode dirTree = new DefaultMutableTreeNode(mainDirectory);
 
         DatasetCreator[] ts = new DatasetCreator[mainDirectory.toFile().listFiles().length];
@@ -575,10 +575,10 @@ public class Dataset implements PropertyChangeListener {
     public boolean saveDataset() {
         try {
             (new File("saves")).mkdirs();
-            File datasetSave = new File("saves\\" + name + ".archie");
+            File datasetSave = new File("saves\\" + datasetHelper.metadataMap.get(MetadataKey.DatasetTitle) + ".archie");
             BufferedWriter writer = new BufferedWriter(new FileWriter(datasetSave));
 
-            writer.write(name + "\n\n");
+            writer.write(datasetHelper.metadataMap.get(MetadataKey.DatasetTitle) + "\n\n");
 
             datasetHelper.saveDataset(writer, "");
 
