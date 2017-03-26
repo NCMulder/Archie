@@ -136,7 +136,6 @@ public class NewDataset extends JPanel implements ActionListener, PropertyChange
 //            setProgress(progress++);
 //        }
 //    }
-
     public NewDataset(MainFrame parent) {
         this.parent = parent;
         pm.setMillisToDecideToPopup(0);
@@ -156,7 +155,9 @@ public class NewDataset extends JPanel implements ActionListener, PropertyChange
     public boolean initializeNewDataset() {
         for (Map.Entry<MetadataKey, JComponent> metadataKeyTextEntry : fields.labelText.entrySet()) {
             String value = (metadataKeyTextEntry.getKey().unrestricted) ? ((ArchieTextField) metadataKeyTextEntry.getValue()).getText() : ((JComboBox) metadataKeyTextEntry.getValue()).getSelectedItem().toString();
-            datasetHelper.setRecord(metadataKeyTextEntry.getKey(), value, false);
+            if (value != null && !value.equals("")) {
+                datasetHelper.setRecord(metadataKeyTextEntry.getKey(), value, false);
+            }
         }
         for (AddablePanel addablePanel : fields.addablePanels) {
             datasetHelper.SetAddableRecord(addablePanel.Values, addablePanel.valueArray, true);
@@ -188,7 +189,6 @@ public class NewDataset extends JPanel implements ActionListener, PropertyChange
 //            //busy wait
 //            //System.out.println("test");
 //        }
-
         dataset = new Dataset(datasetPath, datasetHelper, datasetSize);
         return true;
     }
@@ -251,7 +251,7 @@ public class NewDataset extends JPanel implements ActionListener, PropertyChange
         if (!succes) {
             return;
         }
-        
+
         setCursor(null);
 
         //Setting the mainpanel to a metadatachanger

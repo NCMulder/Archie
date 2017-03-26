@@ -194,7 +194,17 @@ public class MainFrame extends JFrame implements ActionListener {
                 Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else if (e.getSource() == saveItem) {
-            boolean succes = ((MetadataChanger) mainPanel).dataset.saveDataset();
+            MetadataChanger mdc = (MetadataChanger) mainPanel;
+            JFileChooser fc = new JFileChooser(mdc.dataset.mainDirectory.getParent().toString());
+            fc.setSelectedFile(new File(mdc.dataset.datasetHelper.metadataMap.get(MetadataKey.DatasetTitle) + ".archie"));
+            FileNameExtensionFilter archieFilter = new FileNameExtensionFilter("archie files (*.archie)", "archie");
+            fc.addChoosableFileFilter(archieFilter);
+            fc.setFileFilter(archieFilter);
+            int rv = fc.showSaveDialog(this);
+            boolean succes = false;
+            if (rv == JFileChooser.APPROVE_OPTION) {
+                succes = mdc.dataset.saveDataset(fc.getSelectedFile());
+            }
             if (succes) {
                 JOptionPane.showMessageDialog(this, "The dataset has been succesfully saved.");
             } else {

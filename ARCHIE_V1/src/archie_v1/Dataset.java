@@ -68,7 +68,6 @@ public class Dataset implements PropertyChangeListener {
     //Debugging
     private ArrayList<String> probfiles = new ArrayList();
     Lock probfilesArrayLock = new ReentrantLock();
-    private ProgressMonitorTracker pmt;
 
     public Dataset(Path path, FolderHelper datasetHelper, int childCount) {
         this.mainDirectory = path;
@@ -78,17 +77,12 @@ public class Dataset implements PropertyChangeListener {
         pm.setMillisToDecideToPopup(0);
         pm.setMillisToPopup(0);
 
-        pmt = new ProgressMonitorTracker(pm);
-        pmt.run();
-
         dirToTree(path);
-        //dirToTree();
-        
-        for(FileHelper fh : datasetHelper.children){
+
+        for (FileHelper fh : datasetHelper.children) {
             fh.Save();
         }
 
-        pmt.setProgress(childCount);
         pm.close();
 
         debugFiles();
@@ -102,7 +96,7 @@ public class Dataset implements PropertyChangeListener {
         for (File file : currentFiles) {
             currentPaths.add(file.toPath());
         }
-        
+
         System.out.println("Paths found: " + currentPaths.size());
 
         for (Path path : currentPaths) {
@@ -123,71 +117,40 @@ public class Dataset implements PropertyChangeListener {
 
             newFiles.add(path.toString());
         }
-        
-        AddFiles(newFiles);        
-        
+
+        AddFiles(newFiles);
+
         return newFiles;
     }
 
     private void AddFiles(ArrayList<String> newFiles) {
-        for(String fileString : newFiles){
+        for (String fileString : newFiles) {
             Path filePath = Paths.get(fileString);
             FileHelper fileHelper;
-            if(filePath.toFile().isDirectory())
+            if (filePath.toFile().isDirectory()) {
                 fileHelper = new FolderHelper(filePath);
-            else
+            } else {
                 fileHelper = ARCHIE.fileSelector(filePath);
+            }
             files.add(fileHelper);
             Path parent = filePath.getParent();
-            
-            for(FileHelper fh : files){
-                if(fh.filePath.equals(parent)){
-                    ((FolderHelper)fh).addToChildren(fileHelper);
+
+            for (FileHelper fh : files) {
+                if (fh.filePath.equals(parent)) {
+                    ((FolderHelper) fh).addToChildren(fileHelper);
                     break;
                 }
             }
-            
+
             DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(filePath);
             Enumeration<DefaultMutableTreeNode> e = fileTree.breadthFirstEnumeration();
-            while(e.hasMoreElements()){
+            while (e.hasMoreElements()) {
                 DefaultMutableTreeNode parentNode = e.nextElement();
-                if(parentNode.getUserObject().equals(parent)){
+                if (parentNode.getUserObject().equals(parent)) {
                     parentNode.add(childNode);
                     break;
                 }
             }
-        }
-    }
-
-    private class ProgressMonitorTracker implements Runnable, PropertyChangeListener {
-
-        ProgressMonitor pm;
-
-        public ProgressMonitorTracker(ProgressMonitor pm) {
-            this.pm = new ProgressMonitor(ARCHIE.ui.mf, "Processing files...", "", 0, childCount);
-            this.pm.setMillisToDecideToPopup(0);
-            this.pm.setMillisToPopup(0);
-            //this.pm = pm;
-        }
-
-        @Override
-        public void run() {
-            pm.setProgress(0);
-        }
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.equals("progress")) {
-                int progress = Integer.parseInt(evt.getNewValue().toString());
-                pm.setProgress(progress);
-                pm.setNote("Progress: " + progress + " of " + pm.getMaximum());
-            }
-        }
-
-        public void setProgress(int i) {
-            progress = i;
-            pm.setProgress(progress);
-            pm.setNote("Progress: " + progress + " of " + pm.getMaximum());
         }
     }
 
@@ -222,7 +185,7 @@ public class Dataset implements PropertyChangeListener {
                         return;
                 }
             }
-            
+
             this.childCount = Integer.parseInt(br.readLine());
             this.datasetHelper = new FolderHelper(br, mainDirectory);
 
@@ -237,8 +200,9 @@ public class Dataset implements PropertyChangeListener {
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals("progress")) {
-            //System.out.println("Firing event " + evt.getPropertyName());
+            int progress = (int) evt.getNewValue();
             pm.setProgress(progress);
+            System.out.println("Firing event " + evt.getPropertyName());
             pm.setNote("Processing file " + progress + " of " + childCount);
         }
     }
@@ -266,41 +230,11 @@ public class Dataset implements PropertyChangeListener {
         }
     }
 
-    public void dirToTree() {
-        DefaultMutableTreeNode dirTree = new DefaultMutableTreeNode(mainDirectory);
-
-        DatasetCreator[] ts = new DatasetCreator[mainDirectory.toFile().listFiles().length];
-        for (int i = 0; i < mainDirectory.toFile().listFiles().length; i++) {
-            Path p = mainDirectory.toFile().listFiles()[i].toPath();
-            DatasetCreator creator = new DatasetCreator(p, dirTree, this);
-            ts[i] = creator;
-            creator.execute();
-        }
-
-        for (DatasetCreator dc : ts) {
-            try {
-                FileHelper fh = dc.get();
-                if (fh == null) {
-                    continue;
-                }
-                files.add(fh);
-                datasetHelper.addToChildren(fh);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (ExecutionException ex) {
-                Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-
-        files.add(datasetHelper);
-
-        fileTree = dirTree;
-    }
-
     private boolean isFileSafe(Path filePath, boolean testForReadmes) {
-        if(testForReadmes){
-            if(filePath.getFileName().toString().equals("readme.csv"))
+        if (testForReadmes) {
+            if (filePath.getFileName().toString().equals("readme.csv")) {
                 return false;
+            }
         }
         if ("Thumbs.db".equals(filePath.getFileName().toString())) {
             return false;
@@ -308,7 +242,7 @@ public class Dataset implements PropertyChangeListener {
             return false;
         } else if (filePath.getFileName().toString().equals(".dataNowFolderUploads_")) {
             return false;
-        } else if (filePath.getFileName().toString().startsWith(".")){
+        } else if (filePath.getFileName().toString().startsWith(".")) {
             return false;
         }//Possibly also filter out all filePaths starting with ".".
 
@@ -318,84 +252,6 @@ public class Dataset implements PropertyChangeListener {
             return false;
         }
         return true;
-    }
-
-    private class DatasetCreator extends SwingWorker<FileHelper, Void> {
-
-        private Path filePath;
-        private DefaultMutableTreeNode treeNode;
-        private PropertyChangeListener listener;
-
-        public DatasetCreator(Path filePath, DefaultMutableTreeNode treeNode, PropertyChangeListener listener) {
-            this.filePath = filePath;
-            this.treeNode = treeNode;
-            this.listener = listener;
-            this.addPropertyChangeListener(listener);
-            setProgress(0);
-        }
-
-        @Override
-        protected FileHelper doInBackground() throws Exception {
-            this.setProgress(++progress);
-            System.out.println("Processing file " + progress + " of " + childCount);
-            if ("readme".equals(FilenameUtils.removeExtension(filePath.getFileName().toString()))) {
-                readmesMapLock.lock();
-                readmes.put(filePath.getParent(), filePath);
-                readmesMapLock.unlock();
-                return null;
-            } else if (!isFileSafe(filePath, false)) {
-                return null;
-            }
-
-            if (filePath.toFile().isDirectory()) {
-                if (filePath.toFile().listFiles() == null) {
-                    System.out.println("nullexeperror for file " + filePath.getFileName());
-                    probfilesArrayLock.lock();
-                    probfiles.add(filePath.toString());
-                    probfilesArrayLock.unlock();
-                    return null;
-                }
-
-                FolderHelper folderHelper = new FolderHelper(filePath);
-                DefaultMutableTreeNode folderNode = new DefaultMutableTreeNode(filePath);
-                DatasetCreator[] sws = new DatasetCreator[filePath.toFile().listFiles().length];
-                for (int i = 0; i < filePath.toFile().listFiles().length; i++) {
-                    File childFile = filePath.toFile().listFiles()[i];
-                    DatasetCreator sw = new DatasetCreator(childFile.toPath(), folderNode, listener);
-                    //System.out.println("SwingWorker created");
-                    //sws[i] = sw;
-                    sw.execute();
-                }
-
-                for (DatasetCreator sw : sws) {
-                    FileHelper fh = sw.get();
-                    //System.out.println("Swingworker got");
-                    if (fh == null) {
-                        continue;
-                    }
-
-                    DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(fh.filePath);
-                    folderNode.add(childNode);
-
-                    filesArrayLock.lock();
-                    files.add(fh);
-                    filesArrayLock.unlock();
-
-                    folderHelper.addToChildren(fh);
-                }
-
-                if (readmes.containsKey(filePath)) {
-                    Path readmePath = readmes.get(filePath);
-                    ReadmeParser rms = new ReadmeParser(folderHelper, readmePath);
-                }
-
-                treeNode.add(folderNode);
-                return folderHelper;
-            } else {
-                FileHelper fh = ARCHIE.fileSelector(filePath);
-                return fh;
-            }
-        }
     }
 
     private class Runnable1 implements Runnable {
@@ -416,9 +272,8 @@ public class Dataset implements PropertyChangeListener {
         }
 
         private void createNodes(Path file, DefaultMutableTreeNode tree, FolderHelper folderH) {
-            pmt.setProgress(++progress);
-            //progress++;
             System.out.println("Processing file " + progress + " of " + childCount + " [" + file.getFileName() + "]");
+            
             if ("readme".equals(FilenameUtils.removeExtension(file.getFileName().toString()))) {
                 readmesMapLock.lock();
                 readmes.put(file.getParent(), file);
@@ -479,8 +334,6 @@ public class Dataset implements PropertyChangeListener {
 
     public void dirToTree(Path path) {
         DefaultMutableTreeNode dirTree = new DefaultMutableTreeNode(mainDirectory);
-        //pmt = new ProgressMonitorTracker(pm);
-        //pmt.run();
 
         Thread[] ts = new Thread[mainDirectory.toFile().listFiles().length];
         for (int i = 0; i < mainDirectory.toFile().listFiles().length; i++) {
@@ -491,6 +344,8 @@ public class Dataset implements PropertyChangeListener {
             t.start();
         }
 
+        pm.setMaximum(ts.length);
+
         for (Thread t : ts) {
             try {
                 t.join();
@@ -498,30 +353,59 @@ public class Dataset implements PropertyChangeListener {
                 Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-
-        System.out.println("all threads joined!");
-
         files.add(datasetHelper);
 
         fileTree = dirTree;
     }
 
     public void openDataset(BufferedReader br, int children) {
+        pm = new ProgressMonitor(ARCHIE.ui.mf, "Processing files...", "", 0, children);
+        pm.setMillisToDecideToPopup(0);
+        pm.setMillisToPopup(0);
+        DatasetOpener dO = new DatasetOpener(br, children);
+        dO.addPropertyChangeListener(this);
+        dO.execute();
+        
         try {
+            dO.get();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ExecutionException ex) {
+            Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        pm.close();
+        JOptionPane.showMessageDialog(ARCHIE.ui.mf, "Successfully opened save file.");
+    }
+    
+    private class DatasetOpener extends SwingWorker<Void, Void>{
+        BufferedReader br;
+        int children;
+        
+        public DatasetOpener(BufferedReader br, int children){
+            this.br = br;
+            this.children = children;
+        }
+        
+        @Override
+        protected Void doInBackground() throws Exception {
+            setProgress(0);
             DefaultMutableTreeNode dirTree = new DefaultMutableTreeNode(mainDirectory);
             br.readLine();
+            int myprogress = 0;
             for (int i = 0; i < children; i++) {
+                setProgress(myprogress++);
                 createNodes(br, ">>", dirTree, datasetHelper);
             }
             files.add(datasetHelper);
             fileTree = dirTree;
-        } catch (IOException ex) {
-            Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
+            
+            return null;
         }
+        
     }
 
     public void createNodes(BufferedReader br, String prefix, DefaultMutableTreeNode parent, FolderHelper folderHelper) {
-        pm.setProgress(++progress);
         try {
             Path path = Paths.get(((Path) parent.getUserObject()).toString(), br.readLine().replaceFirst(prefix, ""));
             DefaultMutableTreeNode fileNode = new DefaultMutableTreeNode(path);
@@ -574,11 +458,9 @@ public class Dataset implements PropertyChangeListener {
         }
     }
 
-    public boolean saveDataset() {
+    public boolean saveDataset(File saveFile) {
         try {
-            (new File("saves")).mkdirs();
-            File datasetSave = new File("saves\\" + datasetHelper.metadataMap.get(MetadataKey.DatasetTitle) + ".archie");
-            BufferedWriter writer = new BufferedWriter(new FileWriter(datasetSave));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(saveFile));
 
             writer.write(datasetHelper.metadataMap.get(MetadataKey.DatasetTitle) + "\n\n");
 
