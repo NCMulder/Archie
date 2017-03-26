@@ -33,18 +33,18 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  *
  * @author N.C. Mulder <n.c.mulder at students.uu.nl>
  */
-public class MetadataChangerFields extends JScrollPane implements ActionListener{
-    
+public class MetadataChangerFields extends JScrollPane implements ActionListener {
+
     public int panelY;
     private FileHelper fileHelper;
     private boolean newDataset = false;
-    
+
     public String datasetLocation = null;
-    
+
     public HashMap<MetadataKey, JComponent> labelText;
     public HashMap<MetadataKey, String> addableValues;
     public ArrayList<AddablePanel> addablePanels;
-    
+
     public ArchieTextField datasetLocationField;
     private JButton chooseButton;
     private int totalHeight;
@@ -52,55 +52,56 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
     private int panelHeight;
     private JButton chooseCodeBook;
     private ArchieTextField codeField;
-    
-    public MetadataChangerFields(FileHelper fileHelper){
+
+    public MetadataChangerFields(FileHelper fileHelper) {
         this.fileHelper = fileHelper;
         labelText = new HashMap();
         addableValues = new HashMap();
         addablePanels = new ArrayList();
-        
+
         resetPane();
     }
-    
-    public MetadataChangerFields(FileHelper fileHelper, boolean newDataset){
+
+    public MetadataChangerFields(FileHelper fileHelper, boolean newDataset) {
         this.fileHelper = fileHelper;
         labelText = new HashMap();
         addableValues = new HashMap();
         addablePanels = new ArrayList();
-        
+
         this.newDataset = true;
         this.datasetLocation = "C:\\Users\\niels\\Documents\\Archie\\Testset\\testset_test";
-        
+
         resetPane();
     }
-    
-    public void resetPane(){
+
+    public void resetPane() {
         this.setViewportView(createMetadataFieldsPanel());
     }
-    
+
     private JPanel createMetadataFieldsPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(10, 20, 20, 10));
 
         panelY = 0;
         totalHeight = 0;
-        
-        for(MetadataKey.KeyCategory keyCat : MetadataKey.KeyCategory.values()){
+
+        for (MetadataKey.KeyCategory keyCat : MetadataKey.KeyCategory.values()) {
             JPanel categoryPanel = new JPanel(new GridBagLayout());
             categoryY = 0;
             panelHeight = 0;
             Border paneBorder = BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), keyCat.name());
+                    BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), keyCat.name());
             categoryPanel.setBorder(paneBorder);
-            for(MetadataKey key : fileHelper.metadataMap.keySet()){
-                if(key.keyCategory.equals(keyCat)){
+            for (MetadataKey key : fileHelper.metadataMap.keySet()) {
+                if (key.keyCategory.equals(keyCat)) {
                     createValueFields(key, categoryPanel);
                 }
             }
-            
-            if(categoryPanel.getComponentCount()==0)
+
+            if (categoryPanel.getComponentCount() == 0) {
                 continue;
-            
+            }
+
             GridBagConstraints gbc = new GridBagConstraints(
                     0, panelY++, //GridX, GridY
                     5, 1, //GridWidth, GridHeight
@@ -110,13 +111,13 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
             panel.add(categoryPanel, gbc);
             totalHeight += panelHeight;
         }
-        
-        if(newDataset){
+
+        if (newDataset) {
             JPanel finalPanel = new JPanel(new GridBagLayout());
             Border paneBorder = BorderFactory.createTitledBorder(
-                BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Dataset location");
+                    BorderFactory.createEtchedBorder(EtchedBorder.LOWERED), "Dataset location");
             finalPanel.setBorder(paneBorder);
-            
+
             JLabel label = new JLabel("Dataset location");
             GridBagConstraints gbc = new GridBagConstraints(
                     0, 0, //GridX, GridY
@@ -125,7 +126,7 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
                     GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, //Anchor, Fill
                     new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
             finalPanel.add(label, gbc);
-            
+
             datasetLocationField = new ArchieTextField(datasetLocation);
             gbc = new GridBagConstraints(
                     2, 0, //GridX, GridY
@@ -134,7 +135,7 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
                     GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, //Anchor, Fill
                     new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
             finalPanel.add(datasetLocationField, gbc);
-            
+
             chooseButton = new JButton("Choose");
             chooseButton.addActionListener(this);
             gbc = new GridBagConstraints(
@@ -144,7 +145,7 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
                     GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, //Anchor, Fill
                     new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
             finalPanel.add(chooseButton, gbc);
-            
+
             gbc = new GridBagConstraints(
                     0, panelY, //GridX, GridY
                     1, 1, //GridWidth, GridHeight
@@ -207,11 +208,14 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
                         GridBagConstraints.WEST, GridBagConstraints.NONE, //Anchor, Fill
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 parent.add(codeLabel, cGBC);
-                
+
                 String codeLocation = fileHelper.metadataMap.get(key);
-                String fieldValue = (codeLocation==null)? "E.G. " + key.getDefaultValue() : codeLocation;
-                codeField= new ArchieTextField(20, fieldValue);
-                
+                if (codeLocation == null) {
+                    codeField = new ArchieTextField(20, "E.G. " + key.getDefaultValue());
+                } else {
+                    codeField = new ArchieTextField(codeLocation, 20, "E.G. " + key.getDefaultValue());
+                }
+
                 cGBC = new GridBagConstraints(
                         2, categoryY, //GridX, GridY
                         2, 1, //GridWidth, GridHeight
@@ -219,10 +223,10 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
                         GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, //Anchor, Fill
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 parent.add(codeField, cGBC);
-                
+
                 chooseCodeBook = new JButton("Choose");
                 chooseCodeBook.addActionListener(this);
-                
+
                 cGBC = new GridBagConstraints(
                         4, categoryY++, //GridX, GridY
                         1, 1, //GridWidth, GridHeight
@@ -230,7 +234,7 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
                         GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, //Anchor, Fill
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 parent.add(chooseCodeBook, cGBC);
-                
+
                 panelHeight++;
 
                 labelText.put(key, codeField);
@@ -244,11 +248,11 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
                         GridBagConstraints.WEST, GridBagConstraints.NONE, //Anchor, Fill
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 parent.add(label, gbc);
-                
+
                 String valueString = fileHelper.metadataMap.get(key);
                 JComponent value;
-                
-                if(valueString==null){
+
+                if (valueString == null) {
                     value = (key.unrestricted) ? new ArchieTextField(20, "E.G. " + key.getDefaultValue()) : new JComboBox(key.getSetOptions());
                     if (!key.unrestricted) {
                         if (Arrays.asList(key.getSetOptions()).contains(fileHelper.metadataMap.get(key))) {
@@ -270,7 +274,7 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
                         GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, //Anchor, Fill
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 parent.add(value, gbc);
-                
+
                 panelHeight++;
 
                 labelText.put(key, value);
@@ -280,20 +284,22 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (e.getSource() == chooseButton){
+        if (e.getSource() == chooseButton) {
             JFileChooser fileChooser = new JFileChooser(datasetLocation);
             fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             int status = fileChooser.showOpenDialog(this);
             if (status == JFileChooser.APPROVE_OPTION) {
                 datasetLocationField.setText(fileChooser.getSelectedFile().toString());
             }
-        } else if(e.getSource() == chooseCodeBook){
+        } else if (e.getSource() == chooseCodeBook) {
             JFileChooser fileChooser = new JFileChooser(datasetLocation);
             FileNameExtensionFilter zipFilter = new FileNameExtensionFilter("Access files (*.accdb), Excel files (*.xls/*.xlsx), ", "accdb", "xls", "xlsx");
             fileChooser.addChoosableFileFilter(zipFilter);
             int status = fileChooser.showOpenDialog(this);
             if (status == JFileChooser.APPROVE_OPTION) {
                 codeField.setText(fileChooser.getSelectedFile().toString());
+                codeField.setFont(codeField.normalFont);
+                codeField.setForeground(codeField.normalColor);
             }
         } else {
             System.out.println(e.getSource());

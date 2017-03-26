@@ -16,7 +16,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -67,9 +69,12 @@ public class outputDANS extends outputAbstract implements PropertyChangeListener
         protected Void doInBackground() throws Exception {
             setProgress(0);
             ZipOutputStream out = new ZipOutputStream(new FileOutputStream(FilenameUtils.removeExtension(destination) + ".zip"));
+
+            out.putNextEntry(new ZipEntry("codebooks/"));
+            out.closeEntry();
+
             ZipEntry zEntry = new ZipEntry(dataset.datasetHelper.metadataMap.get(MetadataKey.DatasetTitle) + "_DANS_FileList.xls");
             out.putNextEntry(zEntry);
-
             workbook.write(out);
             out.closeEntry();
 
@@ -98,6 +103,27 @@ public class outputDANS extends outputAbstract implements PropertyChangeListener
                     out.write(readBuffer, 0, length);
                 }
                 out.closeEntry();
+
+                //Writing the associated codebook, if applicable
+                try {
+                    String codebookPath = fh.metadataMap.get(MetadataKey.RelatedCodeBookLocation);
+                    if (codebookPath == null) {
+                        continue;
+                    }
+                    System.out.println("Writing associated codebook for file " + filePath.getFileName());
+
+                    FileInputStream codeStream = new FileInputStream(codebookPath);
+                    ZipEntry codebookEntry = new ZipEntry("codebooks/" + Paths.get(codebookPath).getFileName());
+                    out.putNextEntry(codebookEntry);
+                    readBuffer = new byte[2048];
+                    length = 0;
+                    while ((length = codeStream.read(readBuffer)) > 0) {
+                        out.write(readBuffer, 0, length);
+                    }
+                    out.closeEntry();
+                } catch (Exception e) {
+                    System.out.println("Duplicate codebook, not writing twice.");
+                }
             }
 
             out.close();

@@ -29,12 +29,15 @@ public class outputIslandora extends outputAbstract {
         HashMap<Path, Document> documentMap = new HashMap();
 
         for (FileHelper fileHelper : files) {
+            if (fileHelper instanceof FolderHelper && !fileHelper.root) {
+                continue;
+            }
             Document doc = FileToDocument(fileHelper);
             documentMap.put(fileHelper.filePath, doc);
         }
 
         //Instruct the zipper to save the generated .xml-documents and their associated files to a zip.
-        zipper.SaveAsZip(destination, documentMap, parent);
+        zipper.SaveAsZip(destination, documentMap, files, parent);
     }
 
     public Document FileToDocument(FileHelper fileHelper) {
@@ -67,8 +70,21 @@ public class outputIslandora extends outputAbstract {
     public LinkedList<Element> getDatasetElements(FolderHelper datasetHelper) {
         LinkedList<Element> elementList = new LinkedList();
 
+        Element[] creators = getCreator(datasetHelper);
+        if (creators != null) {
+            elementList.addAll(Arrays.asList(creators));
+        }
+        Element[] contributors = getContributors(datasetHelper);
+        if (contributors != null) {
+            elementList.addAll(Arrays.asList(contributors));
+        }
+        elementList.add(getOriginInfo(datasetHelper));
+        elementList.add(getTypeOfResource());
         elementList.add(getRightsHolder(datasetHelper));
-        elementList.add(getRelatedDataSet(datasetHelper));
+        Element[] relatedDatasets = getRelatedDataSet(datasetHelper);
+        if(relatedDatasets!=null){
+            elementList.addAll(Arrays.asList(relatedDatasets));
+        }
         elementList.add(getSubject(datasetHelper, true));
         elementList.add(getAbstract(datasetHelper));
         elementList.add(getLanguage(datasetHelper));
@@ -78,6 +94,10 @@ public class outputIslandora extends outputAbstract {
     }
 
     public LinkedList<Element> getMODSElements(FileHelper fileHelper) {
+        if (fileHelper.root) {
+            return getDatasetElements((FolderHelper) fileHelper);
+        }
+
         LinkedList<Element> elementList = new LinkedList();
 
         Element[] creators = getCreator(fileHelper);
@@ -225,24 +245,41 @@ public class outputIslandora extends outputAbstract {
         return null;
     }
 
-    public Element getRelatedDataSet(FileHelper fileHelper) {
-        Element relatedItem = new Element("relatedItem", rootNamespace);
+    public Element[] getRelatedDataSet(FileHelper fileHelper) {
+        String relatedTitleValue = fileHelper.metadataMap.get(MetadataKey.RelatedDatasetName);
+        if (relatedTitleValue == null) {
+            return null;
+        }
+        String[] relatedTitles = relatedTitleValue.split(";");
+        String[] relatedLocations = fileHelper.metadataMap.get(MetadataKey.RelatedDatasetLocation).split(";");
+        Element[] relatedItems = new Element[relatedTitles.length];
 
-        Element relatedTitleInfo = new Element("titleInfo", rootNamespace);
-        Element relatedTitle = new Element("title", rootNamespace);
-        relatedTitle.setText(fileHelper.metadataMap.get(MetadataKey.RelatedDatasetName));
-        relatedTitleInfo.addContent(relatedTitle);
-        relatedItem.addContent(relatedTitleInfo);
+        for (int i = 0; i < relatedTitles.length; i++) {
+            String relatedTitleString = relatedTitles[i];
+            if(relatedTitleString==null)
+                continue;
+            
+            Element relatedItem = new Element("relatedItem", rootNamespace);
 
-        Element relatedLocation = new Element("location", rootNamespace);
-        Element relatedURL = new Element("url", rootNamespace);
-        //is this really necessary?
-        relatedURL.setAttribute("usage", "primary");
-        relatedURL.setText(fileHelper.metadataMap.get(MetadataKey.RelatedDatasetLocation));
-        relatedLocation.addContent(relatedURL);
-        relatedItem.addContent(relatedLocation);
+            Element relatedTitleInfo = new Element("titleInfo", rootNamespace);
+            Element relatedTitle = new Element("title", rootNamespace);
+            relatedTitle.setText(relatedTitleString);
+            relatedTitleInfo.addContent(relatedTitle);
+            relatedItem.addContent(relatedTitleInfo);
 
-        return relatedItem;
+            String relatedLocationString = relatedLocations[i];
+            if(relatedLocationString == null)
+                continue;
+            Element relatedLocation = new Element("location", rootNamespace);
+            Element relatedURL = new Element("url", rootNamespace);
+            //is this really necessary?
+            relatedURL.setAttribute("usage", "primary");
+            relatedURL.setText(relatedLocationString);
+            relatedLocation.addContent(relatedURL);
+            relatedItem.addContent(relatedLocation);
+        }
+
+        return relatedItems;
     }
 
     public Element getSubject(FileHelper fileHelper, boolean forDataset) {
@@ -411,7 +448,6 @@ public class outputIslandora extends outputAbstract {
     }
 
     //more "optional" elements
-
     public Element getPhysicialDescription(FileHelper fileHelper) {
         String fileContentType = fileHelper.metadataMap.get(MetadataKey.FileContentType);
         String fileFormat = fileHelper.metadataMap.get(MetadataKey.FileFormat);
@@ -428,19 +464,19 @@ public class outputIslandora extends outputAbstract {
             internetMT.setText(fileContentType);
             physDesc.addContent(internetMT);
         }
-        
-        if(fileFormat!=null){
+
+        if (fileFormat != null) {
             Element format = new Element("form", rootNamespace);
             format.setText(fileFormat);
             physDesc.addContent(format);
         }
-        
-        if(fileSize!=null){
+
+        if (fileSize != null) {
             Element extent = new Element("extent", rootNamespace);
             extent.setText(fileSize);
             physDesc.addContent(extent);
         }
-        
+
         return physDesc;
     }
 
