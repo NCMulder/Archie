@@ -13,10 +13,9 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.prefs.Preferences;
 
-
 public enum MetadataKey {
     DatasetTitle("Dataset Title", "Dataset_01", null, KeyCategory.Main, true, false, false),
-    Identifier("Identifier","DOI1:0.1006/jmbi.1995.0238", null,KeyCategory.Main, true, false, false),
+    Identifier("Identifier", "DOI1:0.1006/jmbi.1995.0238", null, KeyCategory.Main, true, false, false),
     CreatorGivenName("Creator given name", "G.F.", "data_collector", KeyCategory.Main, true, true, true),
     CreatorFamilyName("Creator family name", "Coninck", null, KeyCategory.Main, true, true, true),
     CreatorAffiliation("Creator affiliation", "Universiteit Leiden", null, KeyCategory.Main, true, true, true),
@@ -48,13 +47,23 @@ public enum MetadataKey {
     FileAppreciation("Appreciation", "Island of Grenada was not included in this survey", "data_appreciation", KeyCategory.Detailed, false, true, false),
     FileSource("Source", "Interviews conducted in March 2015", "source_lineage", KeyCategory.Detailed, false, true, false),
     FileCitation("Citation", "See also survey of the Montecristi area", "othmat_citation", KeyCategory.Detailed, false, true, false),
-    FileContentType("Content type", "Recording", "data_format", KeyCategory.Main, false, true, false),
+    FileContent("Content", "Recording", "data_format", KeyCategory.Main, false, true, false),
     FileFormat("Format", "Mediocre", "archival_format", KeyCategory.Technical, false, true, false),
-    FileSize("File size", "234221324 bytes", "file_size",KeyCategory.Technical, false, true, false),
-    FileNotes("Notes", "Research notes", "notes",KeyCategory.Detailed, false, true, false);
+    FileSize("File size", "234221324 bytes", "file_size", KeyCategory.Technical, false, true, false),
+    FileNotes("Notes", "Research notes", "notes", KeyCategory.Detailed, false, true, false);
 
-    public enum KeyCategory{Main, Geographical, Technical, Detailed;}
-    
+    //When keys are changed, adress changes here to provide backwards compatability with old save files.
+    public static MetadataKey HistoricKeys(String string) {
+        switch (string) {
+            case "FileContentType": return MetadataKey.FileContent;
+            default: return null;
+        }
+    }
+
+    public enum KeyCategory {
+        Main, Geographical, Technical, Detailed;
+    }
+
     String displayValue = this.name();
     String hintValue;
     String DANSName;
@@ -63,12 +72,12 @@ public enum MetadataKey {
     public static HashMap<MetadataKey, String> defaultValues;
     public KeyCategory keyCategory;
 
-    static public MetadataKey[] creatorKeys = {CreatorIdentifier,  CreatorTOA, CreatorGivenName, CreatorFamilyName,CreatorAffiliation};
+    static public MetadataKey[] creatorKeys = {CreatorIdentifier, CreatorTOA, CreatorGivenName, CreatorFamilyName, CreatorAffiliation};
     static public MetadataKey[] contributorKeys = {ContributorIdentifier, ContributorTOA, ContributorGivenName, ContributorFamilyName, ContributorAffiliation};
     static public MetadataKey[] relatedDatasetKeys = {RelatedDatasetName, RelatedDatasetLocation};
     static public MetadataKey[] subjectKeys = {Subject};
-    
-    MetadataKey(String displayValue, String hintValue, String DANSName, KeyCategory keyCategory, boolean dataset, boolean file, boolean addable){
+
+    MetadataKey(String displayValue, String hintValue, String DANSName, KeyCategory keyCategory, boolean dataset, boolean file, boolean addable) {
         this.displayValue = displayValue;
         this.hintValue = hintValue;
         this.DANSName = DANSName;
@@ -77,8 +86,8 @@ public enum MetadataKey {
         this.addable = addable;
         this.keyCategory = keyCategory;
     }
-    
-    MetadataKey(String displayValue, String DANSName, KeyCategory keyCategory, boolean dataset, boolean file, String... settableValues){
+
+    MetadataKey(String displayValue, String DANSName, KeyCategory keyCategory, boolean dataset, boolean file, String... settableValues) {
         this.displayValue = displayValue;
         this.DANSName = DANSName;
         this.unrestricted = false;
@@ -92,8 +101,8 @@ public enum MetadataKey {
     public String toString() {
         return displayValue;
     }
-    
-    public String getDANSname(){
+
+    public String getDANSname() {
         return DANSName;
     }
 

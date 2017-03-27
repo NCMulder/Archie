@@ -154,7 +154,7 @@ public class ReadmeParser {
                         //setForFileHelper(MetadataKey.RelatedDatasetLocation, "empty", true, true);
                         break;
                     case "type":
-                        setForFileHelper(MetadataKey.FileContentType, keyValue[1].substring(0, keyValue[1].indexOf(",always")), false);
+                        setForFileHelper(MetadataKey.FileContent, keyValue[1].substring(0, keyValue[1].indexOf(",always")), false);
                         break;
                     case "language":
                         //Should not be in readme

@@ -449,7 +449,7 @@ public class outputIslandora extends outputAbstract {
 
     //more "optional" elements
     public Element getPhysicialDescription(FileHelper fileHelper) {
-        String fileContentType = fileHelper.metadataMap.get(MetadataKey.FileContentType);
+        String fileContentType = fileHelper.metadataMap.get(MetadataKey.FileContent);
         String fileFormat = fileHelper.metadataMap.get(MetadataKey.FileFormat);
         String fileSize = fileHelper.metadataMap.get(MetadataKey.FileSize);
 

@@ -21,7 +21,7 @@ import javax.swing.tree.TreeSelectionModel;
 public class MetadataChanger extends JSplitPane implements TreeSelectionListener, ActionListener {
 
     public enum SaveType {
-        Islandora, Dans
+        Islandora, Dans, Archie
     }
 
     Path mainDirectory;
@@ -41,6 +41,8 @@ public class MetadataChanger extends JSplitPane implements TreeSelectionListener
             output = new outputIslandora();
         } else if (st == SaveType.Dans) {
             output = new outputDANS(dataset);
+        } else if (st == SaveType.Archie){
+            output = new outputArchie(dataset);
         } else {
             JOptionPane.showMessageDialog(this, "The chosen save mode has not been implemented yet.");
             return false;
@@ -60,8 +62,6 @@ public class MetadataChanger extends JSplitPane implements TreeSelectionListener
 
         for (FileHelper fh : dataset.files) {
             if (nodeInfo.equals(fh.filePath)) {
-                //do interesting stuff here
-
                 updateChangerPane(fh);
                 return;
             }

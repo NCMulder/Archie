@@ -77,7 +77,7 @@ public class Dataset implements PropertyChangeListener {
         pm.setMillisToDecideToPopup(0);
         pm.setMillisToPopup(0);
 
-        dirToTree(path);
+        dirToTree();
 
         for (FileHelper fh : datasetHelper.children) {
             fh.Save();
@@ -332,7 +332,7 @@ public class Dataset implements PropertyChangeListener {
         }
     }
 
-    public void dirToTree(Path path) {
+    public void dirToTree() {
         DefaultMutableTreeNode dirTree = new DefaultMutableTreeNode(mainDirectory);
 
         Thread[] ts = new Thread[mainDirectory.toFile().listFiles().length];
@@ -428,7 +428,12 @@ public class Dataset implements PropertyChangeListener {
                 //First, parse metadatakeys
                 String[] keyValue = nextLine.replaceFirst(prefix, "").split(": ");
                 if (keyValue.length > 1) {
-                    MetadataKey key = MetadataKey.valueOf(keyValue[0]);
+                    MetadataKey key;
+                    try{
+                        key = MetadataKey.valueOf(keyValue[0]);
+                    } catch(Exception e){
+                        key = MetadataKey.HistoricKeys(keyValue[0]);
+                    }
                     String value = keyValue[1];
                     fileHelper.setRecord(key, value, false);
                 }

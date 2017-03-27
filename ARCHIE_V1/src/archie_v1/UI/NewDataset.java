@@ -1,6 +1,7 @@
 //License
 package archie_v1.UI;
 
+import archie_v1.ARCHIE;
 import archie_v1.Dataset;
 import archie_v1.fileHelpers.FolderHelper;
 import archie_v1.fileHelpers.MetadataKey;
@@ -63,84 +64,18 @@ public class NewDataset extends JPanel implements ActionListener, PropertyChange
             }
         }
     }
-
-//    public abstract class DatasetInitializer extends SwingWorker<Void, Void> {
-//
-//        public JPanel parent;
-//
-//        public void setNotBusy() {
-//            ((NewDataset) parent).busy = false;
-//        }
-//
-//        public DatasetInitializer(JPanel parent) {
-//            this.parent = parent;
-//        }
-//
-//        public abstract void updateProgress();
-//    }
-//
-//    private class DatasetCreator extends DatasetInitializer {
-//
-//        ProgressPanel pp;
-//        int fileCount;
-//        int progress = 0;
-//
-//        public DatasetCreator(ProgressPanel pp, int fileCount, JPanel parent) {
-//            super(parent);
-//            this.pp = pp;
-//            this.fileCount = fileCount;
-//            pm.setMaximum(fileCount);
-//            setProgress(0);
-//        }
-//
-//        @Override
-//        protected Void doInBackground() throws Exception {
-//            dataset = new Dataset(datasetName, datasetPath, datasetHelper, this);
-//
-//            System.out.println("after ds " + progress);
-//
-//            return null;
-//        }
-//
-//        public void updateProgress() {
-//            int prog = getProgress();
-//            setProgress(progress++);
-//            this.firePropertyChange("progress", prog, progress);
-//        }
-//    }
-//
-//    private class DatasetOpener extends DatasetInitializer {
-//
-//        BufferedReader br;
-//        int datasetChildCount;
-//        int progress = 0;
-//
-//        public DatasetOpener(BufferedReader br, int datasetChildCount, JPanel parent) {
-//            super(parent);
-//            this.br = br;
-//            this.datasetChildCount = datasetChildCount;
-//            pm.setMaximum(datasetChildCount);
-//            setProgress(0);
-//        }
-//
-//        @Override
-//        protected Void doInBackground() throws Exception {
-//            dataset = new Dataset(datasetName, datasetPath, datasetHelper, br, datasetChildCount, this);
-//
-//            System.out.println("after ds " + progress);
-//
-//            return null;
-//        }
-//
-//        public void updateProgress() {
-//            setProgress(progress++);
-//        }
-//    }
+    
     public NewDataset(MainFrame parent) {
         this.parent = parent;
+        //String path = ARCHIE.getRecentlyGenerated();
+        String path = null;
+        if(path!=null){
+            datasetHelper = new FolderHelper(Paths.get(path), true);
+        } else {
+            datasetHelper = new FolderHelper(null, true);
+        }
         pm.setMillisToDecideToPopup(0);
         pm.setMillisToPopup(0);
-        datasetHelper = new FolderHelper(Paths.get("C:\\Users\\niels\\Documents\\Archie\\Testset\\testset_test"), true);
         createUI();
     }
 
@@ -153,6 +88,13 @@ public class NewDataset extends JPanel implements ActionListener, PropertyChange
     }
 
     public boolean initializeNewDataset() {
+
+        //Start generating the metadata and UI.
+        datasetPath = Paths.get(fields.datasetLocationField.getText());
+        //ARCHIE.setRecentlyGenerated(datasetPath);
+        datasetSize = FileUtils.listFilesAndDirs(datasetPath.toFile(), TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size();
+        datasetHelper = new FolderHelper(datasetPath, true);
+        
         for (Map.Entry<MetadataKey, JComponent> metadataKeyTextEntry : fields.labelText.entrySet()) {
             String value = (metadataKeyTextEntry.getKey().unrestricted) ? ((ArchieTextField) metadataKeyTextEntry.getValue()).getText() : ((JComboBox) metadataKeyTextEntry.getValue()).getSelectedItem().toString();
             if (value != null && !value.equals("")) {
@@ -168,10 +110,6 @@ public class NewDataset extends JPanel implements ActionListener, PropertyChange
             JOptionPane.showMessageDialog(this, "The name of a dataset can not be empty.", "Dataset name", JOptionPane.PLAIN_MESSAGE);
             return false;
         }
-
-        //Start generating the metadata and UI.
-        datasetPath = Paths.get(fields.datasetLocationField.getText());
-        datasetSize = FileUtils.listFilesAndDirs(datasetPath.toFile(), TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size();
 
         //Setting the mainpanel to a progresspanel
 //        parent.working = parent.WorkingOnItPanel(datasetSize);

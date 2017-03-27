@@ -69,7 +69,7 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
         addablePanels = new ArrayList();
 
         this.newDataset = true;
-        this.datasetLocation = "C:\\Users\\niels\\Documents\\Archie\\Testset\\testset_test";
+        this.datasetLocation = "C:\\Users\\niels\\Documents\\Archie\\Testset\\testset";
 
         resetPane();
     }

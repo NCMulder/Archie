@@ -88,14 +88,17 @@ public class outputDANS extends outputAbstract implements PropertyChangeListener
                 setProgress(this.getProgress() + 1);
                 Path filePath = fh.filePath;
                 if (filePath.toFile().isDirectory()) {
+                    zEntry = new ZipEntry(dataset.mainDirectory.relativize(fh.filePath).toString() + "/");
+                    out.putNextEntry(zEntry);
+                    out.closeEntry();
                     continue;
                 }
 
-                String[] fileNames = checkDuplicateNames(filePath);
+                //String[] fileNames = checkDuplicateNames(filePath);
 
                 //Writing the associated file.
                 FileInputStream fIS = new FileInputStream(filePath.toString());
-                ZipEntry fileZipEntry = new ZipEntry(fileNames[0] + fileNames[1]);
+                ZipEntry fileZipEntry = new ZipEntry(dataset.mainDirectory.relativize(fh.filePath).toString());
                 out.putNextEntry(fileZipEntry);
                 byte[] readBuffer = new byte[2048];
                 int length;
@@ -231,23 +234,6 @@ public class outputDANS extends outputAbstract implements PropertyChangeListener
             cell = row.createCell(i + 1 - notDANS);
             cell.setCellValue(value);
         }
-    }
-
-    private String[] checkDuplicateNames(Path path) {
-        int version = 0;
-        String fileName = FilenameUtils.removeExtension(path.getFileName().toString());
-        String fileExtension = path.getFileName().toString().replace(fileName, "");
-        while (names.contains(fileName)) {
-            if (version != 0) {
-                fileName = fileName.substring(0, fileName.length() - 3);
-            }
-            version++;
-            fileName += "[" + version + "]";
-        }
-        names.add(fileName);
-
-        String[] stringArray = {fileName, fileExtension};
-        return stringArray;
     }
 
     @Override

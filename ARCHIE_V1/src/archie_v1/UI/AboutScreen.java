@@ -43,7 +43,7 @@ public class AboutScreen extends JPanel {
         
         JLabel introductionLabel = new JLabel(
                 "<html><center>Archie was developed at the University of Leiden, Faculty of Archaeology<br>"
-                + "as part of the Nexus1492 project (www.nexus1492.eu), directed by Corinne L. Hofman.<br><br>",
+                + "as part of the Nexus1492 project (www.nexus1492.eu), directed by prof. dr. Corinne L. Hofman.<br><br>",
                 JLabel.CENTER);
         Font ft2 = new Font(introductionLabel.getFont().getFontName(), 16, 16);
         introductionLabel.setFont(ft2);
@@ -95,7 +95,7 @@ public class AboutScreen extends JPanel {
                 new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY);
         this.add(designLabel, gbc);
         
-        JLabel knLabel = new JLabel("Drs. W. Kool", JLabel.CENTER);
+        JLabel knLabel = new JLabel("W. Kool", JLabel.CENTER);
         knLabel.setFont(ft2);
         gbc = new GridBagConstraints(
                 1, 3, //GridX, GridY
