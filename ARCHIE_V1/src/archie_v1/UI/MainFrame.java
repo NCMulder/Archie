@@ -165,6 +165,7 @@ public class MainFrame extends JFrame implements ActionListener {
                         succes = mdc.Save(MetadataChanger.SaveType.Islandora, fc.getSelectedFile().toPath());
                     }
                 } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(this, "The file could not be saved. Close all programs using files present in dataset and try again.");
                     Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
@@ -172,7 +173,7 @@ public class MainFrame extends JFrame implements ActionListener {
             if (mainPanel instanceof MetadataChanger) {
                 try {
                     MetadataChanger mdc = (MetadataChanger) mainPanel;
-                    JFileChooser fc = new JFileChooser(mdc.dataset.mainDirectory.getParent().toString());
+                    JFileChooser fc = new checkingFC(mdc.dataset.mainDirectory.getParent().toString());
                     fc.setSelectedFile(new File(mdc.dataset.datasetHelper.metadataMap.get(MetadataKey.DatasetTitle) + "_DANS.zip"));
                     FileNameExtensionFilter zipFilter = new FileNameExtensionFilter("zip files (*.zip)", "zip");
                     fc.addChoosableFileFilter(zipFilter);

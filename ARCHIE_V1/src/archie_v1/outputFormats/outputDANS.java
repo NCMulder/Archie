@@ -9,9 +9,11 @@ import archie_v1.Dataset;
 import archie_v1.fileHelpers.FileHelper;
 import archie_v1.fileHelpers.FolderHelper;
 import archie_v1.fileHelpers.MetadataKey;
+import archie_v1.fileHelpers.xlsxFile;
 import java.awt.Cursor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -31,6 +33,8 @@ import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.codehaus.plexus.util.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.output.XMLOutputter;
 
@@ -95,7 +99,6 @@ public class outputDANS extends outputAbstract implements PropertyChangeListener
                 }
 
                 //String[] fileNames = checkDuplicateNames(filePath);
-
                 //Writing the associated file.
                 FileInputStream fIS = new FileInputStream(filePath.toString());
                 ZipEntry fileZipEntry = new ZipEntry(dataset.mainDirectory.relativize(fh.filePath).toString());
@@ -110,20 +113,47 @@ public class outputDANS extends outputAbstract implements PropertyChangeListener
                 //Writing the associated codebook, if applicable
                 try {
                     String codebookPath = fh.metadataMap.get(MetadataKey.RelatedCodeBookLocation);
-                    if (codebookPath == null) {
-                        continue;
-                    }
-                    System.out.println("Writing associated codebook for file " + filePath.getFileName());
+                    if (codebookPath != null && !codebookPath.equals("will be generated upon export")) {
+                        System.out.println("Writing associated codebook for file " + filePath.getFileName());
 
-                    FileInputStream codeStream = new FileInputStream(codebookPath);
-                    ZipEntry codebookEntry = new ZipEntry("codebooks/" + Paths.get(codebookPath).getFileName());
-                    out.putNextEntry(codebookEntry);
-                    readBuffer = new byte[2048];
-                    length = 0;
-                    while ((length = codeStream.read(readBuffer)) > 0) {
-                        out.write(readBuffer, 0, length);
+                        FileInputStream codeStream = new FileInputStream(codebookPath);
+                        ZipEntry codebookEntry = new ZipEntry("codebooks/" + Paths.get(codebookPath).getFileName());
+                        out.putNextEntry(codebookEntry);
+                        readBuffer = new byte[2048];
+                        length = 0;
+                        while ((length = codeStream.read(readBuffer)) > 0) {
+                            out.write(readBuffer, 0, length);
+                        }
+                        out.closeEntry();
                     }
-                    out.closeEntry();
+
+                    if (fh instanceof xlsxFile && codebookPath.equals("will be generated upon export")) {
+                        ArrayList<Workbook> codebooks = ((xlsxFile) fh).codebooks;
+                        for (Workbook codebook : codebooks) {
+                            System.out.println("Writing codebook...");
+                            String fileName = FileUtils.removeExtension(fh.filePath.getFileName().toString()) + "_" + codebook.getSheetName(0) + "." + FileUtils.getExtension(((xlsxFile) fh).filePath.toString());
+                            ZipEntry cbEntry = new ZipEntry("codebooks/" + fileName);
+
+                            File tempFile = new File("temp");
+                            tempFile.mkdirs();
+                            File codeFile = new File(tempFile, codebook.getSheetName(0) + "_" + ((xlsxFile) fh).filePath.getFileName());
+                            FileOutputStream FOS = new FileOutputStream(codeFile);
+                            codebook.write(FOS);
+                            FOS.close();
+
+                            FileInputStream FIS = new FileInputStream(codeFile);
+
+                            out.putNextEntry(cbEntry);
+                            readBuffer = new byte[2048];
+                            length = 0;
+                            while ((length = FIS.read(readBuffer)) > 0) {
+                                out.write(readBuffer, 0, length);
+                            }
+                            FIS.close();
+                            out.closeEntry();
+                        }
+                    }
+
                 } catch (Exception e) {
                     System.out.println("Duplicate codebook, not writing twice.");
                 }

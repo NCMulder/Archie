@@ -244,7 +244,9 @@ public class Dataset implements PropertyChangeListener {
             return false;
         } else if (filePath.getFileName().toString().startsWith(".")) {
             return false;
-        }//Possibly also filter out all filePaths starting with ".".
+        } else if (filePath.getFileName().toString().startsWith("~")){
+            return false;
+        }
 
         String[] errFiles = {".zip", ".cache", ".svn-base",};
         String fileType = filePath.getFileName().toString().replace(FilenameUtils.removeExtension(filePath.getFileName().toString()), "");
@@ -421,7 +423,7 @@ public class Dataset implements PropertyChangeListener {
             if (isDir) {
                 fileHelper = new FolderHelper(path, false);
             } else {
-                fileHelper = new basicFile(path);
+                fileHelper = ARCHIE.fileSelector(path);
             }
 
             while (!(nextLine = br.readLine()).equals("--")) {

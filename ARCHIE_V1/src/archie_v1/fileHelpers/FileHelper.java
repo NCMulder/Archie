@@ -73,7 +73,7 @@ public abstract class FileHelper {
         setRecordThroughTika(MetadataKey.Software, "pdf:docinfo:producer");
         setRecordThroughTika(MetadataKey.Software, "xmp:CreatorTool");
         setRecordThroughTika(MetadataKey.Software, "xmpMM:History:SoftwareAgent");
-        setRecordThroughTika(MetadataKey.FileContent, "Content-Type");
+        setRecordThroughTika(MetadataKey.FileFormat, "Content-Type");
         
         try {
             String format = Files.probeContentType(filePath);

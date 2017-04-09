@@ -3,6 +3,7 @@ package archie_v1.outputFormats;
 
 import archie_v1.fileHelpers.FileHelper;
 import archie_v1.fileHelpers.MetadataKey;
+import archie_v1.fileHelpers.xlsxFile;
 import java.awt.Cursor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -23,6 +24,9 @@ import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingWorker;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.codehaus.plexus.util.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.output.XMLOutputter;
 
@@ -104,35 +108,67 @@ public class Zipper implements PropertyChangeListener {
                 while ((length = fIS.read(readBuffer)) > 0) {
                     out.write(readBuffer, 0, length);
                 }
+                fIS.close();
                 out.closeEntry();
-                
+
                 //Writing the associated codebook, if present
                 FileHelper fh = null;
-                for(FileHelper fH : fileHelpers){
-                    if(fH.filePath.equals(filePath)){
+                for (FileHelper fH : fileHelpers) {
+                    if (fH.filePath.equals(filePath)) {
                         fh = fH;
                         break;
                     }
                 }
-                if(fh == null)
+                if (fh == null) {
                     continue;
-                
+                }
+
                 try {
                     String codebookPath = fh.metadataMap.get(MetadataKey.RelatedCodeBookLocation);
-                    if (codebookPath == null) {
-                        continue;
-                    }
-                    System.out.println("Writing associated codebook for file " + filePath.getFileName());
+                    if (codebookPath != null  && !codebookPath.equals("will be generated upon export")) {
+                        System.out.println("Writing associated codebook for file " + filePath.getFileName());
 
-                    FileInputStream codeStream = new FileInputStream(codebookPath);
-                    ZipEntry codebookEntry = new ZipEntry("codebooks/" + Paths.get(codebookPath).getFileName());
-                    out.putNextEntry(codebookEntry);
-                    readBuffer = new byte[2048];
-                    length = 0;
-                    while ((length = codeStream.read(readBuffer)) > 0) {
-                        out.write(readBuffer, 0, length);
+                        FileInputStream codeStream = new FileInputStream(codebookPath);
+                        ZipEntry codebookEntry = new ZipEntry("codebooks/" + Paths.get(codebookPath).getFileName());
+                        out.putNextEntry(codebookEntry);
+                        readBuffer = new byte[2048];
+                        length = 0;
+                        while ((length = codeStream.read(readBuffer)) > 0) {
+                            out.write(readBuffer, 0, length);
+                        }
+                        codeStream.close();
+                        out.closeEntry();
+                    } else {
                     }
-                    out.closeEntry();
+
+                    //Writing the generated codebooks if excel file
+                    if (fh instanceof xlsxFile && codebookPath.equals("will be generated upon export")) {
+                        ArrayList<Workbook> codebooks = ((xlsxFile) fh).codebooks;
+                        for (Workbook codebook : codebooks) {
+                            System.out.println("Writing codebook...");
+                            String fileName = FileUtils.removeExtension(fh.filePath.getFileName().toString()) + "_" + codebook.getSheetName(0) + "." + FileUtils.getExtension(((xlsxFile) fh).filePath.toString());
+                            ZipEntry cbEntry = new ZipEntry("codebooks/" + fileName);
+
+                            File tempFile = new File("temp");
+                            tempFile.mkdirs();
+                            File codeFile = new File(tempFile, codebook.getSheetName(0) + "_" + ((xlsxFile) fh).filePath.getFileName());
+                            FileOutputStream FOS = new FileOutputStream(codeFile);
+                            codebook.write(FOS);
+                            FOS.close();
+
+                            FileInputStream FIS = new FileInputStream(codeFile);
+
+                            out.putNextEntry(cbEntry);
+                            readBuffer = new byte[2048];
+                            length = 0;
+                            while ((length = FIS.read(readBuffer)) > 0) {
+                                out.write(readBuffer, 0, length);
+                            }
+                            FIS.close();
+                            out.closeEntry();
+                        }
+                    }
+
                 } catch (Exception e) {
                     System.out.println(Arrays.toString(e.getStackTrace()));
                 }

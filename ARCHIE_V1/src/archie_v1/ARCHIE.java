@@ -52,11 +52,11 @@ public class ARCHIE {
                 return new pictureFile(filePath);
             case "accdb":
                 return new databaseFile(filePath);
-            case "doc":
-            case "docx":
             case "xls":
             case "xlsx":
                 return new xlsxFile(filePath);
+            case "doc":
+            case "docx":
             case "dbf":
             case "pdf":
             case "mxd":
