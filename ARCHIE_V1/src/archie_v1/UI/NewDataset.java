@@ -69,7 +69,13 @@ public class NewDataset extends JPanel implements ActionListener{
     }
 
     public boolean initializeNewDataset() {
+        datasetPath = Paths.get(fields.datasetLocationField.getText());
+        if (datasetPath == null || "".equals(datasetPath.toString())) {
+            JOptionPane.showMessageDialog(this, "The path of a dataset can not be empty.", "Dataset path", JOptionPane.PLAIN_MESSAGE);
+            return false;
+        }
         
+        datasetHelper = new FolderHelper(datasetPath, true);
         for (Map.Entry<MetadataKey, JComponent> metadataKeyTextEntry : fields.labelText.entrySet()) {
             String value = (metadataKeyTextEntry.getKey().unrestricted) ? ((ArchieTextField) metadataKeyTextEntry.getValue()).getText() : ((JComboBox) metadataKeyTextEntry.getValue()).getSelectedItem().toString();
             if (value != null && !value.equals("")) {
@@ -81,20 +87,15 @@ public class NewDataset extends JPanel implements ActionListener{
         }
         
         datasetName = datasetHelper.metadataMap.get(MetadataKey.DatasetTitle);
-        datasetPath = Paths.get(fields.datasetLocationField.getText());
 
         if (datasetName == null || "".equals(datasetName)) {
             JOptionPane.showMessageDialog(this, "The name of a dataset can not be empty.", "Dataset name", JOptionPane.PLAIN_MESSAGE);
-            return false;
-        } else if (datasetPath == null || "".equals(datasetPath.toString())) {
-            JOptionPane.showMessageDialog(this, "The path of a dataset can not be empty.", "Dataset path", JOptionPane.PLAIN_MESSAGE);
             return false;
         }
 
         //Start generating the metadata and UI.
         //ARCHIE.setRecentlyGenerated(datasetPath);
         datasetSize = FileUtils.listFilesAndDirs(datasetPath.toFile(), TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size();
-        datasetHelper = new FolderHelper(datasetPath, true);
 
         //Setting the mainpanel to a progresspanel
         
