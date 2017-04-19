@@ -92,7 +92,7 @@ public class FolderHelper extends FileHelper {
     protected void setRecord(MetadataKey key, String value, boolean softSet, boolean init) {
         super.setRecord(key, value, softSet, init);
         
-        if(init)
+        if(init || root)
             return;
         
         for (FileHelper fh : children) {
@@ -108,6 +108,10 @@ public class FolderHelper extends FileHelper {
     @Override
     public void SetAddableRecord(MetadataKey[] Values, ArrayList<String[]> valueArray, boolean softSet) {
         super.SetAddableRecord(Values, valueArray, softSet);
+        
+        if(root)
+            return;
+        
         for (FileHelper fh : children) {
             fh.SetAddableRecord(Values, valueArray, softSet);
         }
