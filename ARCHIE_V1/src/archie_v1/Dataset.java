@@ -274,7 +274,7 @@ public class Dataset implements PropertyChangeListener {
         }
 
         private void createNodes(Path file, DefaultMutableTreeNode tree, FolderHelper folderH) {
-            System.out.println("Processing file " + progress + " of " + childCount + " [" + file.getFileName() + "]");
+            System.out.println("Processing file " + progress + " of " + childCount + " [" + file.getFileName() + "] on thread " + Thread.currentThread().getName());
             
             if ("readme".equals(FilenameUtils.removeExtension(file.getFileName().toString()))) {
                 readmesMapLock.lock();

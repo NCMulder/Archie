@@ -3,18 +3,10 @@ package archie_v1;
 
 import archie_v1.UI.ArchieUIManager;
 import archie_v1.fileHelpers.*;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.apache.commons.io.FilenameUtils;
@@ -22,8 +14,15 @@ import org.apache.commons.io.FilenameUtils;
 public class ARCHIE {
 
     static public ArchieUIManager ui;
+    static public Preferences prefs;
+    public static String RECENTLY_OPENED_ARCHIEFILE = "recentlyOpenedArchieFile", RECENTLY_OPENED_DIRECTORY = "recentlyOpenedDirectory", RECENTLY_SAVED = "recentlySaved";
+    public static String RECENTLY_OPENED_CODEBOOK = "recentlyOpenedCodebook";
 
     public static void main(String[] args) {
+        prefs = Preferences.userNodeForPackage(ARCHIE.class);
+        System.out.println("Current recently opened: " + prefs.get(RECENTLY_OPENED_ARCHIEFILE, "none"));
+        System.out.println("Current recently saved: " + prefs.get(RECENTLY_SAVED, "none"));
+        
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
@@ -38,8 +37,6 @@ public class ARCHIE {
      * input.
      *
      * @param filePath The file path for the desired FileHelper.
-     * @param includeIslandora Selects whether or not the file should be
-     * included in an Islandora output.
      * @return
      */
     static public FileHelper fileSelector(Path filePath) {
@@ -68,127 +65,6 @@ public class ARCHIE {
             case "png":
             default:
                 return new basicFile(filePath);
-        }
-    }
-
-    public static String getRecentlyOpened() {
-        File tempDir = new File("temp");
-        tempDir.mkdirs();
-        File prefsFile = new File(tempDir, "prefs.txt");
-        if (prefsFile.exists()) {
-            try {
-                BufferedReader reader = new BufferedReader(new FileReader(prefsFile));
-                String line;
-                while(!"opened:".equals(line = reader.readLine())){
-                    
-                }
-                return reader.readLine();
-            } catch (IOException ex) {
-                Logger.getLogger(ARCHIE.class.getName()).log(Level.SEVERE, null, ex);
-                return null;
-            }
-        } else {
-            return null;
-        }
-    }
-
-    public static void setRecentlyOpened(Path path) {
-        File tempDir = new File("temp");
-        tempDir.mkdirs();
-        File prefsFile = new File(tempDir, "prefs.txt");
-        try {
-            if (!prefsFile.exists()) {
-                prefsFile.createNewFile();
-                BufferedWriter writer = new BufferedWriter(new FileWriter(prefsFile));
-                writer.write("opened:\n");
-                writer.write(path.toString() + "\n");
-                writer.write("generated:\n");
-                writer.close();
-                return;
-            } else {
-                BufferedReader reader = new BufferedReader(new FileReader(prefsFile));
-                LinkedList<String> prefsList = new LinkedList();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    prefsList.add(line);
-                }
-                prefsFile.delete();
-                prefsFile.createNewFile();
-                BufferedWriter writer = new BufferedWriter(new FileWriter(prefsFile));
-                for (int i = 0; i < prefsList.size(); i++) {
-                    String oneLine = prefsList.get(i);
-                    if (oneLine.equals("opened:")) {
-                        writer.write("opened:\n");
-                        writer.write(path.toString() + "\n");
-                        i++;
-                    } else {
-                        writer.write(oneLine + "\n");
-                    }
-                }
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    public static String getRecentlyGenerated() {
-        File tempDir = new File("temp");
-        tempDir.mkdirs();
-        File prefsFile = new File(tempDir, "prefs.txt");
-        if (prefsFile.exists()) {
-            try {
-                BufferedReader reader = new BufferedReader(new FileReader(prefsFile));
-                String line;
-                while(!"generated:".equals(line = reader.readLine())){
-                    
-                }
-                return reader.readLine();
-            } catch (IOException ex) {
-                Logger.getLogger(ARCHIE.class.getName()).log(Level.SEVERE, null, ex);
-                return null;
-            }
-        } else {
-            return null;
-        }
-    }
-
-    public static void setRecentlyGenerated(Path path) {
-        File tempDir = new File("temp");
-        tempDir.mkdirs();
-        File prefsFile = new File(tempDir, "prefs.txt");
-        try {
-            if (!prefsFile.exists()) {
-                prefsFile.createNewFile();
-                BufferedWriter writer = new BufferedWriter(new FileWriter(prefsFile));
-                writer.write("generated:\n");
-                writer.write(path.toString() + "\n");
-                writer.write("opened:\n");
-                
-                writer.close();
-                return;
-            } else {
-                BufferedReader reader = new BufferedReader(new FileReader(prefsFile));
-                LinkedList<String> prefsList = new LinkedList();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    prefsList.add(line);
-                }
-                prefsFile.delete();
-                prefsFile.createNewFile();
-                BufferedWriter writer = new BufferedWriter(new FileWriter(prefsFile));
-                for (int i = 0; i < prefsList.size(); i++) {
-                    String oneLine = prefsList.get(i);
-                    if (oneLine.equals("generated:")) {
-                        writer.write("generated:\n");
-                        writer.write(path.toString() + "\n");
-                        i++;
-                    } else {
-                        writer.write(oneLine + "\n");
-                    }
-                }
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }

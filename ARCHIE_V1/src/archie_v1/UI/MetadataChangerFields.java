@@ -5,6 +5,7 @@
  */
 package archie_v1.UI;
 
+import archie_v1.ARCHIE;
 import archie_v1.fileHelpers.FileHelper;
 import archie_v1.fileHelpers.MetadataKey;
 import java.awt.GridBagConstraints;
@@ -39,8 +40,6 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
     private FileHelper fileHelper;
     private boolean newDataset = false;
 
-    public String datasetLocation = null;
-
     public HashMap<MetadataKey, JComponent> labelText;
     public HashMap<MetadataKey, String> addableValues;
     public ArrayList<AddablePanel> addablePanels;
@@ -69,7 +68,6 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
         addablePanels = new ArrayList();
 
         this.newDataset = true;
-        this.datasetLocation = "C:\\Users\\niels\\Documents\\Archie\\Testset\\testset";
 
         resetPane();
     }
@@ -127,7 +125,7 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
                     new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
             finalPanel.add(label, gbc);
 
-            datasetLocationField = new ArchieTextField(datasetLocation);
+            datasetLocationField = new ArchieTextField(ARCHIE.prefs.get(ARCHIE.RECENTLY_OPENED_DIRECTORY, ""));
             gbc = new GridBagConstraints(
                     2, 0, //GridX, GridY
                     2, 1, //GridWidth, GridHeight
@@ -285,18 +283,28 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == chooseButton) {
-            JFileChooser fileChooser = new JFileChooser(datasetLocation);
-            fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            JFileChooser fileChooser = new JFileChooser(ARCHIE.prefs.get(ARCHIE.RECENTLY_OPENED_DIRECTORY, "")){
+                public void approveSelection(){
+                    if(getSelectedFile().isFile()){
+                        return;
+                    } else {
+                        super.approveSelection();
+                    }
+                }
+            };
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             int status = fileChooser.showOpenDialog(this);
             if (status == JFileChooser.APPROVE_OPTION) {
+                ARCHIE.prefs.put(ARCHIE.RECENTLY_OPENED_DIRECTORY, fileChooser.getSelectedFile().getPath());
                 datasetLocationField.setText(fileChooser.getSelectedFile().toString());
             }
         } else if (e.getSource() == chooseCodeBook) {
-            JFileChooser fileChooser = new JFileChooser(datasetLocation);
+            JFileChooser fileChooser = new JFileChooser(ARCHIE.prefs.get(ARCHIE.RECENTLY_OPENED_CODEBOOK, ""));
             FileNameExtensionFilter zipFilter = new FileNameExtensionFilter("Access files (*.accdb), Excel files (*.xls/*.xlsx), ", "accdb", "xls", "xlsx");
             fileChooser.addChoosableFileFilter(zipFilter);
             int status = fileChooser.showOpenDialog(this);
             if (status == JFileChooser.APPROVE_OPTION) {
+                ARCHIE.prefs.put(ARCHIE.RECENTLY_OPENED_CODEBOOK, fileChooser.getSelectedFile().getPath());
                 codeField.setText(fileChooser.getSelectedFile().toString());
                 codeField.setFont(codeField.normalFont);
                 codeField.setForeground(codeField.normalColor);

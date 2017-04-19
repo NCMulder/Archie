@@ -154,7 +154,8 @@ public class MainFrame extends JFrame implements ActionListener {
             if (mainPanel instanceof MetadataChanger) {
                 try {
                     MetadataChanger mdc = (MetadataChanger) mainPanel;
-                    JFileChooser fc = new checkingFC(mdc.dataset.mainDirectory.getParent().toString());
+                    String recentlyOpened = ARCHIE.prefs.get(ARCHIE.RECENTLY_SAVED, mdc.dataset.mainDirectory.getParent().toString());
+                    JFileChooser fc = new checkingFC(recentlyOpened);
                     fc.setSelectedFile(new File(mdc.dataset.datasetHelper.metadataMap.get(MetadataKey.DatasetTitle) + "_ISLANDORA.zip"));
                     FileNameExtensionFilter zipFilter = new FileNameExtensionFilter("zip files (*.zip)", "zip");
                     fc.addChoosableFileFilter(zipFilter);
@@ -162,6 +163,7 @@ public class MainFrame extends JFrame implements ActionListener {
                     boolean succes = false;
                     int rv = fc.showSaveDialog(this);
                     if (rv == JFileChooser.APPROVE_OPTION) {
+                        ARCHIE.prefs.put(ARCHIE.RECENTLY_SAVED, fc.getSelectedFile().getPath());
                         succes = mdc.Save(MetadataChanger.SaveType.Islandora, fc.getSelectedFile().toPath());
                     }
                 } catch (IOException ex) {
@@ -173,7 +175,8 @@ public class MainFrame extends JFrame implements ActionListener {
             if (mainPanel instanceof MetadataChanger) {
                 try {
                     MetadataChanger mdc = (MetadataChanger) mainPanel;
-                    JFileChooser fc = new checkingFC(mdc.dataset.mainDirectory.getParent().toString());
+                    String recentlyOpened = ARCHIE.prefs.get(ARCHIE.RECENTLY_SAVED, mdc.dataset.mainDirectory.getParent().toString());
+                    JFileChooser fc = new checkingFC(recentlyOpened);
                     fc.setSelectedFile(new File(mdc.dataset.datasetHelper.metadataMap.get(MetadataKey.DatasetTitle) + "_DANS.zip"));
                     FileNameExtensionFilter zipFilter = new FileNameExtensionFilter("zip files (*.zip)", "zip");
                     fc.addChoosableFileFilter(zipFilter);
@@ -181,6 +184,7 @@ public class MainFrame extends JFrame implements ActionListener {
                     boolean succes = false;
                     int rv = fc.showSaveDialog(this);
                     if (rv == JFileChooser.APPROVE_OPTION) {
+                        ARCHIE.prefs.put(ARCHIE.RECENTLY_SAVED, fc.getSelectedFile().getPath());
                         succes = mdc.Save(MetadataChanger.SaveType.Dans, fc.getSelectedFile().toPath());
                     }
                 } catch (IOException ex) {
@@ -192,7 +196,8 @@ public class MainFrame extends JFrame implements ActionListener {
             if (mainPanel instanceof MetadataChanger) {
                 try {
                     MetadataChanger mdc = (MetadataChanger) mainPanel;
-                    JFileChooser fc = new checkingFC(mdc.dataset.mainDirectory.getParent().toString());
+                    String recentlyOpened = ARCHIE.prefs.get(ARCHIE.RECENTLY_SAVED, mdc.dataset.mainDirectory.getParent().toString());
+                    JFileChooser fc = new checkingFC(recentlyOpened);
                     fc.setSelectedFile(new File(mdc.dataset.datasetHelper.metadataMap.get(MetadataKey.DatasetTitle) + "_ARCHIE.zip"));
                     FileNameExtensionFilter zipFilter = new FileNameExtensionFilter("zip files (*.zip)", "zip");
                     fc.addChoosableFileFilter(zipFilter);
@@ -200,6 +205,7 @@ public class MainFrame extends JFrame implements ActionListener {
                     boolean succes = false;
                     int rv = fc.showSaveDialog(this);
                     if (rv == JFileChooser.APPROVE_OPTION) {
+                        ARCHIE.prefs.put(ARCHIE.RECENTLY_SAVED, fc.getSelectedFile().getPath());
                         succes = mdc.Save(MetadataChanger.SaveType.Archie, fc.getSelectedFile().toPath());
                     }
                 } catch (IOException ex) {
@@ -210,7 +216,8 @@ public class MainFrame extends JFrame implements ActionListener {
         } else if (e.getSource() == saveItem) {
             if (mainPanel instanceof MetadataChanger) {
                 MetadataChanger mdc = (MetadataChanger) mainPanel;
-                JFileChooser fc = new checkingFC(mdc.dataset.mainDirectory.getParent().toString());
+                String recentlyOpened = ARCHIE.prefs.get(ARCHIE.RECENTLY_SAVED, mdc.dataset.mainDirectory.getParent().toString());
+                JFileChooser fc = new checkingFC(recentlyOpened);
                 fc.setSelectedFile(new File(mdc.dataset.datasetHelper.metadataMap.get(MetadataKey.DatasetTitle) + ".archie"));
                 FileNameExtensionFilter archieFilter = new FileNameExtensionFilter("archie files (*.archie)", "archie");
                 fc.addChoosableFileFilter(archieFilter);
@@ -218,6 +225,7 @@ public class MainFrame extends JFrame implements ActionListener {
                 int rv = fc.showSaveDialog(this);
                 boolean succes = false;
                 if (rv == JFileChooser.APPROVE_OPTION) {
+                    ARCHIE.prefs.put(ARCHIE.RECENTLY_SAVED, fc.getSelectedFile().getPath());
                     succes = mdc.dataset.saveDataset(fc.getSelectedFile());
                 }
                 if (succes) {
@@ -227,24 +235,18 @@ public class MainFrame extends JFrame implements ActionListener {
                 }
             }
         } else if (e.getSource() == openMenu) {
-            JFileChooser fc;
-            //String path = ARCHIE.getRecentlyOpened();
-            String path = null;
-            if(path!=null){
-                fc = new JFileChooser(path);
-            } else {
-                fc = new JFileChooser();
-            }
+            String path = ARCHIE.prefs.get(ARCHIE.RECENTLY_OPENED_ARCHIEFILE, "");
+            JFileChooser fc = new JFileChooser(path);
             FileNameExtensionFilter archieFilter = new FileNameExtensionFilter("archie files(*.archie)", "archie");
             fc.addChoosableFileFilter(archieFilter);
             fc.setFileFilter(archieFilter);
             int rv = fc.showOpenDialog(this);
             if (rv == JFileChooser.APPROVE_OPTION) {
-                //ARCHIE.setRecentlyOpened(fc.getSelectedFile().toPath());
+                ARCHIE.prefs.put(ARCHIE.RECENTLY_OPENED_ARCHIEFILE, fc.getSelectedFile().getPath());
                 NewDataset nds = new NewDataset(this, fc.getSelectedFile());
                 //ChangeMainPanel(nds);
             } else {
-                
+
             }
         } else if (e.getSource() == about) {
             AboutScreen abs = new AboutScreen();

@@ -74,15 +74,17 @@ public abstract class FileHelper {
         setRecordThroughTika(MetadataKey.Software, "xmp:CreatorTool");
         setRecordThroughTika(MetadataKey.Software, "xmpMM:History:SoftwareAgent");
         setRecordThroughTika(MetadataKey.FileFormat, "Content-Type");
-        
+
         try {
             String format = Files.probeContentType(filePath);
-            setRecord(MetadataKey.FileFormat, format, true);
+            if (format != null) {
+                format = format.replaceAll(".*[\\/\\-]", "");
+                setRecord(MetadataKey.FileFormat, format, true);
+            }
         } catch (IOException ex) {
-            
+
         }
-        
-        
+
         File file = new File(filePath.toString());
 
         //Rounding is not nice; possible better solution: http://stackoverflow.com/questions/3758606/how-to-convert-byte-size-into-human-readable-format-in-java
@@ -207,8 +209,12 @@ public abstract class FileHelper {
         assert !key.addable;
         String tikaValue = metadata.get(tikaString);
         if (tikaValue != null) {
+            if (key == MetadataKey.FileFormat) {
+                tikaValue = tikaValue.replaceAll(".*[\\/\\-]", "");
+            } else if (key == MetadataKey.DateCreated) {
+                tikaValue = tikaValue.replaceAll("T.*", "");
+            }
             setRecord(key, tikaValue, true);
-            //metadataMap.put(key, tikaValue);
         }
     }
 

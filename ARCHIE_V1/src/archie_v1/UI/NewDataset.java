@@ -88,12 +88,6 @@ public class NewDataset extends JPanel implements ActionListener, PropertyChange
     }
 
     public boolean initializeNewDataset() {
-
-        //Start generating the metadata and UI.
-        datasetPath = Paths.get(fields.datasetLocationField.getText());
-        //ARCHIE.setRecentlyGenerated(datasetPath);
-        datasetSize = FileUtils.listFilesAndDirs(datasetPath.toFile(), TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size();
-        datasetHelper = new FolderHelper(datasetPath, true);
         
         for (Map.Entry<MetadataKey, JComponent> metadataKeyTextEntry : fields.labelText.entrySet()) {
             String value = (metadataKeyTextEntry.getKey().unrestricted) ? ((ArchieTextField) metadataKeyTextEntry.getValue()).getText() : ((JComboBox) metadataKeyTextEntry.getValue()).getSelectedItem().toString();
@@ -104,29 +98,25 @@ public class NewDataset extends JPanel implements ActionListener, PropertyChange
         for (AddablePanel addablePanel : fields.addablePanels) {
             datasetHelper.SetAddableRecord(addablePanel.Values, addablePanel.valueArray, true);
         }
+        
         datasetName = datasetHelper.metadataMap.get(MetadataKey.DatasetTitle);
+        datasetPath = Paths.get(fields.datasetLocationField.getText());
 
         if (datasetName == null || "".equals(datasetName)) {
             JOptionPane.showMessageDialog(this, "The name of a dataset can not be empty.", "Dataset name", JOptionPane.PLAIN_MESSAGE);
             return false;
+        } else if (datasetPath == null || "".equals(datasetPath.toString())) {
+            JOptionPane.showMessageDialog(this, "The path of a dataset can not be empty.", "Dataset path", JOptionPane.PLAIN_MESSAGE);
+            return false;
         }
 
+        //Start generating the metadata and UI.
+        //ARCHIE.setRecentlyGenerated(datasetPath);
+        datasetSize = FileUtils.listFilesAndDirs(datasetPath.toFile(), TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE).size();
+        datasetHelper = new FolderHelper(datasetPath, true);
+
         //Setting the mainpanel to a progresspanel
-//        parent.working = parent.WorkingOnItPanel(datasetSize);
-//        parent.ChangeMainPanel(parent.working);
-//        parent.revalidate();
-//        task = new DatasetCreator(null, datasetSize, this);
-//        task.addPropertyChangeListener(this);
-//        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-//        task.execute();
-//        
-//        System.out.println(task.getState());
-//        System.out.println(task.isDone());
-//
-//        while (!task.isDone()/* && !task.isCancelled()*/) {
-//            //busy wait
-//            //System.out.println("test");
-//        }
+        
         dataset = new Dataset(datasetPath, datasetHelper, datasetSize);
         return true;
     }
