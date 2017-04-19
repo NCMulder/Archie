@@ -56,14 +56,6 @@ public class outputArchie extends outputAbstract implements PropertyChangeListen
         dO = new doOutput(destination, files);
         dO.addPropertyChangeListener(this);
         dO.execute();
-        
-        try {
-            dO.get();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(outputArchie.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ExecutionException ex) {
-            Logger.getLogger(outputArchie.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
 
     private class doOutput extends SwingWorker<Void, Void> {

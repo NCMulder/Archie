@@ -37,7 +37,7 @@ import org.apache.commons.io.filefilter.TrueFileFilter;
  *
  * @author niels
  */
-public class NewDataset extends JPanel implements ActionListener, PropertyChangeListener {
+public class NewDataset extends JPanel implements ActionListener{
 
     private JButton generate, cancel;
     private MainFrame parent;
@@ -47,23 +47,8 @@ public class NewDataset extends JPanel implements ActionListener, PropertyChange
     private Path datasetPath;
     private Dataset dataset;
     private int datasetSize;
-    ProgressMonitor pm = new ProgressMonitor(this, "Creating dataset", "", 0, 100);
     SwingWorker task;
     public boolean busy = true;
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals("progress")) {
-            int progress = (int) evt.getNewValue();
-            pm.setProgress(progress);
-            pm.setNote("File " + progress + " of " + datasetSize);
-            if (task.isDone() || task.isCancelled()) {
-                System.out.println("Job's done!");
-                pm.close();
-                parent.setCursor(null);
-            }
-        }
-    }
     
     public NewDataset(MainFrame parent) {
         this.parent = parent;
@@ -74,17 +59,13 @@ public class NewDataset extends JPanel implements ActionListener, PropertyChange
         } else {
             datasetHelper = new FolderHelper(null, true);
         }
-        pm.setMillisToDecideToPopup(0);
-        pm.setMillisToPopup(0);
         createUI();
     }
 
     public NewDataset(MainFrame parent, File selectedFile) {
         this.parent = parent;
-        pm.setMillisToDecideToPopup(0);
-        pm.setMillisToPopup(0);
         dataset = new Dataset(selectedFile);
-        createMetadataChanger(true);
+        //createMetadataChanger(true);
     }
 
     public boolean initializeNewDataset() {
@@ -171,17 +152,6 @@ public class NewDataset extends JPanel implements ActionListener, PropertyChange
     }
 
     public void createMetadataChanger(boolean open) {
-        boolean succes = open;
-        if (!open) {
-            succes = initializeNewDataset();
-        }
-
-        if (!succes) {
-            return;
-        }
-
-        setCursor(null);
-
         //Setting the mainpanel to a metadatachanger
         parent.metadatachanger = new MetadataChanger(dataset);
         parent.ChangeMainPanel(parent.metadatachanger);
@@ -191,6 +161,8 @@ public class NewDataset extends JPanel implements ActionListener, PropertyChange
         //CHECK THIS
         parent.validate();
         parent.pack();
+        
+        parent.setCursor(null);
     }
 
     @Override
@@ -198,7 +170,7 @@ public class NewDataset extends JPanel implements ActionListener, PropertyChange
         if (e.getSource() == cancel) {
             parent.goToHome();
         } else if (e.getSource() == generate) {
-            createMetadataChanger(false);
+            initializeNewDataset();
         }
     }
 }

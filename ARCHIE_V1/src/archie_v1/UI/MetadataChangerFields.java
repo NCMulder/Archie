@@ -8,6 +8,7 @@ package archie_v1.UI;
 import archie_v1.ARCHIE;
 import archie_v1.fileHelpers.FileHelper;
 import archie_v1.fileHelpers.MetadataKey;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
@@ -265,6 +266,7 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
                         ((JComboBox) value).setSelectedItem(valueString);
                     }
                 }
+                
                 gbc = new GridBagConstraints(
                         2, categoryY++, //GridX, GridY
                         3, 1, //GridWidth, GridHeight

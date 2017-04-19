@@ -35,7 +35,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class MainFrame extends JFrame implements ActionListener {
 
     ArchieUIManager parent;
-    private JComponent mainPanel;
+    public JComponent mainPanel;
     public JComponent prevPanel;
     public JPanel welcome, working, preferences;
     public JSplitPane metadatachanger;
@@ -46,6 +46,8 @@ public class MainFrame extends JFrame implements ActionListener {
     private JMenuItem openMenu;
     private JMenuItem about;
     private JMenuItem scan;
+    
+    public NewDataset currentNewDatasetter;
 
     public MainFrame(ArchieUIManager parent) {
         // base init
@@ -148,8 +150,8 @@ public class MainFrame extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
 
         if (e.getActionCommand() == "From directory") {
-            NewDataset nds = new NewDataset(this);
-            ChangeMainPanel(nds);
+            currentNewDatasetter = new NewDataset(this);
+            ChangeMainPanel(currentNewDatasetter);
         } else if (e.getSource() == toIslandora) {
             if (mainPanel instanceof MetadataChanger) {
                 try {
@@ -243,7 +245,7 @@ public class MainFrame extends JFrame implements ActionListener {
             int rv = fc.showOpenDialog(this);
             if (rv == JFileChooser.APPROVE_OPTION) {
                 ARCHIE.prefs.put(ARCHIE.RECENTLY_OPENED_ARCHIEFILE, fc.getSelectedFile().getPath());
-                NewDataset nds = new NewDataset(this, fc.getSelectedFile());
+                currentNewDatasetter = new NewDataset(this, fc.getSelectedFile());
                 //ChangeMainPanel(nds);
             } else {
 

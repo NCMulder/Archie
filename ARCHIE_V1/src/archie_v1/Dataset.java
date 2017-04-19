@@ -7,6 +7,7 @@ import archie_v1.fileHelpers.FolderHelper;
 import archie_v1.fileHelpers.MetadataKey;
 import archie_v1.fileHelpers.ReadmeParser;
 import archie_v1.fileHelpers.basicFile;
+import java.awt.Cursor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
@@ -58,6 +59,7 @@ public class Dataset implements PropertyChangeListener {
     public HashMap<Path, Path> readmes = new HashMap();
     Lock filesArrayLock = new ReentrantLock();
     Lock readmesMapLock = new ReentrantLock();
+    Lock progressLock = new ReentrantLock();
 
     private ProgressMonitor pm;
     int progress = 0;
@@ -68,25 +70,6 @@ public class Dataset implements PropertyChangeListener {
     //Debugging
     private ArrayList<String> probfiles = new ArrayList();
     Lock probfilesArrayLock = new ReentrantLock();
-
-    public Dataset(Path path, FolderHelper datasetHelper, int childCount) {
-        this.mainDirectory = path;
-        this.datasetHelper = datasetHelper;
-        this.childCount = childCount;
-        pm = new ProgressMonitor(ARCHIE.ui.mf, "Processing files...", "", 0, childCount);
-        pm.setMillisToDecideToPopup(0);
-        pm.setMillisToPopup(0);
-
-        dirToTree();
-
-        for (FileHelper fh : datasetHelper.children) {
-            fh.Save();
-        }
-
-        pm.close();
-
-        debugFiles();
-    }
 
     public ArrayList<String> Scan() {
         ArrayList<String> newFiles = new ArrayList();
@@ -154,49 +137,6 @@ public class Dataset implements PropertyChangeListener {
         }
     }
 
-    public Dataset(File selectedFile) {
-        pm = new ProgressMonitor(ARCHIE.ui.mf, "Processing files...", "", 0, childCount);
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(selectedFile));
-            br.readLine();
-            br.readLine();
-            this.mainDirectory = Paths.get(br.readLine());
-
-            if (Files.notExists(mainDirectory)) {
-                Object[] options = {"Choose directory", "Ignore", "Cancel"};
-                int result = JOptionPane.showOptionDialog(
-                        ARCHIE.ui.mf, "The provided directory could not be found.", "Invalid directory",
-                        JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE,
-                        null, options, null);
-                switch (result) {
-                    case 0:
-                        JFileChooser fc = new JFileChooser();
-                        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                        int rv = fc.showOpenDialog(ARCHIE.ui.mf);
-                        if (rv == JFileChooser.APPROVE_OPTION) {
-                            this.mainDirectory = fc.getSelectedFile().toPath();
-                        } else {
-                            return;
-                        }
-                    case 1:
-                        break;
-                    case 2:
-                    default:
-                        return;
-                }
-            }
-
-            this.childCount = Integer.parseInt(br.readLine());
-            this.datasetHelper = new FolderHelper(br, mainDirectory);
-
-            openDataset(br, childCount);
-        } catch (IOException ex) {
-            Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        progress = childCount;
-        pm.close();
-    }
-
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals("progress")) {
@@ -244,7 +184,7 @@ public class Dataset implements PropertyChangeListener {
             return false;
         } else if (filePath.getFileName().toString().startsWith(".")) {
             return false;
-        } else if (filePath.getFileName().toString().startsWith("~")){
+        } else if (filePath.getFileName().toString().startsWith("~")) {
             return false;
         }
 
@@ -256,26 +196,163 @@ public class Dataset implements PropertyChangeListener {
         return true;
     }
 
-    private class Runnable1 implements Runnable {
+    public Dataset(Path path, FolderHelper datasetHelper, int childCount) {
+        this.mainDirectory = path;
+        this.datasetHelper = datasetHelper;
+        this.childCount = childCount;
+        pm = new ProgressMonitor(ARCHIE.ui.mf, "Processing files...", "", 0, childCount);
+        pm.setMillisToDecideToPopup(0);
+        pm.setMillisToPopup(0);
+
+        dirToTree();
+    }
+
+    public Dataset(File selectedFile) {
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(selectedFile));
+            br.readLine();
+            br.readLine();
+            this.mainDirectory = Paths.get(br.readLine());
+
+            if (Files.notExists(mainDirectory)) {
+                Object[] options = {"Choose directory", "Ignore", "Cancel"};
+                int result = JOptionPane.showOptionDialog(
+                        ARCHIE.ui.mf, "The provided directory could not be found.", "Invalid directory",
+                        JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE,
+                        null, options, null);
+                switch (result) {
+                    case 0:
+                        JFileChooser fc = new JFileChooser();
+                        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                        int rv = fc.showOpenDialog(ARCHIE.ui.mf);
+                        if (rv == JFileChooser.APPROVE_OPTION) {
+                            this.mainDirectory = fc.getSelectedFile().toPath();
+                        } else {
+                            return;
+                        }
+                    case 1:
+                        break;
+                    case 2:
+                    default:
+                        return;
+                }
+            }
+
+            this.childCount = Integer.parseInt(br.readLine());
+            this.datasetHelper = new FolderHelper(br, mainDirectory);
+
+            pm = new ProgressMonitor(ARCHIE.ui.mf, "Processing files...", "", 0, childCount);
+            pm.setMillisToDecideToPopup(0);
+            pm.setMillisToPopup(0);
+
+            openDataset(br, childCount);
+        } catch (IOException ex) {
+            Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public void dirToTree() {
+        DatasetOverseer dO = new DatasetOverseer();
+        dO.addPropertyChangeListener(this);
+        dO.execute();
+        
+        ThreadJoiner tj = new ThreadJoiner(dO);
+        tj.execute();
+    }
+    
+    private class DatasetOverseer extends SwingWorker<Void, Void>{
+
+        @Override
+        protected Void doInBackground() throws Exception {
+            int myprogress = 0;
+            setProgress(myprogress);
+
+            DefaultMutableTreeNode dirTree = new DefaultMutableTreeNode(mainDirectory);
+
+            DatasetGenerator[] ts = new DatasetGenerator[mainDirectory.toFile().listFiles().length];
+            for (int i = 0; i < mainDirectory.toFile().listFiles().length; i++) {
+                Path p = mainDirectory.toFile().listFiles()[i].toPath();
+                DatasetGenerator r = new DatasetGenerator(p, dirTree, datasetHelper);
+                ts[i] = r;
+            }
+
+            for (DatasetGenerator r : ts) {
+                r.run();
+            }
+
+            for (DatasetGenerator t : ts) {
+                try {
+                    t.get();
+                    this.setProgress(myprogress++);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+
+            files.add(datasetHelper);
+
+            fileTree = dirTree;
+
+            for (FileHelper fh : datasetHelper.children) {
+                fh.Save();
+            }
+
+            debugFiles();
+            return null;
+        }
+        
+    }
+
+    private class ThreadJoiner extends SwingWorker<Void, Void> {
+
+        private final DatasetOverseer dO;
+
+        public ThreadJoiner(DatasetOverseer dO){
+            this.dO = dO;
+        }
+        
+        @Override
+        protected Void doInBackground() throws Exception {
+            ARCHIE.ui.mf.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            try {
+                dO.get();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ExecutionException ex) {
+                Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            ARCHIE.ui.mf.currentNewDatasetter.createMetadataChanger(true);
+
+            JOptionPane.showMessageDialog(ARCHIE.ui.mf, "Successfully opened directory.");
+            pm.close();
+            
+            return null;
+        }
+
+    }
+
+    private class DatasetGenerator extends SwingWorker<Void, Void> {
 
         Path file;
         DefaultMutableTreeNode tree;
         FolderHelper folderH;
 
-        public Runnable1(Path file, DefaultMutableTreeNode tree, FolderHelper folderH) {
+        public DatasetGenerator(Path file, DefaultMutableTreeNode tree, FolderHelper folderH) {
             this.file = file;
             this.tree = tree;
             this.folderH = folderH;
         }
 
         @Override
-        public void run() {
+        protected Void doInBackground() throws Exception {
             createNodes(file, tree, folderH);
+            return null;
         }
 
         private void createNodes(Path file, DefaultMutableTreeNode tree, FolderHelper folderH) {
             System.out.println("Processing file " + progress + " of " + childCount + " [" + file.getFileName() + "] on thread " + Thread.currentThread().getName());
-            
+
             if ("readme".equals(FilenameUtils.removeExtension(file.getFileName().toString()))) {
                 readmesMapLock.lock();
                 readmes.put(file.getParent(), file);
@@ -332,63 +409,55 @@ public class Dataset implements PropertyChangeListener {
                 filesArrayLock.unlock();
             }
         }
-    }
 
-    public void dirToTree() {
-        DefaultMutableTreeNode dirTree = new DefaultMutableTreeNode(mainDirectory);
-
-        Thread[] ts = new Thread[mainDirectory.toFile().listFiles().length];
-        for (int i = 0; i < mainDirectory.toFile().listFiles().length; i++) {
-            Path p = mainDirectory.toFile().listFiles()[i].toPath();
-            Runnable1 r = new Runnable1(p, dirTree, datasetHelper);
-            Thread t = new Thread(r);
-            ts[i] = t;
-            t.start();
-        }
-
-        pm.setMaximum(ts.length);
-
-        for (Thread t : ts) {
-            try {
-                t.join();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        files.add(datasetHelper);
-
-        fileTree = dirTree;
     }
 
     public void openDataset(BufferedReader br, int children) {
-        pm = new ProgressMonitor(ARCHIE.ui.mf, "Processing files...", "", 0, children);
-        pm.setMillisToDecideToPopup(0);
-        pm.setMillisToPopup(0);
         DatasetOpener dO = new DatasetOpener(br, children);
         dO.addPropertyChangeListener(this);
         dO.execute();
-        
-        try {
-            dO.get();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (ExecutionException ex) {
-            Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        pm.close();
-        JOptionPane.showMessageDialog(ARCHIE.ui.mf, "Successfully opened save file.");
+
+        TestClass tc = new TestClass(dO);
+        tc.execute();
     }
-    
-    private class DatasetOpener extends SwingWorker<Void, Void>{
+
+    private class TestClass extends SwingWorker<Void, Void> {
+
+        private final DatasetOpener dO;
+
+        public TestClass(DatasetOpener dO) {
+            this.dO = dO;
+        }
+
+        @Override
+        protected Void doInBackground() throws Exception {
+            ARCHIE.ui.mf.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            try {
+                dO.get();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ExecutionException ex) {
+                Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            pm.close();
+            ARCHIE.ui.mf.currentNewDatasetter.createMetadataChanger(true);
+
+            JOptionPane.showMessageDialog(ARCHIE.ui.mf, "Successfully opened save file.");
+            return null;
+        }
+    }
+
+    private class DatasetOpener extends SwingWorker<Void, Void> {
+
         BufferedReader br;
         int children;
-        
-        public DatasetOpener(BufferedReader br, int children){
+
+        public DatasetOpener(BufferedReader br, int children) {
             this.br = br;
             this.children = children;
         }
-        
+
         @Override
         protected Void doInBackground() throws Exception {
             setProgress(0);
@@ -401,10 +470,10 @@ public class Dataset implements PropertyChangeListener {
             }
             files.add(datasetHelper);
             fileTree = dirTree;
-            
+
             return null;
         }
-        
+
     }
 
     public void createNodes(BufferedReader br, String prefix, DefaultMutableTreeNode parent, FolderHelper folderHelper) {
@@ -431,9 +500,9 @@ public class Dataset implements PropertyChangeListener {
                 String[] keyValue = nextLine.replaceFirst(prefix, "").split(": ");
                 if (keyValue.length > 1) {
                     MetadataKey key;
-                    try{
+                    try {
                         key = MetadataKey.valueOf(keyValue[0]);
-                    } catch(Exception e){
+                    } catch (Exception e) {
                         key = MetadataKey.HistoricKeys(keyValue[0]);
                     }
                     String value = keyValue[1];
