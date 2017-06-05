@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//License
 package archie_v1.outputFormats;
 
 import archie_v1.Dataset;
@@ -20,8 +16,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.swing.JComponent;
@@ -35,8 +29,6 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.codehaus.plexus.util.FileUtils;
-import org.jdom2.Document;
-import org.jdom2.output.XMLOutputter;
 
 /**
  *
@@ -54,6 +46,22 @@ public class outputDANS extends outputAbstract implements PropertyChangeListener
     ProgressMonitor pm;
     DANSSaver saver;
     private JComponent parent;
+    
+    String[] columnTitles = {  "DATASET", "DC_TITLE", "DCT_ALTERNATIVE", "DCX_CREATOR_TITLES", "DCX_CREATOR_INITIALS", "DCX_CREATOR_INSERTIONS", 
+                               "DCX_CREATOR_SURNAME", "DCX_CREATOR_DAI", "DCX_CREATOR_ORGANIZATION", "DCX_CONTRIBUTOR_TITLES", "DCX_CONTRIBUTOR_INITIALS", 
+                               "DCX_CONTRIBUTOR_INSERTIONS", "DCX_CONTRIBUTOR_SURNAME", "DCX_CONTRIBUTOR_DAI", "DCX_CONTRIBUTOR_ORGANIZATION", "DDM_CREATED", 
+                               "DCT_RIGHTSHOLDER", "DC_PUBLISHER", "DC_DESCRIPTION", "DC_SUBJECT", "DCT_TEMPORAL", "DCT_SPATIAL", "DCX_SPATIAL_SCHEME", 
+                                "DCX_SPATIAL_X", "DCX_SPATIAL_Y", "DCX_SPATIAL_NORTH", "DCX_SPATIAL_SOUTH", "DCX_SPATIAL_EAST", "DCX_SPATIAL_WEST", 
+                                "DC_IDENTIFIER", "DCX_RELATION_QUALIFIER", "DCX_RELATION_TITLE", "DCX_RELATION_LINK", "DC_TYPE", "DC_FORMAT", "DC_LANGUAGE", 
+                                "DC_SOURCE", "DDM_ACCESSRIGHTS", "DDM_AVAILABLE", "DDM_AUDIENCE", "DepositorID", "ArchivistID", "DatasetState"};
+    
+    MetadataKey[] columnKeys = {    null, MetadataKey.DatasetTitle, null, MetadataKey.CreatorTOA, MetadataKey.CreatorGivenName, null, 
+                                    MetadataKey.CreatorFamilyName, MetadataKey.CreatorIdentifier, MetadataKey.CreatorAffiliation, MetadataKey.ContributorTOA, MetadataKey.ContributorGivenName, 
+                                    null, MetadataKey.ContributorFamilyName, MetadataKey.ContributorIdentifier, MetadataKey.CreatorAffiliation, MetadataKey.DateCreated, 
+                                    null /*Hier hoort rightsholder; moet deze er weer bij?*/, MetadataKey.Publisher, MetadataKey.Description, MetadataKey.Subject, MetadataKey.TemporalCoverage, MetadataKey.SpatialCoverage, MetadataKey.FileGeopgraphicUnit, 
+                                    null, null, null, null, null, null, 
+                                    MetadataKey.Identifier, null, MetadataKey.RelatedDatasetName, MetadataKey.RelatedDatasetLocation, null, MetadataKey.Software, MetadataKey.Language, 
+                                    MetadataKey.FileSource, MetadataKey.AccessLevel, MetadataKey.Embargo, null, null, null, null};
 
     public outputDANS(Dataset dataset) {
         super();
@@ -231,19 +239,56 @@ public class outputDANS extends outputAbstract implements PropertyChangeListener
 
     }
 
-    public void createCodeBooks() {
-
-    }
-
     public HSSFWorkbook createDatasetWorkbook() {
         HSSFWorkbook datasetWB = new HSSFWorkbook();
         HSSFSheet datasetSheet = datasetWB.createSheet();
-        HSSFRow firstRow = datasetSheet.createRow(0);
-        String[] columnTitles = {"DATASET", "DC_TITLE", "DCT_ALTERNATIVE", "DCX_CREATOR_TITLES", "DCX_CREATOR_INITIALS", "DCX_CREATOR_INSERTIONS", "DCX_CREATOR_SURNAME", "DCX_CREATOR_DAI", "DCX_CREATOR_ORGANIZATION", "DCX_CONTRIBUTOR_TITLES", "DCX_CONTRIBUTOR_INITIALS", "DCX_CONTRIBUTOR_INSERTIONS", "DCX_CONTRIBUTOR_SURNAME", "DCX_CONTRIBUTOR_DAI", "DCX_CONTRIBUTOR_ORGANIZATION", "DDM_CREATED", "DCT_RIGHTSHOLDER", "DC_PUBLISHER", "DC_DESCRIPTION", "DC_SUBJECT", "DCT_TEMPORAL", "DCT_SPATIAL", "DCX_SPATIAL_SCHEME", "DCX_SPATIAL_X", "DCX_SPATIAL_Y", "DCX_SPATIAL_NORTH", "DCX_SPATIAL_SOUTH", "DCX_SPATIAL_EAST", "DCX_SPATIAL_WEST", "DC_IDENTIFIER", "DCX_RELATION_QUALIFIER", "DCX_RELATION_TITLE", "DCX_RELATION_LINK", "DC_TYPE", "DC_FORMAT", "DC_LANGUAGE", "DC_SOURCE", "DDM_ACCESSRIGHTS", "DDM_AVAILABLE", "DDM_AUDIENCE", "DepositorID", "ArchivistID", "DatasetState"};
-        for (int i = 0; i < columnTitles.length; i++) {
-            HSSFCell cell = firstRow.createCell(i);
-            cell.setCellValue(columnTitles[i]);
+        
+        int rowcount = 0;
+        for(MetadataKey key : MetadataKey.values()){
+            if(key.addable){
+                rowcount = Math.max(rowcount,  dataset.datasetHelper.metadataMap.get(key).split(";").length);
+            }
         }
+        rowcount++;
+        
+        HSSFRow[] rows = new HSSFRow[rowcount];
+        for(int i = 0; i < rowcount; i++){
+            rows[i] = datasetSheet.createRow(i);
+        }
+        
+        for (int i = 0; i < columnTitles.length; i++) {
+            HSSFCell[] valueCells = new HSSFCell[rowcount];
+            for(int j = 0; j < rowcount; j++){
+                valueCells[j] = rows[j].createCell(i);
+            }
+            
+            String headerValue = columnTitles[i];
+            valueCells[0].setCellValue(headerValue);
+            
+            MetadataKey key = columnKeys[i];
+            String value = null;
+            
+            if(key!=null){
+                value = dataset.datasetHelper.metadataMap.get(key);
+                if(key.addable){
+                    String[] values = value.split(";");
+                    for(int j = 0; j < values.length; j++)
+                        valueCells[j+1].setCellValue(values[j]);
+                } else {
+                    valueCells[1].setCellValue(value);
+                }
+            } else if (headerValue.equals("DATASET")) {
+                for(int j = 1; j < rowcount; j++)
+                    valueCells[j].setCellValue("Dataset_01");
+            } else if (headerValue.equals("DCX_RELATION_QUALIFIER")){
+                for(int j = 1; j < dataset.datasetHelper.metadataMap.get(MetadataKey.RelatedDatasetName).split(";").length + 1; j++){
+                    valueCells[j].setCellValue("references");
+                }
+            } else if (headerValue.equals("DC_TYPE")){
+                    valueCells[1].setCellValue("dataset");
+            }
+        }
+        
         return datasetWB;
     }
 

@@ -15,19 +15,36 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
 
+/**
+ * The concrete outputter for Islandora.
+ * Packs all files from the dataset with their (generated) .xml-files
+ * and linked codebooks.
+ * @author N.C. Mulder <n.c.mulder at students.uu.nl>
+ */
 public class outputIslandora extends outputAbstract {
-
+    
+    /** 
+     * The namespace set for all elements, and its accompanying element.
+     */
     Namespace rootNamespace;
+    Element rootElement;
 
-    public outputIslandora() {
-        super();
-    }
-
+    /**
+     * Creates a hashmap containing all dataset files and generates
+     * the appropriate .xml-structures, and passes this hashmap to a zipper to
+     * process the saving of these structures.
+     * @param destination Location of the .zip the files need to be saved to.
+     * @param files List of FileHelpers containing all dataset files.
+     * @param parent UI element.
+     * @throws IOException
+     */
     @Override
     public void Save(String destination, ArrayList<FileHelper> files, JComponent parent) throws IOException {
+        setRootElement();
         Zipper zipper = new Zipper();
         HashMap<Path, Document> documentMap = new HashMap();
-
+        
+        //Iterate through all passed files, processing them when necessary.
         for (FileHelper fileHelper : files) {
             if (fileHelper instanceof FolderHelper && !fileHelper.root) {
                 continue;
@@ -36,25 +53,29 @@ public class outputIslandora extends outputAbstract {
             documentMap.put(fileHelper.filePath, doc);
         }
 
-        //Instruct the zipper to save the generated .xml-documents and their associated files to a zip.
+        //Instruct the zipper to save the generated .xml-structures and their associated files to a zip.
         zipper.SaveAsZip(destination, documentMap, files, parent);
     }
 
+    /**
+     * Generates the .xml-document based on the passed FileHelper
+     * @param fileHelper The FileHelper containing the file in need of the .xml-document
+     * @return An .xml-document describing the passed file 
+     * (formatted according to the MODS standard (http://www.loc.gov/standards/mods/userguide/index.html))
+     */
     public Document FileToDocument(FileHelper fileHelper) {
-        Element root = getRootElement();
-
-        for (Element element : getMODSElements(fileHelper)) {
-            if (element != null) {
+        Element root = rootElement.clone();
+        
+        //Generate elements from the metadata saved in the FileHelper, and add them to the root element.
+        for (Element element : (fileHelper.root)?getDatasetElements((FolderHelper)fileHelper) : getMODSElements(fileHelper))
+            if (element != null)
                 root.addContent(element);
-            }
-        }
-
-        Document fileXML = new Document(root);
-
-        return fileXML;
+        
+        //Create the document from the root element.
+        return new Document(root);
     }
 
-    private Element getRootElement() {
+    private void setRootElement() {
         rootNamespace = Namespace.getNamespace("http://www.loc.gov/mods/v3");
         Namespace ns2 = Namespace.getNamespace("xsi", "https://www.w3.org/2001/XMLSchema-instance");
         Namespace ns3 = Namespace.getNamespace("schemaLocation", "http://www.loc.gov/standards/mods/v3/mods-3-6.xsd");
@@ -63,28 +84,44 @@ public class outputIslandora extends outputAbstract {
         modsXML.addNamespaceDeclaration(ns2);
         modsXML.addNamespaceDeclaration(ns3);
         modsXML.setAttribute("version", "3.6");
-
-        return modsXML;
+        
+        rootElement = modsXML;
     }
 
+    /**
+     * Groups all MODS-elements relevant to the full dataset.
+     * @param datasetHelper The FolderHelper encapsulating the dataset root.
+     * @return A list of MODS-elements relevant to the full dataset.
+     */
     public LinkedList<Element> getDatasetElements(FolderHelper datasetHelper) {
         LinkedList<Element> elementList = new LinkedList();
-
+        
+        //Convert all metadata to the appropriate MODS-elements.
+        
+        //Creators
         Element[] creators = getCreator(datasetHelper);
         if (creators != null) {
             elementList.addAll(Arrays.asList(creators));
         }
+        
+        //Contributors
         Element[] contributors = getContributors(datasetHelper);
         if (contributors != null) {
             elementList.addAll(Arrays.asList(contributors));
         }
+        
+        //Origin, type of resource and rightsholder
         elementList.add(getOriginInfo(datasetHelper));
         elementList.add(getTypeOfResource());
         elementList.add(getRightsHolder(datasetHelper));
+        
+        //Related datasets
         Element[] relatedDatasets = getRelatedDataSet(datasetHelper);
         if(relatedDatasets!=null){
             elementList.addAll(Arrays.asList(relatedDatasets));
         }
+        
+        //Subject, abstract, language, and access level
         elementList.add(getSubject(datasetHelper, true));
         elementList.add(getAbstract(datasetHelper));
         elementList.add(getLanguage(datasetHelper));
@@ -93,37 +130,54 @@ public class outputIslandora extends outputAbstract {
         return elementList;
     }
 
+    /**
+     * Groups all MODS-elements relevant to the passed FileHelper.
+     * @param fileHelper The FileHelper encapsulating the file.
+     * @return A list of MODS-elements relevant to the passed file.
+     */
     public LinkedList<Element> getMODSElements(FileHelper fileHelper) {
-        if (fileHelper.root) {
-            return getDatasetElements((FolderHelper) fileHelper);
-        }
-
         LinkedList<Element> elementList = new LinkedList();
-
+        
+        //Convert all metadata to the appropriate MODS-elements.
+        
+        //Creators
         Element[] creators = getCreator(fileHelper);
         if (creators != null) {
             elementList.addAll(Arrays.asList(creators));
         }
+        
+        //Contributors
         Element[] contributors = getContributors(fileHelper);
         if (contributors != null) {
             elementList.addAll(Arrays.asList(contributors));
         }
+        
+        //Origin info, type of resource, subject, and abstract
         elementList.add(getOriginInfo(fileHelper));
         elementList.add(getTypeOfResource());
         elementList.add(getSubject(fileHelper, false));
         elementList.add(getAbstract(fileHelper));
-        elementList.add(getPhysicialDescription(fileHelper));
+        
+        //Physical description, purpose, collection, and units
+        elementList.add(getPhysicalDescription(fileHelper));
         elementList.add(getPurpose(fileHelper));
         elementList.add(getCollection(fileHelper));
         elementList.add(getUnits(fileHelper));
+        
+        //Appreciation, source, citation, and notes
         elementList.add(getAppreciation(fileHelper));
         elementList.add(getSource(fileHelper));
         elementList.add(getCitation(fileHelper));
         elementList.add(getNotes(fileHelper));
-        elementList.add(getPhysicalDescription(fileHelper));
+        
         return elementList;
     }
 
+    /**
+     * Converts identifier metadata to MODS element.
+     * @param fileHelper The FileHelper containing the relevant metadata.
+     * @return A MODS-appropriate element.
+     */
     public Element getIdentifier(FileHelper fileHelper) {
         Element identifier = new Element("identifier", rootNamespace);
         identifier.setAttribute("type", "doi");
@@ -131,6 +185,11 @@ public class outputIslandora extends outputAbstract {
         return identifier;
     }
 
+    /**
+     * Converts creator metadata to MODS element(s).
+     * @param fileHelper The FileHelper containing the relevant metadata.
+     * @return A MODS-appropriate element.
+     */
     public Element[] getCreator(FileHelper fileHelper) {
         String creatorNames = fileHelper.metadataMap.get(MetadataKey.CreatorFamilyName);
         if (creatorNames == null) {
@@ -184,6 +243,11 @@ public class outputIslandora extends outputAbstract {
         return creators;
     }
 
+    /**
+     * Converts contributor metadata to MODS element(s).
+     * @param fileHelper The FileHelper containing the relevant metadata.
+     * @return A MODS-appropriate element.
+     */
     public Element[] getContributors(FileHelper fileHelper) {
         String contributorNames = fileHelper.metadataMap.get(MetadataKey.ContributorFamilyName);
         if (contributorNames == null) {
@@ -239,12 +303,16 @@ public class outputIslandora extends outputAbstract {
         return contributors;
     }
 
-    //TODO
+    //TODO: What MODS element is used for this?
     public Element getRightsHolder(FileHelper fileHelper) {
-        //What MODS element is used for this?
         return null;
     }
 
+    /**
+     * Converts related-dataset metadata to MODS element(s).
+     * @param fileHelper The FileHelper containing the relevant metadata.
+     * @return A MODS-appropriate element.
+     */
     public Element[] getRelatedDataSet(FileHelper fileHelper) {
         String relatedTitleValue = fileHelper.metadataMap.get(MetadataKey.RelatedDatasetName);
         if (relatedTitleValue == null) {
@@ -282,6 +350,11 @@ public class outputIslandora extends outputAbstract {
         return relatedItems;
     }
 
+    /**
+     * Converts subject-relevant metadata to MODS element(s).
+     * @param fileHelper The FileHelper containing the relevant metadata.
+     * @return A MODS-appropriate element.
+     */
     public Element getSubject(FileHelper fileHelper, boolean forDataset) {
         boolean subjectTest = fileHelper.metadataMap.get(MetadataKey.Subject) != null && !fileHelper.metadataMap.get(MetadataKey.Subject).equals("");
         boolean coordinatesTest = fileHelper.metadataMap.get(MetadataKey.Coordinates) != null && !fileHelper.metadataMap.get(MetadataKey.Coordinates).equals("");
@@ -345,6 +418,11 @@ public class outputIslandora extends outputAbstract {
         return subject;
     }
 
+    /**
+     * Converts abstract metadata to MODS element.
+     * @param fileHelper The FileHelper containing the relevant metadata.
+     * @return A MODS-appropriate element.
+     */
     public Element getAbstract(FileHelper fileHelper) {
         Element abstractEl = new Element("abstract", rootNamespace);
         abstractEl.setText(fileHelper.metadataMap.get(MetadataKey.Description));
@@ -352,6 +430,11 @@ public class outputIslandora extends outputAbstract {
         return abstractEl;
     }
 
+    /**
+     * Converts origin metadata to MODS element.
+     * @param fileHelper The FileHelper containing the relevant metadata.
+     * @return A MODS-appropriate element.
+     */
     public Element getOriginInfo(FileHelper fileHelper) {
         boolean publisherTest = fileHelper.metadataMap.get(MetadataKey.Publisher) != null && !fileHelper.metadataMap.get(MetadataKey.Publisher).equals("");
         boolean dateTest = fileHelper.metadataMap.get(MetadataKey.DateCreated) != null && !fileHelper.metadataMap.get(MetadataKey.DateCreated).equals("");
@@ -373,7 +456,10 @@ public class outputIslandora extends outputAbstract {
         return originInfo;
     }
 
-    //static element, not settable/viewable by user.
+    
+    /**
+     * @return A MODS-appropriate element for type of resource.
+     */
     public Element getTypeOfResource() {
         Element typeOfResource = new Element("typeOfResource", rootNamespace);
         typeOfResource.setAttribute("collection", "yes");
@@ -387,6 +473,11 @@ public class outputIslandora extends outputAbstract {
         return null;
     }
 
+    /**
+     * Converts language metadata to MODS element.
+     * @param fileHelper The FileHelper containing the relevant metadata.
+     * @return A MODS-appropriate element.
+     */
     public Element getLanguage(FileHelper fileHelper) {
         Element language = new Element("language", rootNamespace);
         Element languageTerm = new Element("languageTerm", rootNamespace);
@@ -398,6 +489,11 @@ public class outputIslandora extends outputAbstract {
         return language;
     }
 
+    /**
+     * Converts access level metadata to MODS element.
+     * @param fileHelper The FileHelper containing the relevant metadata.
+     * @return A MODS-appropriate element.
+     */
     public Element getAccessLevel(FileHelper fileHelper) {
         Element accessCondition = new Element("accessCondition", rootNamespace);
         accessCondition.setText(fileHelper.metadataMap.get(MetadataKey.AccessLevel));
@@ -405,7 +501,13 @@ public class outputIslandora extends outputAbstract {
         return accessCondition;
     }
 
-    //file elements?
+    /**
+     * Creates note-based elements.
+     * @param fileHelper The FileHelper containing the relevant metadata.
+     * @param metadataKey The key for which the note is created.
+     * @param noteType The MODS note type.
+     * @return A MODS-appropriate element.
+     */
     public Element getNote(FileHelper fileHelper, MetadataKey metadataKey, String noteType) {
         String value = fileHelper.metadataMap.get(metadataKey);
         if (value == null) {
@@ -419,36 +521,75 @@ public class outputIslandora extends outputAbstract {
         return note;
     }
 
+    /**
+     * Converts purpose metadata to MODS element.
+     * @param fileHelper The FileHelper containing the relevant metadata.
+     * @return A MODS-appropriate element.
+     */
     public Element getPurpose(FileHelper fileHelper) {
         return getNote(fileHelper, MetadataKey.FilePurpose, null);
     }
 
+    /**
+     * Converts collection metadata to MODS element.
+     * @param fileHelper The FileHelper containing the relevant metadata.
+     * @return A MODS-appropriate element.
+     */
     public Element getCollection(FileHelper fileHelper) {
         return getNote(fileHelper, MetadataKey.FileCollection, "accrual method");
     }
 
+    /**
+     * Converts unit metadata to MODS element.
+     * @param fileHelper The FileHelper containing the relevant metadata.
+     * @return A MODS-appropriate element.
+     */
     public Element getUnits(FileHelper fileHelper) {
         return getNote(fileHelper, MetadataKey.FileUnits, "source dimensions");
     }
 
+    /**
+     * Converts appreciation metadata to MODS element.
+     * @param fileHelper The FileHelper containing the relevant metadata.
+     * @return A MODS-appropriate element.
+     */
     public Element getAppreciation(FileHelper fileHelper) {
         return getNote(fileHelper, MetadataKey.FileAppreciation, null);
     }
 
+    /**
+     * Converts source metadata to MODS element.
+     * @param fileHelper The FileHelper containing the relevant metadata.
+     * @return A MODS-appropriate element.
+     */
     public Element getSource(FileHelper fileHelper) {
         return getNote(fileHelper, MetadataKey.FileSource, "source note");
     }
 
+    /**
+     * Converts citation metadata to MODS element.
+     * @param fileHelper The FileHelper containing the relevant metadata.
+     * @return A MODS-appropriate element.
+     */
     public Element getCitation(FileHelper fileHelper) {
         return getNote(fileHelper, MetadataKey.FileCitation, "citation/reference");
     }
 
+    /**
+     * Converts note metadata to MODS element.
+     * @param fileHelper The FileHelper containing the relevant metadata.
+     * @return A MODS-appropriate element.
+     */
     public Element getNotes(FileHelper fileHelper) {
         return getNote(fileHelper, MetadataKey.FileNotes, null);
     }
 
-    //more "optional" elements
-    public Element getPhysicialDescription(FileHelper fileHelper) {
+    /**
+     * Converts descriptive metadata to MODS element.
+     * @param fileHelper The FileHelper containing the relevant metadata.
+     * @return A MODS-appropriate element.
+     */
+    public Element getPhysicalDescription(FileHelper fileHelper) {
         String fileContentType = fileHelper.metadataMap.get(MetadataKey.FileContent);
         String fileFormat = fileHelper.metadataMap.get(MetadataKey.FileFormat);
         String fileSize = fileHelper.metadataMap.get(MetadataKey.FileSize);
@@ -485,10 +626,6 @@ public class outputIslandora extends outputAbstract {
     }
 
     public Element getSourceType(FileHelper fileHelper) {
-        return null;
-    }
-
-    public Element getPhysicalDescription(FileHelper fileHelper) {
         return null;
     }
 }

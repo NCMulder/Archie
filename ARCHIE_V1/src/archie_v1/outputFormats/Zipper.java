@@ -24,17 +24,21 @@ import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingWorker;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.codehaus.plexus.util.FileUtils;
 import org.jdom2.Document;
 import org.jdom2.output.XMLOutputter;
 
+/**
+ * Handles saving files and JDOM documents.
+ *
+ * @author N.C. Mulder <n.c.mulder at students.uu.nl>
+ */
 public class Zipper implements PropertyChangeListener {
 
     ArrayList<String> names = new ArrayList();
     ProgressMonitor pm;
-    Task task;
+    ZipTask task;
     int size;
     JComponent parent;
 
@@ -52,13 +56,16 @@ public class Zipper implements PropertyChangeListener {
         }
     }
 
-    class Task extends SwingWorker<Void, Void> {
+    /**
+     * Handles zipping.
+     */
+    class ZipTask extends SwingWorker<Void, Void> {
 
         String destination;
         HashMap<Path, Document> documentMap;
         ArrayList<FileHelper> fileHelpers;
 
-        public Task(String destination, HashMap<Path, Document> documentMap, ArrayList<FileHelper> fileHelpers) {
+        public ZipTask(String destination, HashMap<Path, Document> documentMap, ArrayList<FileHelper> fileHelpers) {
             this.destination = destination;
             this.documentMap = documentMap;
             this.fileHelpers = fileHelpers;
@@ -66,22 +73,24 @@ public class Zipper implements PropertyChangeListener {
 
         @Override
         protected Void doInBackground() throws Exception {
+            //Create the zipoutputstream and xmloutputter.
             ZipOutputStream out = new ZipOutputStream(new FileOutputStream(FilenameUtils.removeExtension(destination) + ".zip"));
             XMLOutputter xmlOutputter = new XMLOutputter();
             out.putNextEntry(new ZipEntry("codebooks/"));
 
             setProgress(0);
-
             int progress = 0;
 
+            //Iterare over every document in the set
             for (Map.Entry<Path, Document> documentEntry : documentMap.entrySet()) {
                 Path filePath = documentEntry.getKey();
                 setProgress(progress++);
 
                 Document document = documentEntry.getValue();
-
+                
+                //For the full dataset, write only the .xml-file.
                 if (filePath.toFile().isDirectory()) {
-                    ZipEntry zEntry = new ZipEntry("DATASET_WIDE.xml");
+                    ZipEntry zEntry = new ZipEntry("DATASET_COMPLETE.xml");
                     out.putNextEntry(zEntry);
                     byte[] data = xmlOutputter.outputString(document).getBytes();
                     out.write(data, 0, data.length);
@@ -111,7 +120,7 @@ public class Zipper implements PropertyChangeListener {
                 fIS.close();
                 out.closeEntry();
 
-                //Writing the associated codebook, if present
+                //Writing the associated codebook, if present.
                 FileHelper fh = null;
                 for (FileHelper fH : fileHelpers) {
                     if (fH.filePath.equals(filePath)) {
@@ -125,7 +134,7 @@ public class Zipper implements PropertyChangeListener {
 
                 try {
                     String codebookPath = fh.metadataMap.get(MetadataKey.RelatedCodeBookLocation);
-                    if (codebookPath != null  && !codebookPath.equals("will be generated upon export")) {
+                    if (codebookPath != null && !codebookPath.equals("will be generated upon export")) {
                         System.out.println("Writing associated codebook for file " + filePath.getFileName());
 
                         FileInputStream codeStream = new FileInputStream(codebookPath);
@@ -180,6 +189,15 @@ public class Zipper implements PropertyChangeListener {
 
     }
 
+    /**
+     * Saves the provided files and documents to the provided location.
+     *
+     * @param destination Save path for zip.
+     * @param documentMap Documents for associated FileHelpers.
+     * @param fileHelpers Encapsulation for files.
+     * @param parent UI component.
+     * @throws IOException
+     */
     public void SaveAsZip(String destination, HashMap<Path, Document> documentMap, ArrayList<FileHelper> fileHelpers, JComponent parent) throws IOException {
         this.size = documentMap.entrySet().size();
         this.parent = parent;
@@ -190,13 +208,12 @@ public class Zipper implements PropertyChangeListener {
 
         parent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-        task = new Task(destination, documentMap, fileHelpers);
+        task = new ZipTask(destination, documentMap, fileHelpers);
         task.addPropertyChangeListener(this);
         task.execute();
 
     }
 
-    //redo this with name as key and amount as value in dict? todo
     private String[] checkDuplicateNames(Path path) {
         int version = 0;
         String fileName = FilenameUtils.removeExtension(path.getFileName().toString());

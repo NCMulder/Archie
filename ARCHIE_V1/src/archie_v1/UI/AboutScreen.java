@@ -1,29 +1,18 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//License header
 package archie_v1.UI;
 
-import java.awt.Component;
-import java.awt.Font;
-import java.awt.GridLayout;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
-
-/**
- *
- * @author N.C. Mulder <n.c.mulder at students.uu.nl>
- */
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.Insets;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
+
+/**
+ * The AboutScreen class encapsulates the about-screen, containing information
+ * regarding the application.
+ * @author N.C. Mulder <n.c.mulder at students.uu.nl>
+ */
 
 public class AboutScreen extends JPanel {
 

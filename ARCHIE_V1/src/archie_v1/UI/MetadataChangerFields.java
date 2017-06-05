@@ -299,6 +299,8 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
             if (status == JFileChooser.APPROVE_OPTION) {
                 ARCHIE.prefs.put(ARCHIE.RECENTLY_OPENED_DIRECTORY, fileChooser.getSelectedFile().getPath());
                 datasetLocationField.setText(fileChooser.getSelectedFile().toString());
+                datasetLocationField.setFont(datasetLocationField.normalFont);
+                datasetLocationField.setForeground(datasetLocationField.normalColor);
             }
         } else if (e.getSource() == chooseCodeBook) {
             JFileChooser fileChooser = new JFileChooser(ARCHIE.prefs.get(ARCHIE.RECENTLY_OPENED_CODEBOOK, ""));

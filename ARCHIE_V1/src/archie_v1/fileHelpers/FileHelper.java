@@ -88,7 +88,8 @@ public abstract class FileHelper {
         File file = new File(filePath.toString());
 
         //Rounding is not nice; possible better solution: http://stackoverflow.com/questions/3758606/how-to-convert-byte-size-into-human-readable-format-in-java
-        setRecord(MetadataKey.FileSize, FileUtils.byteCountToDisplaySize(file.length()), false);
+        //setRecord(MetadataKey.FileSize, FileUtils.byteCountToDisplaySize(file.length()), false);
+        setRecord(MetadataKey.FileSize, file.length() + " bytes", false);
     }
 
     public void Save() {

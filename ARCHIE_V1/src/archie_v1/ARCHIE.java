@@ -11,6 +11,10 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.apache.commons.io.FilenameUtils;
 
+/**
+ *
+ * @author N.C. Mulder <n.c.mulder at students.uu.nl>
+ */
 public class ARCHIE {
 
     static public ArchieUIManager ui;
@@ -20,8 +24,6 @@ public class ARCHIE {
 
     public static void main(String[] args) {
         prefs = Preferences.userNodeForPackage(ARCHIE.class);
-        System.out.println("Current recently opened: " + prefs.get(RECENTLY_OPENED_ARCHIEFILE, "none"));
-        System.out.println("Current recently saved: " + prefs.get(RECENTLY_SAVED, "none"));
         
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());

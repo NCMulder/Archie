@@ -90,7 +90,7 @@ public class FolderHelper extends FileHelper {
 
     @Override
     protected void setRecord(MetadataKey key, String value, boolean softSet, boolean init) {
-        super.setRecord(key, value, softSet, init);
+        super.setRecord(key, value, false, init);
         
         if(init || root)
             return;

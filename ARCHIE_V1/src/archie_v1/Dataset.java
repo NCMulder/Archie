@@ -1,12 +1,10 @@
 //License
 package archie_v1;
 
-import archie_v1.UI.NewDataset;
 import archie_v1.fileHelpers.FileHelper;
 import archie_v1.fileHelpers.FolderHelper;
 import archie_v1.fileHelpers.MetadataKey;
 import archie_v1.fileHelpers.ReadmeParser;
-import archie_v1.fileHelpers.basicFile;
 import java.awt.Cursor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -25,8 +23,6 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -34,9 +30,7 @@ import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
-import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -155,7 +149,7 @@ public class Dataset implements PropertyChangeListener {
             }
 
             try {
-                File archielog = new File("Archie(o)Lo(o)g.txt");
+                File archielog = new File("filesparseerror.txt");
                 BufferedWriter writer = new BufferedWriter(new FileWriter(archielog));
                 writer.write("Log file for dataset " + datasetHelper.metadataMap.get(MetadataKey.DatasetTitle) + "\n\n");
                 writer.write(errorMessage);
@@ -163,10 +157,6 @@ public class Dataset implements PropertyChangeListener {
             } catch (IOException ex) {
                 Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
             }
-            errorMessage += "\nPlease report this error, enclosing all problematic file names.\nA log file has been saved to the ARCHIE directory.";
-
-            //TODO
-            //JOptionPane.showMessageDialog(sw.parent, errorMessage);
         }
     }
 

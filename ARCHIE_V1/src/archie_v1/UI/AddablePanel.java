@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//License
 package archie_v1.UI;
 
 import archie_v1.fileHelpers.FileHelper;
@@ -15,8 +11,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -28,6 +22,8 @@ import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 
 /**
+ * The AddablePanel is the part of the MetadataChanger responsible
+ * for addable metadata, such as creators and contributors.
  *
  * @author N.C. Mulder <n.c.mulder at students.uu.nl>
  */
@@ -126,12 +122,7 @@ public class AddablePanel extends JPanel implements ActionListener {
             }
         }
 
-        //same arbitrary six here
         JPanel addPanel = new JPanel(new GridLayout(0, 1));
-//        for (int i = 0; i < 5; i++) {
-//            JLabel label = new JLabel();
-//            addPanel.add(label);
-//        }
 
         addItem = new JButton("Add " + singleTitle);
         addItem.addActionListener(this);
@@ -171,11 +162,8 @@ public class AddablePanel extends JPanel implements ActionListener {
                     values[i] = value;
                 }
                 valueArray.add(values);
-                //valueArray.add(sp.getInfo().values().toArray(new String[sp.getInfo().size()]));
                 resetMainPanel();
             }
-        } else {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }
 }
