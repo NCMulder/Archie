@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+//License
 package archie_v1.outputFormats;
 
 import archie_v1.Dataset;
@@ -17,9 +13,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.swing.JComponent;
@@ -29,7 +22,9 @@ import javax.swing.SwingWorker;
 import org.apache.commons.io.FilenameUtils;
 
 /**
- *
+ * The concrete outputter for verification purposes.
+ * Packs all files from the dataset with their (generated) .xml-files
+ * and linked codebooks, as well as a save file.
  * @author N.C. Mulder <n.c.mulder at students.uu.nl>
  */
 public class outputArchie extends outputAbstract implements PropertyChangeListener{
@@ -102,7 +97,6 @@ public class outputArchie extends outputAbstract implements PropertyChangeListen
                     continue;
                 }
 
-                //String[] fileNames = checkDuplicateNames(filePath);
                 //Writing the associated file.
                 fIS = new FileInputStream(filePath.toString());
                 fileZipEntry = new ZipEntry(dataset.mainDirectory.getParent().relativize(fh.filePath).toString());
