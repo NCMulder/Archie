@@ -74,6 +74,7 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener {
                     continue;
                 else
                     value = null;
+            fileHelper.metadataMap.put(metadataKeyTextEntry.getKey(), value);
             fileHelper.setRecord(metadataKeyTextEntry.getKey(), value, softSet);
             //System.out.println("Set key " + metadataKeyTextEntry.getKey() + " to " + value + " for file " + fileHelper.filePath.getFileName());
         }
