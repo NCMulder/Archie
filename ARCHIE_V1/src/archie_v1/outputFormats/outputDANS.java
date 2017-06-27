@@ -145,9 +145,7 @@ public class outputDANS extends outputAbstract implements PropertyChangeListener
                             out.write(readBuffer, 0, length);
                         }
                         out.closeEntry();
-                    }
-
-                    if (fh instanceof xlsxFile && codebookPath.equals("will be generated upon export")) {
+                    } else if (fh instanceof xlsxFile && codebookPath.equals("will be generated upon export")) {
                         ArrayList<Workbook> codebooks = ((xlsxFile) fh).codebooks;
                         for (Workbook codebook : codebooks) {
                             System.out.println("Writing codebook...");
