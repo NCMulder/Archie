@@ -9,11 +9,15 @@ import archie_v1.fileHelpers.databaseFile;
 import archie_v1.fileHelpers.xlsxFile;
 import com.healthmarketscience.jackcess.Database;
 import com.healthmarketscience.jackcess.DatabaseBuilder;
+import com.healthmarketscience.jackcess.Index;
+import com.healthmarketscience.jackcess.Column;
+import com.healthmarketscience.jackcess.Table;
 import java.awt.Cursor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -125,12 +129,7 @@ public class outputDANS extends outputAbstract implements PropertyChangeListener
                     out.write(readBuffer, 0, length);
                 }
                 out.closeEntry();
-
-                //Writing access codebooks
-                if (fh instanceof databaseFile) {
-                    exportAccessCodebook(fh);
-                }
-
+                
                 //Writing the associated codebook, if applicable
                 try {
                     String codebookPath = fh.metadataMap.get(MetadataKey.RelatedCodeBookLocation);
@@ -173,6 +172,8 @@ public class outputDANS extends outputAbstract implements PropertyChangeListener
                             FIS.close();
                             out.closeEntry();
                         }
+                    } else if (fh instanceof databaseFile){
+                        exportAccessCodebook((databaseFile)fh, out);
                     }
 
                 } catch (Exception e) {
@@ -196,7 +197,6 @@ public class outputDANS extends outputAbstract implements PropertyChangeListener
         pm.setMillisToPopup(0);
 
         //parent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
         createFilesList();
 
         saver = new DANSSaver(destination);
@@ -285,8 +285,9 @@ public class outputDANS extends outputAbstract implements PropertyChangeListener
 
             if (key != null) {
                 value = dataset.datasetHelper.metadataMap.get(key);
-                if( value==null)
+                if (value == null) {
                     continue;
+                }
                 if (key.addable) {
                     String[] values = value.split(";");
                     for (int j = 0; j < values.length; j++) {
@@ -301,8 +302,9 @@ public class outputDANS extends outputAbstract implements PropertyChangeListener
                 }
             } else if (headerValue.equals("DCX_RELATION_QUALIFIER")) {
                 String columnValue = dataset.datasetHelper.metadataMap.get(MetadataKey.RelatedDatasetName);
-                if(columnValue==null)
+                if (columnValue == null) {
                     continue;
+                }
                 for (int j = 1; j < columnValue.split(";").length + 1; j++) {
                     valueCells[j].setCellValue("references");
                 }
@@ -333,19 +335,36 @@ public class outputDANS extends outputAbstract implements PropertyChangeListener
         }
     }
 
-    private void exportAccessCodebook(FileHelper accessFile) {
-        Database db;
+    private void exportAccessCodebook(databaseFile fh, ZipOutputStream out) {
+        FileOutputStream FOS = null;
+        FileInputStream FIS = null;
         try {
-            db = DatabaseBuilder.open(accessFile.filePath.toFile());
-
-            for (String tableName : db.getTableNames()) {
-                System.out.println("tablename: " + tableName);
-            }
-
-            db.close();
+            System.out.println("Writing codebook...");
+            Workbook codebook = fh.codebook;
+            String fileName = FileUtils.removeExtension(fh.filePath.getFileName().toString()) + "_codebook.xlsx";
+            ZipEntry cbEntry = new ZipEntry("codebooks/" + fileName);
+            File tempFile = new File("temp");
+            tempFile.mkdirs();
+            File codeFile = new File(tempFile, codebook.getSheetName(0) + "_" + (fh.filePath.getFileName()));
+            FOS = new FileOutputStream(codeFile);
+            codebook.write(FOS);
+            FIS = new FileInputStream(codeFile);
+            out.putNextEntry(cbEntry);
+            byte[] readBuffer = new byte[2048];
+            int length = 0;
+            while ((length = FIS.read(readBuffer)) > 0) {
+                out.write(readBuffer, 0, length);
+            }   
+            out.closeEntry();
         } catch (IOException ex) {
             Logger.getLogger(outputDANS.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
+            try {
+                FOS.close();
+                FIS.close();
+            } catch (IOException ex) {
+                Logger.getLogger(outputDANS.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 
