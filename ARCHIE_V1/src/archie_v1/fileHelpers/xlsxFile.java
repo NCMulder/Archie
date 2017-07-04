@@ -79,13 +79,13 @@ public class xlsxFile extends FileHelper {
                         int numberofCellsFound = 0;
                         for (int j = 0; numberofCellsFound <= headers.getPhysicalNumberOfCells(); j++) {
                             Cell headerCell = headers.getCell(j);
-                            if (headerCell == null || headerCell.getStringCellValue() == null || headerCell.getStringCellValue().equals("")) {
+                            if (headerCell == null || headerCell.toString() == null || headerCell.toString().equals("")) {
                                 break;
                             }
                             numberofCellsFound++;
                             XSSFRow newHeader = newCodebookSheet.createRow(numberofCellsFound);
                             XSSFCell newHeaderCell = newHeader.createCell(0);
-                            newHeaderCell.setCellValue(headerCell.getStringCellValue());
+                            newHeaderCell.setCellValue(headerCell.toString());
                         }
                     }
                     codebooks.add(newCodebook);

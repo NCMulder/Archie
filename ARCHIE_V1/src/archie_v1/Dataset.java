@@ -275,7 +275,8 @@ public class Dataset implements PropertyChangeListener {
                     t.get();
                     this.setProgress(myprogress++);
                 } catch (InterruptedException ex) {
-                    Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
+                    System.out.println("The file " + t.file.getFileName() + " could not be processed.");
+                    //Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
 
@@ -341,8 +342,8 @@ public class Dataset implements PropertyChangeListener {
         }
 
         private void createNodes(Path file, DefaultMutableTreeNode tree, FolderHelper folderH) {
-            System.out.println("Processing file " + progress + " of " + childCount + " [" + file.getFileName() + "] on thread " + Thread.currentThread().getName());
-
+            System.out.println("Processing file " + progress++ + " of ~" + childCount + " [" + file.getFileName() + "] on thread " + Thread.currentThread().getName());
+            
             if ("readme".equals(FilenameUtils.removeExtension(file.getFileName().toString()))) {
                 readmesMapLock.lock();
                 readmes.put(file.getParent(), file);
