@@ -40,8 +40,10 @@ public class xlsxFile extends FileHelper {
     public ArrayList<Workbook> codebooks = new ArrayList();
 
     //Create a better addable adding method. Also helpful for removing, perhabs.
-    public xlsxFile(Path filePath) {
-        super(filePath);
+    public xlsxFile(Path filePath, boolean open) {
+        super(filePath, open);
+        if(open)
+            return;
 
         System.out.println("Parsing " + filePath.getFileName() + " for codebooks.");
 

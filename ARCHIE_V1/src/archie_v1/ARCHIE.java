@@ -24,7 +24,7 @@ public class ARCHIE {
 
     public static void main(String[] args) {
         prefs = Preferences.userNodeForPackage(ARCHIE.class);
-        
+
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
@@ -41,19 +41,19 @@ public class ARCHIE {
      * @param filePath The file path for the desired FileHelper.
      * @return
      */
-    static public FileHelper fileSelector(Path filePath) {
+    static public FileHelper fileSelector(Path filePath, boolean open) {
         String fileExtension = FilenameUtils.getExtension(filePath.toString());
         switch (fileExtension) {
             case "jpg":
             case "JPG":
             case "jpeg":
             case "JPEG":
-                return new pictureFile(filePath);
+                return new pictureFile(filePath, open);
             case "accdb":
-                return new databaseFile(filePath);
+                return new databaseFile(filePath, open);
             case "xls":
             case "xlsx":
-                return new xlsxFile(filePath);
+                return new xlsxFile(filePath, open);
             case "doc":
             case "docx":
             case "dbf":
@@ -66,7 +66,11 @@ public class ARCHIE {
             case "shx":
             case "png":
             default:
-                return new basicFile(filePath);
+                return new basicFile(filePath, open);
         }
+    }
+
+    static public FileHelper fileSelector(Path filePath) {
+        return fileSelector(filePath, false);
     }
 }

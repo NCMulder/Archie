@@ -483,7 +483,7 @@ public class Dataset implements PropertyChangeListener {
             if (isDir) {
                 fileHelper = new FolderHelper(path, false);
             } else {
-                fileHelper = ARCHIE.fileSelector(path);
+                fileHelper = ARCHIE.fileSelector(path, true);
             }
 
             while (!(nextLine = br.readLine()).equals("--")) {

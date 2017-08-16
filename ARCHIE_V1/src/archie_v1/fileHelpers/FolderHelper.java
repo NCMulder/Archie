@@ -22,19 +22,19 @@ import java.util.logging.Logger;
  */
 public class FolderHelper extends FileHelper {
 
-    public LinkedList<FileHelper> children;
+    public LinkedList<FileHelper> children = new LinkedList();;
     private Lock childrenListLock = new ReentrantLock();
 
     public FolderHelper(Path filePath) {
-        super(filePath);
+        super(filePath, false);
     }
 
     public FolderHelper(Path filePath, boolean root) {
-        super(filePath, root);
+        super(filePath, root, false);
     }
 
     public FolderHelper(BufferedReader br, Path path) {
-        super(path, true);
+        super(path, true, true);
         try {
             String line;
             while (!(line = br.readLine()).equals("--")) {
@@ -69,8 +69,7 @@ public class FolderHelper extends FileHelper {
     }
     
     @Override
-    public void Initialize() {
-        children = new LinkedList();
+    public void Initialize(boolean open) {
         
         if (root) {
             for (int i = 0; i < MetadataKey.values().length; i++) {

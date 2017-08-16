@@ -19,11 +19,15 @@ public class databaseFile extends FileHelper {
     public XSSFWorkbook codebook = new XSSFWorkbook();
 
     //File specific setters
-    public databaseFile(Path filePath) {
-        super(filePath);
+    public databaseFile(Path filePath, boolean open) {
+        super(filePath, open);
 
+        if(open)
+            return;
+        
+        //TODO: how to do?
         System.out.println("Creating codebooks for database file " + filePath.getFileName());
-
+        
         try {
             Database db = DatabaseBuilder.open(filePath.toFile());
             for (String tableName : db.getTableNames()) {

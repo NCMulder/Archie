@@ -35,30 +35,38 @@ public abstract class FileHelper {
     public boolean root = false;
     public LinkedHashMap<MetadataKey, String> metadataMap;
 
-    public FileHelper(Path filePath) {
+    public FileHelper(Path filePath){
         metadataMap = new LinkedHashMap();
         metadata = new HashMap();
         this.filePath = filePath;
-
-        Initialize();
+        Initialize(false);
+    }
+    
+    public FileHelper(Path filePath, boolean open) {
+        metadataMap = new LinkedHashMap();
+        metadata = new HashMap();
+        this.filePath = filePath;
+        Initialize(open);
     }
 
-    public FileHelper(Path filePath, boolean root) {
+    public FileHelper(Path filePath, boolean root, boolean open) {
         metadataMap = new LinkedHashMap();
         metadata = new HashMap();
         this.root = root;
         this.filePath = filePath;
-
-        Initialize();
+        Initialize(open);
     }
-
-    public void Initialize() {
+    
+    public void Initialize(boolean open) {
         for (int i = 0; i < MetadataKey.values().length; i++) {
             if (MetadataKey.values()[i].file) {
                 setRecord(MetadataKey.values()[i], null, false, true);
             }
         }
 
+        if(open)
+            return;
+        
         metadata = getMetaData();
         //Is this useful? TODO WIP WOUTER
         //setRecord(MetadataKey.FileContentType, "." + FilenameUtils.getExtension(filePath.toString()) + " file", false);
