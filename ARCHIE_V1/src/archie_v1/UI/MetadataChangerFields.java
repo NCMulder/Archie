@@ -193,10 +193,14 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
             case Subject:
                 AddablePanel subjectPanel = createAddable(parent, "Subject", "Subjects", MetadataKey.subjectKeys);
                 return subjectPanel;
+            case SpatialCoverage:
+                AddablePanel spatialPanel = createAddable(parent, "Spatial coverage", "Spatial coverage", MetadataKey.spatialCoverageKeys);
+                return spatialPanel;
             case RelatedDatasetName:
                 AddablePanel relatedDatasetPanel = createAddable(parent, "Related dataset", "Related datasets", MetadataKey.relatedDatasetKeys);
                 return relatedDatasetPanel;
             case RelatedDatasetLocation:
+            case RelatedDatasetRelation:
                 return null;
             case RelatedCodeBookLocation:
                 JLabel codeLabel = new JLabel(key.toString());

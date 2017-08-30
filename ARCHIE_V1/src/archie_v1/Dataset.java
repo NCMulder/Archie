@@ -48,9 +48,11 @@ import org.apache.commons.io.filefilter.RegexFileFilter;
 public class Dataset implements PropertyChangeListener {
 
     public Path mainDirectory;
+    public Path saveLocation = null;
     public DefaultMutableTreeNode fileTree;
     public ArrayList<FileHelper> files = new ArrayList();
     public HashMap<Path, Path> readmes = new HashMap();
+    public boolean saved = true;
     Lock filesArrayLock = new ReentrantLock();
     Lock readmesMapLock = new ReentrantLock();
     Lock progressLock = new ReentrantLock();
@@ -496,6 +498,8 @@ public class Dataset implements PropertyChangeListener {
                     } catch (Exception e) {
                         key = MetadataKey.HistoricKeys(keyValue[0]);
                     }
+                    if(key==null)
+                        continue;
                     String value = keyValue[1];
                     fileHelper.setRecord(key, value, false);
                 }

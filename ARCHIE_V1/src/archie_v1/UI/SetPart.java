@@ -23,10 +23,12 @@ import javax.swing.JPanel;
 public class SetPart extends JPanel {
 
     private String[] identifierTypes = {"DAI", "ORCID", "ISNI"};
+    private String[] relationTypes = {"DAI", "ORCID", "ISNI"};
     public JComboBox idComboBox;
 
     public ArchieTextField idField, toaField, nameGivenField, nameFamilyField, affiliationField;
     public ArchieTextField singleField, relatedDatasetNameField, relatedDatasetLocationField;
+    public JComboBox relatedDatasetRelationBox;
     private MetadataKey role;
     private String[] availableStrings = {"", "", "", "", ""};
 
@@ -186,6 +188,26 @@ public class SetPart extends JPanel {
                         GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, //Anchor, Fill
                         new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
                 this.add(relatedDatasetLocationField, gbc);
+                
+
+                JLabel relatedDatasetRelationLabel = new JLabel("Dataset relation");
+                gbc = new GridBagConstraints(
+                        0, 2, //GridX, GridY
+                        2, 1, //GridWidth, GridHeight
+                        1, 1, //WeightX, WeightY
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, //Anchor, Fill
+                        new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
+                this.add(relatedDatasetRelationLabel, gbc);
+                
+                relatedDatasetRelationBox = new JComboBox(relationTypes);
+                ((JComboBox) relatedDatasetRelationBox).setSelectedIndex(0);
+                gbc = new GridBagConstraints(
+                        2, 2, //GridX, GridY
+                        3, 1, //GridWidth, GridHeight
+                        1, 1, //WeightX, WeightY
+                        GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, //Anchor, Fill
+                        new Insets(4, 4, 4, 4), 3, 3); //Insets, IpadX, IpadY
+                this.add(relatedDatasetRelationBox, gbc);
 
                 break;
             default:
@@ -245,6 +267,7 @@ public class SetPart extends JPanel {
             case RelatedDatasetLocation:
                 info.put(MetadataKey.RelatedDatasetName, relatedDatasetNameField.getText());
                 info.put(MetadataKey.RelatedDatasetLocation, relatedDatasetLocationField.getText());
+                info.put(MetadataKey.RelatedDatasetRelation, relatedDatasetRelationBox.getSelectedItem().toString());
                 break;
             default:
                 info.put(role, singleField.getText());

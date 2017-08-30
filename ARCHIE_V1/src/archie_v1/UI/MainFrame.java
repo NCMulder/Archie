@@ -42,11 +42,11 @@ public class MainFrame extends JFrame implements ActionListener {
     JMenuItem toIslandora, toDANS, toArchive, editPrefs;
     public JMenu export;
     private JMenuItem tempMenuItem;
-    public JMenuItem saveItem;
+    public JMenuItem saveItem, saveAsItem;
     private JMenuItem openMenu;
     private JMenuItem about;
     private JMenuItem scan;
-    
+
     public NewDataset currentNewDatasetter;
 
     public MainFrame(ArchieUIManager parent) {
@@ -107,6 +107,11 @@ public class MainFrame extends JFrame implements ActionListener {
         saveItem.setEnabled(false);
         dataSet.add(saveItem);
 
+        saveAsItem = new JMenuItem("Save as");
+        saveAsItem.addActionListener(this);
+        saveAsItem.setEnabled(false);
+        dataSet.add(saveAsItem);
+
         export = new JMenu("Export as...    ");
         export.setEnabled(false);
         toIslandora = new JMenuItem("Islandora .zip");
@@ -115,7 +120,7 @@ public class MainFrame extends JFrame implements ActionListener {
         toDANS = new JMenuItem("DANS .zip");
         toDANS.addActionListener(this);
         export.add(toDANS);
-        toArchive = new JMenuItem("Archie-zip");
+        toArchive = new JMenuItem("Nexus1492-zip");
         toArchive.addActionListener(this);
         export.add(toArchive);
         dataSet.add(export);
@@ -150,6 +155,8 @@ public class MainFrame extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
 
         if (e.getActionCommand() == "From directory") {
+            if (!checkSave())
+                return;
             currentNewDatasetter = new NewDataset(this);
             ChangeMainPanel(currentNewDatasetter);
         } else if (e.getSource() == toIslandora) {
@@ -200,7 +207,7 @@ public class MainFrame extends JFrame implements ActionListener {
                     MetadataChanger mdc = (MetadataChanger) mainPanel;
                     String recentlyOpened = ARCHIE.prefs.get(ARCHIE.RECENTLY_SAVED, mdc.dataset.mainDirectory.getParent().toString());
                     JFileChooser fc = new checkingFC(recentlyOpened);
-                    fc.setSelectedFile(new File(mdc.dataset.datasetHelper.metadataMap.get(MetadataKey.DatasetTitle) + "_ARCHIE.zip"));
+                    fc.setSelectedFile(new File(mdc.dataset.datasetHelper.metadataMap.get(MetadataKey.DatasetTitle) + "_Nexus1492.zip"));
                     FileNameExtensionFilter zipFilter = new FileNameExtensionFilter("zip files (*.zip)", "zip");
                     fc.addChoosableFileFilter(zipFilter);
                     fc.setFileFilter(zipFilter);
@@ -215,28 +222,13 @@ public class MainFrame extends JFrame implements ActionListener {
                     Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
+        } else if (e.getSource() == saveAsItem) {
+            Save(true);
         } else if (e.getSource() == saveItem) {
-            if (mainPanel instanceof MetadataChanger) {
-                MetadataChanger mdc = (MetadataChanger) mainPanel;
-                String recentlyOpened = ARCHIE.prefs.get(ARCHIE.RECENTLY_SAVED, mdc.dataset.mainDirectory.getParent().toString());
-                JFileChooser fc = new checkingFC(recentlyOpened);
-                fc.setSelectedFile(new File(mdc.dataset.datasetHelper.metadataMap.get(MetadataKey.DatasetTitle) + ".archie"));
-                FileNameExtensionFilter archieFilter = new FileNameExtensionFilter("archie files (*.archie)", "archie");
-                fc.addChoosableFileFilter(archieFilter);
-                fc.setFileFilter(archieFilter);
-                int rv = fc.showSaveDialog(this);
-                boolean succes = false;
-                if (rv == JFileChooser.APPROVE_OPTION) {
-                    ARCHIE.prefs.put(ARCHIE.RECENTLY_SAVED, fc.getSelectedFile().getPath());
-                    succes = mdc.dataset.saveDataset(fc.getSelectedFile());
-                }
-                if (succes) {
-                    JOptionPane.showMessageDialog(this, "The dataset has been succesfully saved.");
-                } else {
-                    JOptionPane.showMessageDialog(this, "An error occured.\nThe dataset has not been saved.\nPlease try again. If this error persists, please contact us through the help menu.");
-                }
-            }
+            Save(false);
         } else if (e.getSource() == openMenu) {
+            if (!checkSave())
+                return;
             String path = ARCHIE.prefs.get(ARCHIE.RECENTLY_OPENED_ARCHIEFILE, "");
             JFileChooser fc = new JFileChooser(path);
             FileNameExtensionFilter archieFilter = new FileNameExtensionFilter("archie files(*.archie)", "archie");
@@ -246,13 +238,15 @@ public class MainFrame extends JFrame implements ActionListener {
             if (rv == JFileChooser.APPROVE_OPTION) {
                 ARCHIE.prefs.put(ARCHIE.RECENTLY_OPENED_ARCHIEFILE, fc.getSelectedFile().getPath());
                 currentNewDatasetter = new NewDataset(this, fc.getSelectedFile());
+                //((MetadataChanger)mainPanel).dataset.saveLocation = fc.getSelectedFile().toPath();
                 //ChangeMainPanel(nds);
             } else {
 
             }
         } else if (e.getSource() == about) {
-            AboutScreen abs = new AboutScreen();
-            ChangeMainPanel(abs);
+            Object[] buttons = {"Close"};
+            JOptionPane.showOptionDialog(this, new AboutScreen(), "About", JOptionPane.OK_OPTION, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
+            //ChangeMainPanel(abs);
         } else if (e.getSource() == scan) {
             if (mainPanel instanceof MetadataChanger) {
                 ArrayList<String> newFiles = ((MetadataChanger) mainPanel).dataset.Scan();
@@ -315,5 +309,63 @@ public class MainFrame extends JFrame implements ActionListener {
         //todo: better home screen implementation? recent files, etc
         welcome = new WelcomeScreen();
         ChangeMainPanel(welcome);
+    }
+
+    public boolean Save(boolean saveAs) {
+        if (!(mainPanel instanceof MetadataChanger)) {
+            return true;
+        }
+        MetadataChanger mdc = (MetadataChanger) mainPanel;
+        JFileChooser fc;
+        File savePath = null;
+        if (saveAs || mdc.dataset.saveLocation == null) {
+            String recentlyOpened = ARCHIE.prefs.get(ARCHIE.RECENTLY_SAVED, mdc.dataset.mainDirectory.getParent().toString());
+            fc = new checkingFC(recentlyOpened);
+            fc.setSelectedFile(new File(mdc.dataset.datasetHelper.metadataMap.get(MetadataKey.DatasetTitle) + ".archie"));
+            FileNameExtensionFilter archieFilter = new FileNameExtensionFilter("archie files (*.archie)", "archie");
+            fc.addChoosableFileFilter(archieFilter);
+            fc.setFileFilter(archieFilter);
+            int rv = fc.showSaveDialog(this);
+            if (rv == JFileChooser.APPROVE_OPTION) {
+                ARCHIE.prefs.put(ARCHIE.RECENTLY_SAVED, fc.getSelectedFile().getPath());
+                savePath = fc.getSelectedFile();
+            } else if (rv == JFileChooser.CANCEL_OPTION) {
+                return false;
+            }
+        }
+        if (savePath == null) {
+            savePath = mdc.dataset.saveLocation.toFile();
+        }
+        boolean succes = mdc.dataset.saveDataset(savePath);
+        if (succes) {
+            mdc.dataset.saveLocation = savePath.toPath();
+            mdc.dataset.saved = true;
+            JOptionPane.showMessageDialog(this, "The dataset has been succesfully saved.");
+            return true;
+        } else {
+            JOptionPane.showMessageDialog(this, "An error occured.\nThe dataset has not been saved.\nPlease try again. If this error persists, please contact us through the help menu.");
+            return false;
+        }
+    }
+
+    public boolean checkSave() {
+        if (!(mainPanel instanceof MetadataChanger)) {
+            return true;
+        }
+        if (((MetadataChanger) mainPanel).dataset.saved) {
+            return true;
+        }
+        Object[] buttons = {"Save", "Save as", "Ignore", "Cancel"};
+        int result = JOptionPane.showOptionDialog(this, "The current dataset is not yet saved. Do you want to save first?", "Opening new dataset", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
+        switch (result) {
+            case 0:
+                return Save(false);
+            case 1:
+                return Save(true);
+            case 2:
+                return true;
+            default:
+                return false;
+        }
     }
 }

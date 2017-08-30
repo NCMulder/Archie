@@ -19,11 +19,12 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener {
     JButton saveButton, resetButton, saveChildrenButton;
     FileHelper fileHelper;
     private MetadataChangerFields topPane;
+    private MetadataChanger parent;
 
     public MetadataChangerPane(FileHelper fileHelper, MetadataChanger parent) {
         super(JSplitPane.VERTICAL_SPLIT);
         this.fileHelper = fileHelper;
-
+        this.parent = parent;
         createUI();
     }
 
@@ -67,6 +68,7 @@ public class MetadataChangerPane extends JSplitPane implements ActionListener {
     }
 
     public void saveToFileHelper(boolean softSet) {
+        parent.dataset.saved = false;
         for (Map.Entry<MetadataKey, JComponent> metadataKeyTextEntry : topPane.labelText.entrySet()) {
             String value = (metadataKeyTextEntry.getKey().unrestricted) ? ((ArchieTextField) metadataKeyTextEntry.getValue()).getText() : ((JComboBox) metadataKeyTextEntry.getValue()).getSelectedItem().toString();
             if(value=="")

@@ -158,6 +158,7 @@ public class NewDataset extends JPanel implements ActionListener{
         parent.ChangeMainPanel(parent.metadatachanger);
         parent.export.setEnabled(true);
         parent.saveItem.setEnabled(true);
+        parent.saveAsItem.setEnabled(true);
 
         //CHECK THIS
         parent.validate();

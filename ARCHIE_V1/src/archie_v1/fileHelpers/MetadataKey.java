@@ -28,6 +28,7 @@ public enum MetadataKey {
     ContributorIdentifier("Contributor identifier", "62935461", null, KeyCategory.Main, true, true, true),
     RelatedDatasetName("Related dataset name", "Philosophy of the Caribean in the Third Century", null, KeyCategory.Main, true, false, true),
     RelatedDatasetLocation("Related dataset location", "DOI: 12683128361", null, KeyCategory.Main, true, false, true),
+    RelatedDatasetRelation("Related dataset relation", null, KeyCategory.Main, true, false, "Relation1", "Relation2"),
     RelatedCodeBookLocation("Codebook location", "C://", "othmat_codebook", KeyCategory.Main, false, true, false),
     Subject("Subject", "Philosophy", "file_category", KeyCategory.Main, true, false, true),
     Description("Description *", "Front side of a Saladoid jar", "file_content", KeyCategory.Main, true, true, false),
@@ -36,7 +37,7 @@ public enum MetadataKey {
     Embargo("Embargo", "Embargo date", null, KeyCategory.Main, true, false, false),
     Language("Language", null, KeyCategory.Main, true, false, "English", "French", "German", "Dutch", "Spanish", "Other"),
     TemporalCoverage("Temporal coverage", "-3000 - 1267", "time_period", KeyCategory.Main, true, false, false),
-    SpatialCoverage("Spatial coverage *", "Dominican Republic", null, KeyCategory.Geographical, true, true, false),
+    SpatialCoverage("Spatial coverage *", "Dominican Republic", null, KeyCategory.Geographical, true, true, true),
     Coordinates("Coordinates", "Preferably use decimal degrees, f.i. -74.967637, 14.540111", "geog_cover", KeyCategory.Geographical, true, true, false),
     AccessLevel("Access level", null, KeyCategory.Main, true, false, "Open access", "On Request", "Research group", "Restricted Subgroup", "Privacy Sensitive", "Dark Archive", "Data Vault"),
     Software("Software *", "Software used to create file", "software", KeyCategory.Technical, false, true, false),
@@ -74,8 +75,9 @@ public enum MetadataKey {
 
     static public MetadataKey[] creatorKeys = {CreatorIdentifier, CreatorTOA, CreatorGivenName, CreatorFamilyName, CreatorAffiliation};
     static public MetadataKey[] contributorKeys = {ContributorIdentifier, ContributorTOA, ContributorGivenName, ContributorFamilyName, ContributorAffiliation};
-    static public MetadataKey[] relatedDatasetKeys = {RelatedDatasetName, RelatedDatasetLocation};
+    static public MetadataKey[] relatedDatasetKeys = {RelatedDatasetName, RelatedDatasetLocation, RelatedDatasetRelation};
     static public MetadataKey[] subjectKeys = {Subject};
+    static public MetadataKey[] spatialCoverageKeys = {SpatialCoverage};
 
     MetadataKey(String displayValue, String hintValue, String DANSName, KeyCategory keyCategory, boolean dataset, boolean file, boolean addable) {
         this.displayValue = displayValue;
