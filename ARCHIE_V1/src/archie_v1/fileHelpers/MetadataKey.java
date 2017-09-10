@@ -15,20 +15,23 @@ import java.util.prefs.Preferences;
 
 public enum MetadataKey {
     DatasetTitle("Dataset Title", "Dataset_01", null, KeyCategory.Main, true, false, false),
+    AlternativeTitle("Alternative Title", "Pottery in the MEVA period", null, KeyCategory.Main, true, false, false),
     Identifier("Identifier", "DOI1:0.1006/jmbi.1995.0238", null, KeyCategory.Main, true, false, false),
     CreatorGivenName("Creator given name", "G.F.", "data_collector", KeyCategory.Main, true, true, true),
+    CreatorInsertions("Creator insertions", "van der", null, KeyCategory.Main, true, true, true),
     CreatorFamilyName("Creator family name", "Coninck", null, KeyCategory.Main, true, true, true),
     CreatorAffiliation("Creator affiliation", "Universiteit Leiden", null, KeyCategory.Main, true, true, true),
     CreatorTOA("Creator Terms of Adress", "Prof. Dr.", null, KeyCategory.Main, true, true, true),
     CreatorIdentifier("Creator identifier", "12345678", null, KeyCategory.Main, true, true, true),
     ContributorGivenName("Contributor given name", "H.T.", null, KeyCategory.Main, true, true, true),
+    ContributorInsertions("Contributor insertions", "van der", null, KeyCategory.Main, true, true, true),
     ContributorFamilyName("Contributor family name", "de Vries", null, KeyCategory.Main, true, true, true),
     ContributorAffiliation("Contributor affiliation", "Cambridge University", null, KeyCategory.Main, true, true, true),
     ContributorTOA("Contributor TOA", "Drs.", null, KeyCategory.Main, true, true, true),
     ContributorIdentifier("Contributor identifier", "62935461", null, KeyCategory.Main, true, true, true),
     RelatedDatasetName("Related dataset name", "Philosophy of the Caribean in the Third Century", null, KeyCategory.Main, true, false, true),
     RelatedDatasetLocation("Related dataset location", "DOI: 12683128361", null, KeyCategory.Main, true, false, true),
-    RelatedDatasetRelation("Related dataset relation", null, KeyCategory.Main, true, false, "Relation1", "Relation2"),
+    RelatedDatasetRelation("Related dataset relation", null, KeyCategory.Main, true, false,  "conforms to", "has format", "has part", "references", "replaces", "requires", "has version", "is format of", "is part of", "is referenced by", "is replaced by", "is required by", "is version of"),
     RelatedCodeBookLocation("Codebook location", "C://", "othmat_codebook", KeyCategory.Main, false, true, false),
     Subject("Subject", "Philosophy", "file_category", KeyCategory.Main, true, false, true),
     Description("Description *", "Front side of a Saladoid jar", "file_content", KeyCategory.Main, true, true, false),
@@ -73,8 +76,8 @@ public enum MetadataKey {
     public static HashMap<MetadataKey, String> defaultValues;
     public KeyCategory keyCategory;
 
-    static public MetadataKey[] creatorKeys = {CreatorIdentifier, CreatorTOA, CreatorGivenName, CreatorFamilyName, CreatorAffiliation};
-    static public MetadataKey[] contributorKeys = {ContributorIdentifier, ContributorTOA, ContributorGivenName, ContributorFamilyName, ContributorAffiliation};
+    static public MetadataKey[] creatorKeys = {CreatorIdentifier, CreatorTOA, CreatorGivenName, CreatorInsertions, CreatorFamilyName, CreatorAffiliation};
+    static public MetadataKey[] contributorKeys = {ContributorIdentifier, ContributorTOA, ContributorGivenName, ContributorInsertions,ContributorFamilyName, ContributorAffiliation};
     static public MetadataKey[] relatedDatasetKeys = {RelatedDatasetName, RelatedDatasetLocation, RelatedDatasetRelation};
     static public MetadataKey[] subjectKeys = {Subject};
     static public MetadataKey[] spatialCoverageKeys = {SpatialCoverage};

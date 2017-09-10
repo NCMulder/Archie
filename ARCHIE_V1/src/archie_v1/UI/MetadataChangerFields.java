@@ -183,10 +183,12 @@ public class MetadataChangerFields extends JScrollPane implements ActionListener
                 return contributorPanel;
             case CreatorIdentifier:
             case CreatorTOA:
+            case CreatorInsertions:
             case CreatorFamilyName:
             case CreatorAffiliation:
             case ContributorIdentifier:
             case ContributorTOA:
+            case ContributorInsertions:
             case ContributorFamilyName:
             case ContributorAffiliation:
                 return null;

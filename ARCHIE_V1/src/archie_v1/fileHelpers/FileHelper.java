@@ -35,13 +35,13 @@ public abstract class FileHelper {
     public boolean root = false;
     public LinkedHashMap<MetadataKey, String> metadataMap;
 
-    public FileHelper(Path filePath){
+    public FileHelper(Path filePath) {
         metadataMap = new LinkedHashMap();
         metadata = new HashMap();
         this.filePath = filePath;
         Initialize(false);
     }
-    
+
     public FileHelper(Path filePath, boolean open) {
         metadataMap = new LinkedHashMap();
         metadata = new HashMap();
@@ -56,7 +56,7 @@ public abstract class FileHelper {
         this.filePath = filePath;
         Initialize(open);
     }
-    
+
     public void Initialize(boolean open) {
         for (int i = 0; i < MetadataKey.values().length; i++) {
             if (MetadataKey.values()[i].file) {
@@ -64,9 +64,10 @@ public abstract class FileHelper {
             }
         }
 
-        if(open)
+        if (open) {
             return;
-        
+        }
+
         metadata = getMetaData();
         //Is this useful? TODO WIP WOUTER
         //setRecord(MetadataKey.FileContentType, "." + FilenameUtils.getExtension(filePath.toString()) + " file", false);
@@ -175,8 +176,12 @@ public abstract class FileHelper {
     }
 
     public void SetAddableRecord(MetadataKey[] Values, ArrayList<String[]> valueArray, boolean softSet) {
-        if (softSet && metadataMap.get(Values[0]) != null) {
-            return;
+        if (softSet) {
+            for (MetadataKey key : Values) {
+                if (metadataMap.get(key) != null) {
+                    return;
+                }
+            }
         }
 
         //Empty array should result in an empty array
@@ -187,9 +192,17 @@ public abstract class FileHelper {
         } else {
             //Non-empty array should be copied verbatim
             for (int i = 0; i < Values.length; i++) {
+                boolean emptyString = true;
                 String value = "";
                 for (String[] values : valueArray) {
-                    value += values[i] + ";";
+                    if (values[i] != "" && values[i] != null) {
+                        emptyString = false;
+                    }
+                    if (emptyString) {
+                        metadataMap.put(Values[i], null);
+                    } else {
+                        value += values[i] + ";";
+                    }
                 }
                 metadataMap.put(Values[i], value);
             }

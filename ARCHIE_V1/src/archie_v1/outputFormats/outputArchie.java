@@ -4,6 +4,8 @@ package archie_v1.outputFormats;
 import archie_v1.Dataset;
 import archie_v1.fileHelpers.FileHelper;
 import archie_v1.fileHelpers.MetadataKey;
+import archie_v1.fileHelpers.databaseFile;
+import archie_v1.fileHelpers.xlsxFile;
 import java.awt.Cursor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -12,7 +14,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.swing.JComponent;
@@ -20,6 +25,8 @@ import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingWorker;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.codehaus.plexus.util.FileUtils;
 
 /**
  * The concrete outputter for verification purposes.
@@ -74,8 +81,8 @@ public class outputArchie extends outputAbstract implements PropertyChangeListen
             dataset.saveDataset(saveFile);
             ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(FilenameUtils.removeExtension(destination) + ".zip"));
             
-            ZipEntry datasetEntry = new ZipEntry(dataset.mainDirectory.getParent().relativize(dataset.mainDirectory).toString());
-            zipOut.putNextEntry(datasetEntry);
+//            ZipEntry datasetEntry = new ZipEntry(dataset.mainDirectory.getParent().relativize(dataset.mainDirectory).toString());
+//            zipOut.putNextEntry(datasetEntry);
             
             FileInputStream fIS = new FileInputStream(saveFile.getPath());
             ZipEntry fileZipEntry = new ZipEntry(saveFile.getName());
@@ -107,12 +114,95 @@ public class outputArchie extends outputAbstract implements PropertyChangeListen
                     zipOut.write(readBuffer, 0, length);
                 }
                 zipOut.closeEntry();
+                
+                try {
+                    String codebookPath = fh.metadataMap.get(MetadataKey.RelatedCodeBookLocation);
+                    if (codebookPath != null && !codebookPath.equals("will be generated upon export")) {
+                        System.out.println("Writing associated codebook for file " + filePath.getFileName());
+
+                        FileInputStream codeStream = new FileInputStream(codebookPath);
+                        ZipEntry codebookEntry = new ZipEntry("codebooks/" + Paths.get(codebookPath).getFileName());
+                        zipOut.putNextEntry(codebookEntry);
+                        readBuffer = new byte[2048];
+                        length = 0;
+                        while ((length = codeStream.read(readBuffer)) > 0) {
+                            zipOut.write(readBuffer, 0, length);
+                        }
+                        zipOut.closeEntry();
+                    } else if (fh instanceof xlsxFile && codebookPath.equals("will be generated upon export")) {
+                        ArrayList<Workbook> codebooks = ((xlsxFile) fh).codebooks;
+                        for (Workbook codebook : codebooks) {
+                            System.out.println("Writing codebook...");
+                            String fileName = FileUtils.removeExtension(fh.filePath.getFileName().toString()) + "_" + codebook.getSheetName(0) + "." + FileUtils.getExtension(((xlsxFile) fh).filePath.toString());
+                            ZipEntry cbEntry = new ZipEntry("codebooks/" + fileName);
+
+                            File tempFile = new File("temp");
+                            tempFile.mkdirs();
+                            File codeFile = new File(tempFile, codebook.getSheetName(0) + "_" + ((xlsxFile) fh).filePath.getFileName());
+                            FileOutputStream FOS = new FileOutputStream(codeFile);
+                            codebook.write(FOS);
+                            FOS.close();
+
+                            FileInputStream FIS = new FileInputStream(codeFile);
+
+                            zipOut.putNextEntry(cbEntry);
+                            readBuffer = new byte[2048];
+                            length = 0;
+                            while ((length = FIS.read(readBuffer)) > 0) {
+                                zipOut.write(readBuffer, 0, length);
+                            }
+                            FIS.close();
+                            zipOut.closeEntry();
+                        }
+                    } else if (fh instanceof databaseFile){
+                        exportAccessCodebook((databaseFile)fh, zipOut);
+                    }
+
+                } catch (Exception e) {
+                    System.out.println("Duplicate codebook, not writing twice.");
+                }
             }
             zipOut.close();
             
+            
+            
+        
+            parent.setCursor(null);
             return null;
         }
-
+    }
+    
+    private void exportAccessCodebook(databaseFile fh, ZipOutputStream out) {
+        FileOutputStream FOS = null;
+        FileInputStream FIS = null;
+        try {
+            System.out.println("Writing codebook...");
+            Workbook codebook = fh.codebook;
+            String fileName = FileUtils.removeExtension(fh.filePath.getFileName().toString()) + "_codebook.xlsx";
+            ZipEntry cbEntry = new ZipEntry("codebooks/" + fileName);
+            File tempFile = new File("temp");
+            tempFile.mkdirs();
+            File codeFile = new File(tempFile, codebook.getSheetName(0) + "_" + (fh.filePath.getFileName()));
+            FOS = new FileOutputStream(codeFile);
+            codebook.write(FOS);
+            FIS = new FileInputStream(codeFile);
+            out.putNextEntry(cbEntry);
+            byte[] readBuffer = new byte[2048];
+            int length = 0;
+            while ((length = FIS.read(readBuffer)) > 0) {
+                out.write(readBuffer, 0, length);
+            }   
+            out.closeEntry();
+        } catch (IOException ex) {
+            Logger.getLogger(outputDANS.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                FOS.close();
+                FIS.close();
+            } catch (IOException ex) {
+                Logger.getLogger(outputDANS.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
     
     @Override
@@ -124,7 +214,7 @@ public class outputArchie extends outputAbstract implements PropertyChangeListen
             if (dO.isCancelled() || dO.isDone()) {
                 pm.close();
                 parent.setCursor(null);
-                JOptionPane.showMessageDialog(parent, "The Archie-export has been succesfully saved.");
+                JOptionPane.showMessageDialog(parent, "The Nexus1492-export has been succesfully saved.");
             }
         }
     }

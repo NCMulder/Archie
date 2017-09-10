@@ -22,8 +22,8 @@ import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
 
 /**
- * The AddablePanel is the part of the MetadataChanger responsible
- * for addable metadata, such as creators and contributors.
+ * The AddablePanel is the part of the MetadataChanger responsible for addable
+ * metadata, such as creators and contributors.
  *
  * @author N.C. Mulder <n.c.mulder at students.uu.nl>
  */
@@ -56,7 +56,11 @@ public class AddablePanel extends JPanel implements ActionListener {
             for (int i = 0; i < fileHelper.metadataMap.getOrDefault(Values[0], "").split(";", 0).length; i++) {
                 String[] arrayEntry = new String[Values.length];
                 for (int j = 0; j < Values.length; j++) {
-                    arrayEntry[j] = fileHelper.metadataMap.get(Values[j]).split(";")[i];
+                    if (fileHelper.metadataMap.get(Values[j]) == null || fileHelper.metadataMap.get(Values[j]) == "") {
+                        arrayEntry[j] = "";
+                    } else {
+                        arrayEntry[j] = fileHelper.metadataMap.get(Values[j]).split(";")[i];
+                    }
                 }
                 valueArray.add(arrayEntry);
             }
@@ -98,7 +102,7 @@ public class AddablePanel extends JPanel implements ActionListener {
 
             for (int i = 0; i < height; i++) {
                 //This six is arbitrary, should be dynamically settable; however, we want all columns equally.
-                JPanel singleValue = new JPanel(new GridLayout(0, 6));
+                JPanel singleValue = new JPanel(new GridLayout(0, 7));
 
                 for (int j = 0; j < Values.length; j++) {
                     String labelText = valueArray.get(i)[j].trim();
@@ -106,7 +110,7 @@ public class AddablePanel extends JPanel implements ActionListener {
                     singleValue.add(label);
                 }
 
-                for (int j = Values.length; j < 5; j++) {
+                for (int j = Values.length; j < 6; j++) {
                     JLabel label = new JLabel();
                     singleValue.add(label);
                 }
@@ -146,19 +150,20 @@ public class AddablePanel extends JPanel implements ActionListener {
             valueArray.remove(f);
             resetMainPanel();
         } else if (e.getSource() == addItem) {
-            SetPart sp = new SetPart(Values[0]);
+            SetPart sp = new SetPart(Values);
             String title = singleTitle + " addition";
             Object[] buttons = {"Add", "Cancel"};
-            
+
             int result = JOptionPane.showOptionDialog(this, sp, title, JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
-            
+
             if (result == JOptionPane.OK_OPTION) {
                 HashMap<MetadataKey, String> map = sp.getInfo();
                 String[] values = new String[Values.length];
-                for(int i = 0; i < Values.length; i++){
+                for (int i = 0; i < Values.length; i++) {
                     String value = map.get(Values[i]);
-                    if(value == null || value.equals(""))
+                    if (value == null || value.equals("")) {
                         value = " ";
+                    }
                     values[i] = value;
                 }
                 valueArray.add(values);

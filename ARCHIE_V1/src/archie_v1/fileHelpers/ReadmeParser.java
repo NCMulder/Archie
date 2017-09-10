@@ -62,7 +62,7 @@ public class ReadmeParser {
                         String authorName = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
                         String authorIdentifier = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
                         String authorAffiliation = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
-                        String[] authorValues = {authorIdentifier, authorTitle, authorInitials, authorName, authorAffiliation};
+                        String[] authorValues = {authorIdentifier, authorTitle, authorInitials, "",authorName, authorAffiliation};
                         setForFileHelper(MetadataKey.creatorKeys, authorValues, false);
                         item = false;
                         creator = true;
@@ -74,7 +74,7 @@ public class ReadmeParser {
                         String contributorName = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
                         String contributorIdentifier = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
                         String contributorAffiliation = br.readLine().split(splitter, 2)[1].replaceAll(",$", "").replaceAll(",", ";");
-                        String[] contributorValues = {contributorIdentifier, contributorTitle, contributorInitials, contributorName, contributorAffiliation};
+                        String[] contributorValues = {contributorIdentifier, contributorTitle, contributorInitials, "",contributorName, contributorAffiliation};
 
                         setForFileHelper(MetadataKey.contributorKeys, contributorValues, false);
                         item = false;
@@ -142,7 +142,8 @@ public class ReadmeParser {
                         //setForFileHelper(MetadataKey.Subject, keyValue[1].replaceAll(",$", "").replaceAll(",", ";"), true, true);
                         break;
                     case "spatial coverage":
-                        setForFileHelper(MetadataKey.SpatialCoverage, keyValue[1].substring(0, keyValue[1].indexOf(",\"")).replace("\"", ""), false);
+                        //setForFileHelper(MetadataKey.SpatialCoverage, keyValue[1].substring(0, keyValue[1].indexOf(",\"")).replace("\"", ""), false);
+                        setForFileHelper(new MetadataKey[]{MetadataKey.SpatialCoverage}, new String[]{keyValue[1].substring(0, keyValue[1].indexOf(",\"")).replaceAll(",$", "").replaceAll(",", ";")}, false);
                         break;
                     case "temporal coverage":
                         //Should not be in readme
@@ -205,7 +206,7 @@ public class ReadmeParser {
         String defValue = value;
         
         if (defValue == null || defValue.equals("")) {
-            SetPart sp = new SetPart(key);
+            SetPart sp = new SetPart(new MetadataKey[]{key});
             Object[] buttons = {"Add", "Cancel"};
             int result = JOptionPane.showOptionDialog(null, sp, "Missing " + key + " in readme.", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
             if (result == JOptionPane.OK_OPTION && !sp.getInfo().containsValue("") && !sp.getInfo().containsValue(null)) {
@@ -241,10 +242,10 @@ public class ReadmeParser {
         }
 
         if (Arrays.asList(defValues).contains(null) || Arrays.asList(defValues).contains("")) {
-            SetPart sp = new SetPart(keys[0], values);
+            SetPart sp = new SetPart(keys, values);
             Object[] buttons = {"Add", "Cancel"};
             int result = JOptionPane.showOptionDialog(null, sp, "Missing parts in readme.", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, buttons, buttons[0]);
-            if (result == JOptionPane.OK_OPTION && !sp.getInfo().containsValue(null) && !sp.getInfo().containsValue("")) {
+            if (result == JOptionPane.OK_OPTION && !sp.getInfo().containsValue(null)){// && !sp.getInfo().containsValue("")) {
                 HashMap<MetadataKey, String> hm = sp.getInfo();
                 defKeys = hm.keySet().toArray(new MetadataKey[hm.keySet().size()]);
                 defValues = hm.values().toArray(new String[hm.values().size()]);
@@ -254,7 +255,7 @@ public class ReadmeParser {
         }
         
         assert !Arrays.asList(defValues).contains(null);
-        assert !Arrays.asList(defValues).contains("");
+        //assert !Arrays.asList(defValues).contains("");
         assert !Arrays.asList(defKeys).contains(null);
 
         fileHelper.AddAddableRecord(defKeys, defValues, softSet);

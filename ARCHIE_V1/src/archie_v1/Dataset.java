@@ -6,8 +6,6 @@ import archie_v1.fileHelpers.FolderHelper;
 import archie_v1.fileHelpers.MetadataKey;
 import archie_v1.fileHelpers.ReadmeParser;
 import java.awt.Cursor;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -45,7 +43,7 @@ import org.apache.commons.io.filefilter.RegexFileFilter;
  *
  * @author N.C. Mulder <n.c.mulder at students.uu.nl>
  */
-public class Dataset implements PropertyChangeListener {
+public class Dataset {
 
     public Path mainDirectory;
     public Path saveLocation = null;
@@ -133,16 +131,6 @@ public class Dataset implements PropertyChangeListener {
         }
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals("progress")) {
-            int progress = (int) evt.getNewValue();
-            pm.setProgress(progress);
-            System.out.println("Firing event " + evt.getPropertyName());
-            pm.setNote("Processing file " + progress + " of " + childCount);
-        }
-    }
-
     private void debugFiles() {
         if (!probfiles.isEmpty()) {
             String errorMessage = "There was a problem parsing the following files:\n\n";
@@ -189,12 +177,13 @@ public class Dataset implements PropertyChangeListener {
     }
 
     public Dataset(Path path, FolderHelper datasetHelper, int childCount) {
+        System.out.println("files: " + childCount);
         this.mainDirectory = path;
         this.datasetHelper = datasetHelper;
         this.childCount = childCount;
-        pm = new ProgressMonitor(ARCHIE.ui.mf, "Processing files...", "", 0, childCount);
-        pm.setMillisToDecideToPopup(0);
-        pm.setMillisToPopup(0);
+        pm = new ProgressMonitor(ARCHIE.ui.mf, "Processing files...", "", 0, childCount * 2);
+        //pm.setMillisToDecideToPopup(0);
+        //pm.setMillisToPopup(0);
 
         dirToTree();
     }
@@ -214,7 +203,7 @@ public class Dataset implements PropertyChangeListener {
                         null, options, null);
                 switch (result) {
                     case 0:
-                        JFileChooser fc = new JFileChooser();
+                        JFileChooser fc = new JFileChooser(selectedFile);
                         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                         int rv = fc.showOpenDialog(ARCHIE.ui.mf);
                         if (rv == JFileChooser.APPROVE_OPTION) {
@@ -234,8 +223,8 @@ public class Dataset implements PropertyChangeListener {
             this.datasetHelper = new FolderHelper(br, mainDirectory);
 
             pm = new ProgressMonitor(ARCHIE.ui.mf, "Processing files...", "", 0, childCount);
-            pm.setMillisToDecideToPopup(0);
-            pm.setMillisToPopup(0);
+            //pm.setMillisToDecideToPopup(0);
+            //pm.setMillisToPopup(0);
 
             openDataset(br, childCount);
         } catch (IOException ex) {
@@ -245,7 +234,6 @@ public class Dataset implements PropertyChangeListener {
 
     public void dirToTree() {
         DatasetOverseer dO = new DatasetOverseer();
-        dO.addPropertyChangeListener(this);
         dO.execute();
         
         ThreadJoiner tj = new ThreadJoiner(dO);
@@ -256,9 +244,6 @@ public class Dataset implements PropertyChangeListener {
 
         @Override
         protected Void doInBackground() throws Exception {
-            int myprogress = 0;
-            setProgress(myprogress);
-
             DefaultMutableTreeNode dirTree = new DefaultMutableTreeNode(mainDirectory);
 
             DatasetGenerator[] ts = new DatasetGenerator[mainDirectory.toFile().listFiles().length];
@@ -275,7 +260,6 @@ public class Dataset implements PropertyChangeListener {
             for (DatasetGenerator t : ts) {
                 try {
                     t.get();
-                    this.setProgress(myprogress++);
                 } catch (InterruptedException ex) {
                     System.out.println("The file " + t.file.getFileName() + " could not be processed.");
                     //Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
@@ -317,8 +301,8 @@ public class Dataset implements PropertyChangeListener {
 
             ARCHIE.ui.mf.currentNewDatasetter.createMetadataChanger(true);
 
-            JOptionPane.showMessageDialog(ARCHIE.ui.mf, "Successfully opened directory.");
             pm.close();
+            JOptionPane.showMessageDialog(ARCHIE.ui.mf, "Successfully opened directory.");
             
             return null;
         }
@@ -401,13 +385,14 @@ public class Dataset implements PropertyChangeListener {
                 files.add(fileHelper);
                 filesArrayLock.unlock();
             }
+            
+            pm.setProgress(progress++);
         }
 
     }
 
     public void openDataset(BufferedReader br, int children) {
         DatasetOpener dO = new DatasetOpener(br, children);
-        dO.addPropertyChangeListener(this);
         dO.execute();
 
         TestClass tc = new TestClass(dO);
@@ -453,12 +438,9 @@ public class Dataset implements PropertyChangeListener {
 
         @Override
         protected Void doInBackground() throws Exception {
-            setProgress(0);
             DefaultMutableTreeNode dirTree = new DefaultMutableTreeNode(mainDirectory);
             br.readLine();
-            int myprogress = 0;
             for (int i = 0; i < children; i++) {
-                setProgress(myprogress++);
                 createNodes(br, ">>", dirTree, datasetHelper);
             }
             files.add(datasetHelper);
@@ -512,6 +494,7 @@ public class Dataset implements PropertyChangeListener {
                     String value = keyValue[1];
                     fileHelper.metadata.put(key, value);
                 }
+                pm.setProgress(progress++);
             }
 
             if (isDir) {
@@ -523,7 +506,7 @@ public class Dataset implements PropertyChangeListener {
             }
             folderHelper.addToChildren(fileHelper);
             files.add(fileHelper);
-
+            
         } catch (IOException ex) {
             Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
         }
