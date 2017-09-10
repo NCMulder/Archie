@@ -64,12 +64,12 @@ public class outputDANS extends outputAbstract implements PropertyChangeListener
         "DC_IDENTIFIER", "DCX_RELATION_QUALIFIER", "DCX_RELATION_TITLE", "DCX_RELATION_LINK", "DC_TYPE", "DC_FORMAT", "DC_LANGUAGE",
         "DC_SOURCE", "DDM_ACCESSRIGHTS", "DDM_AVAILABLE", "DDM_AUDIENCE", "DepositorID", "ArchivistID", "DatasetState"};
 
-    MetadataKey[] columnKeys = {null, MetadataKey.DatasetTitle, MetadataKey.AlternativeTitle, MetadataKey.CreatorTOA, MetadataKey.CreatorGivenName, null,
+    MetadataKey[] columnKeys = {null, MetadataKey.DatasetTitle, MetadataKey.AlternativeTitle, MetadataKey.CreatorTOA, MetadataKey.CreatorGivenName, MetadataKey.CreatorInsertions,
         MetadataKey.CreatorFamilyName, MetadataKey.CreatorIdentifier, MetadataKey.CreatorAffiliation, MetadataKey.ContributorTOA, MetadataKey.ContributorGivenName,
-        null, MetadataKey.ContributorFamilyName, MetadataKey.ContributorIdentifier, MetadataKey.CreatorAffiliation, MetadataKey.DateCreated,
-        null /*Hier hoort rightsholder; moet deze er weer bij?*/, MetadataKey.Publisher, MetadataKey.Description, MetadataKey.Subject, MetadataKey.TemporalCoverage, MetadataKey.SpatialCoverage, MetadataKey.FileGeopgraphicUnit,
+        MetadataKey.ContributorInsertions, MetadataKey.ContributorFamilyName, MetadataKey.ContributorIdentifier, MetadataKey.CreatorAffiliation, MetadataKey.DateCreated,
+        MetadataKey.RightsHolder, MetadataKey.Publisher, MetadataKey.Description, MetadataKey.Subject, MetadataKey.TemporalCoverage, MetadataKey.SpatialCoverage, MetadataKey.FileGeopgraphicUnit,
         null, null, null, null, null, null,
-        MetadataKey.Identifier, null, MetadataKey.RelatedDatasetName, MetadataKey.RelatedDatasetLocation, null, MetadataKey.Software, MetadataKey.Language,
+        MetadataKey.Identifier, MetadataKey.RelatedDatasetRelation, MetadataKey.RelatedDatasetName, MetadataKey.RelatedDatasetLocation, null, MetadataKey.Software, MetadataKey.Language,
         MetadataKey.FileSource, MetadataKey.AccessLevel, MetadataKey.Embargo, null, null, null, null};
 
     public outputDANS(Dataset dataset) {

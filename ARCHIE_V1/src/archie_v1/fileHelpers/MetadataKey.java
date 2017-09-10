@@ -36,6 +36,7 @@ public enum MetadataKey {
     Subject("Subject", "Philosophy", "file_category", KeyCategory.Main, true, false, true),
     Description("Description *", "Front side of a Saladoid jar", "file_content", KeyCategory.Main, true, true, false),
     Publisher("Publisher", "Universiteit Leiden", null, KeyCategory.Main, true, false, false),
+    RightsHolder("Rightsholder", "Universiteit Leiden", null, KeyCategory.Main, true, false, false),
     DateCreated("Date created", "2016-03-16", "collection_date", KeyCategory.Main, true, true, false),
     Embargo("Embargo", "Embargo date", null, KeyCategory.Main, true, false, false),
     Language("Language", null, KeyCategory.Main, true, false, "English", "French", "German", "Dutch", "Spanish", "Other"),

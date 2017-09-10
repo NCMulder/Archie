@@ -53,7 +53,7 @@ public class AddablePanel extends JPanel implements ActionListener {
 
         this.valueArray = new ArrayList();
         if (fileHelper.metadataMap.get(Values[0]) != null) {
-            for (int i = 0; i < fileHelper.metadataMap.getOrDefault(Values[0], "").split(";", 0).length; i++) {
+            for (int i = 0; i < fileHelper.metadataMap.getOrDefault(Values[0], "").split(";").length; i++) {
                 String[] arrayEntry = new String[Values.length];
                 for (int j = 0; j < Values.length; j++) {
                     if (fileHelper.metadataMap.get(Values[j]) == null || fileHelper.metadataMap.get(Values[j]) == "") {

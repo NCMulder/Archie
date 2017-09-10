@@ -197,14 +197,16 @@ public abstract class FileHelper {
                 for (String[] values : valueArray) {
                     if (values[i] != "" && values[i] != null) {
                         emptyString = false;
-                    }
-                    if (emptyString) {
-                        metadataMap.put(Values[i], null);
-                    } else {
                         value += values[i] + ";";
+                    } else {
+                        value += " ;";
                     }
                 }
-                metadataMap.put(Values[i], value);
+                if (emptyString) {
+                    metadataMap.put(Values[i], null);
+                } else {
+                    metadataMap.put(Values[i], value);
+                }
             }
         }
     }

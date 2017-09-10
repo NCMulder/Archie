@@ -10,6 +10,8 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -61,10 +63,24 @@ public class MainFrame extends JFrame implements ActionListener {
         } catch (IOException ex) {
             Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
+        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent we) {
+                if (!(mainPanel instanceof MetadataChanger) || ((MetadataChanger) mainPanel).dataset.saved) {
+                    System.exit(0);
+                }
+                String ObjButtons[] = {"Yes", "No"};
+                int PromptResult = JOptionPane.showOptionDialog(null, "There are unsaved files. Are you sure you want to exit?", "Unsaved files", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, ObjButtons, ObjButtons[1]);
+                if (PromptResult == 0) {
+                    System.exit(0);
+                }
+            }
+        });
 
         this.setLayout(new BorderLayout());
         this.setPreferredSize(new Dimension(1000, 800));
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setMenus();
 
         // loading welcome screen
@@ -155,8 +171,9 @@ public class MainFrame extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
 
         if (e.getActionCommand() == "From directory") {
-            if (!checkSave())
+            if (!checkSave()) {
                 return;
+            }
             currentNewDatasetter = new NewDataset(this);
             ChangeMainPanel(currentNewDatasetter);
         } else if (e.getSource() == toIslandora) {
@@ -227,8 +244,9 @@ public class MainFrame extends JFrame implements ActionListener {
         } else if (e.getSource() == saveItem) {
             Save(false);
         } else if (e.getSource() == openMenu) {
-            if (!checkSave())
+            if (!checkSave()) {
                 return;
+            }
             String path = ARCHIE.prefs.get(ARCHIE.RECENTLY_OPENED_ARCHIEFILE, "");
             JFileChooser fc = new JFileChooser(path);
             FileNameExtensionFilter archieFilter = new FileNameExtensionFilter("archie files(*.archie)", "archie");
